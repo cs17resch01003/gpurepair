@@ -57,7 +57,7 @@ namespace GPURepair.Instrumentation
         public void Instrument()
         {
             bool program_modified = false;
-            
+
             do program_modified = InstrumentNext();
             while (program_modified);
         }
