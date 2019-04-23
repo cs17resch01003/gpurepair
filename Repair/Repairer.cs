@@ -28,15 +28,22 @@ namespace GPURepair.Repair
         public Microsoft.Boogie.Program Repair()
         {
             List<Error> errors = new List<Error>();
+            bool repaired = false;
+
             while (true)
             {
                 Solver solver = new Solver();
-                Dictionary<string, bool> assignments = solver.Solve(errors);
+                Dictionary<string, bool> assignments;
+
+                assignments = repaired ? solver.OptimizedSolve(errors) : solver.Solve(errors);
 
                 Microsoft.Boogie.Program program = ReadFile(filePath);
 
                 ConstraintGenerator constraintGenerator = new ConstraintGenerator(program);
                 constraintGenerator.ConstraintProgram(errors, assignments);
+
+                if (repaired)
+                    return program;
 
                 string tempFile = WriteFile(program);
                 program = ReadFile(tempFile);
@@ -44,17 +51,11 @@ namespace GPURepair.Repair
                 Verifier verifier = new Verifier(program);
                 Error error = verifier.GetError();
 
+                File.Delete(tempFile);
                 if (error == null)
-                {
-                    program = ReadFile(tempFile);
-                    File.Delete(tempFile);
-                    return program;
-                }
+                    repaired = true;
                 else
-                {
-                    File.Delete(tempFile);
                     errors.Add(error);
-                }
             }
         }
 

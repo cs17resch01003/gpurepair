@@ -4,17 +4,19 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{28928067-281F-4546-982A-7AA54AFD6D8D}</ProjectGuid>
+    <ProjectGuid>{2BBB57E5-6AA1-4952-979C-97CC771F90B4}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>GPURepair.Repair</RootNamespace>
     <AssemblyName>GPURepair.Repair</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -31,6 +33,26 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BoogieBasetypes">
@@ -60,8 +82,8 @@
     <Reference Include="GPUVerifyLib">
       <HintPath>..\binaries\gpuverify\GPUVerifyLib.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Z3, Version=4.8.4.0, Culture=neutral, PublicKeyToken=9c8d792caae602a2, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.Z3.x64.4.8.4\lib\netstandard1.4\Microsoft.Z3.dll</HintPath>
+    <Reference Include="Microsoft.Z3, Version=4.8.1.9857, Culture=neutral, PublicKeyToken=9c8d792caae602a2, processorArchitecture=x86">
+      <HintPath>..\packages\Microsoft.Z3.x86.4.8.1\lib\net40\Microsoft.Z3.dll</HintPath>
     </Reference>
     <Reference Include="Provers.SMTLib">
       <HintPath>..\binaries\boogie\Provers.SMTLib.dll</HintPath>
@@ -89,10 +111,12 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="z3.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Microsoft.Z3.x86.4.8.1\build\Microsoft.Z3.x86.targets" Condition="Exists('..\packages\Microsoft.Z3.x86.4.8.1\build\Microsoft.Z3.x86.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Z3.x86.4.8.1\build\Microsoft.Z3.x86.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Z3.x86.4.8.1\build\Microsoft.Z3.x86.targets'))" />
+  </Target>
 </Project>
