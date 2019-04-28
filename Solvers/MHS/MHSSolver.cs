@@ -73,6 +73,11 @@ namespace GPURepair.Solvers
             }
         }
 
+        /// <summary>
+        /// Identifies the assignment that satisfies maximum number of clauses.
+        /// </summary>
+        /// <param name="solution">The solution object that needs to be populated.</param>
+        /// <param name="clauses">The clauses.</param>
         private void ApplyMHS(MHSSolution solution, List<Clause> clauses)
         {
             IEnumerable<string> variables = clauses.SelectMany(x => x.Literals)
