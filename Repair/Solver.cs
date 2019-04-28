@@ -17,15 +17,14 @@ namespace GPURepair.Repair
         {
             List<Clause> clauses = GenerateClauses(errors);
 
-            SATSolver solver = new SATSolver(clauses);
-            bool result = solver.IsSatisfiable();
+            SATSolver satSolver = new SATSolver(clauses);
+            bool result = satSolver.IsSatisfiable();
 
             if (result == false)
                 throw new Exception("The program cannot be repaired!");
 
-            Dictionary<string, bool> assignments = new Dictionary<string, bool>();
-            if (errors.Any())
-                assignments.Add("b1", true);
+            MHSSolver mhsSolver = new MHSSolver(clauses);
+            Dictionary<string, bool> assignments = mhsSolver.Solve();
 
             return assignments;
         }
@@ -54,11 +53,13 @@ namespace GPURepair.Repair
             List<Clause> clauses = new List<Clause>();
             foreach (Error error in errors)
             {
-                bool value = error.ErrorType == ErrorType.Divergence;
+                bool value = error.ErrorType == ErrorType.Race;
 
                 Clause clause = new Clause();
                 foreach (Variable variable in error.Variables)
                     clause.Add(new Literal(variable.Name, value));
+
+                clauses.Add(clause);
             }
 
             return clauses;

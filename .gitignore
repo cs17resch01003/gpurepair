@@ -3,12 +3,8 @@
 ################################################################################
 
 /.vs
-/Instrumentation/bin
-/Instrumentation/obj
-/Repair/bin
-/Repair/obj
-/Solvers/bin
-/Solvers/obj
+/**/bin
+/**/obj
 /packages
 /kernel.cbpl
 *.user
