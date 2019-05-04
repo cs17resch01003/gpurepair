@@ -1,41 +1,50 @@
 ﻿using GPURepair.Solvers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
 namespace Solvers.UnitTests
 {
     [TestClass]
-    public class MHSSolver
+    public class MaxSATSolver
     {
         [TestMethod]
         public void RunTestSuite()
         {
-            string[] files = Directory.GetFiles(@"TestSuite\MHSSolver");
+            string[] files = Directory.GetFiles(@"TestSuite\MaxSATSolver");
             foreach (string file in files)
                 ProcessFile(file);
         }
 
         private void ProcessFile(string filePath)
         {
-            List<Clause> clauses = GetClauses(filePath);
+            dynamic clauses = GetClauses(filePath);
 
-            GPURepair.Solvers.MHSSolver solver = new GPURepair.Solvers.MHSSolver(clauses);
+            GPURepair.Solvers.MaxSATSolver solver = new GPURepair.Solvers.MaxSATSolver(clauses.HardClauses, clauses.SoftClauses);
             Dictionary<string, bool> solution = solver.Solve();
 
-            Verify(clauses, solution, filePath);
+            Verify(clauses.HardClauses, solution, filePath);
         }
 
-        private List<Clause> GetClauses(string filePath)
+        private dynamic GetClauses(string filePath)
         {
-            List<Clause> clauses = new List<Clause>();
+            List<Clause> hard_clauses = new List<Clause>();
+            List<Clause> soft_clauses = new List<Clause>();
+
+            int? hard_clauses_count = null;
 
             string[] lines = File.ReadAllLines(filePath);
             foreach (string line in lines)
             {
-                Clause clause = new Clause();
-
                 string[] variables = line.Split(' ');
+                if (hard_clauses_count == null)
+                {
+                    hard_clauses_count = int.Parse(variables[0]);
+                    continue;
+                }
+
+                Clause clause = new Clause();
                 foreach (string variable in variables)
                 {
                     if (!variable.StartsWith("-"))
@@ -44,10 +53,22 @@ namespace Solvers.UnitTests
                         clause.Add(new Literal(variable.Replace("-", string.Empty), false));
                 }
 
-                clauses.Add(clause);
+                if (hard_clauses_count != 0)
+                {
+                    hard_clauses.Add(clause);
+                    hard_clauses_count--;
+                }
+                else
+                {
+                    soft_clauses.Add(clause);
+                }
             }
 
-            return clauses;
+            return new
+            {
+                HardClauses = hard_clauses,
+                SoftClauses = soft_clauses
+            };
         }
 
         private void Verify(List<Clause> clauses,

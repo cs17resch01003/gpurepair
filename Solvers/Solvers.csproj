@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Clause.cs" />
     <Compile Include="Literal.cs" />
+    <Compile Include="MaxSAT\MaxSATSolver.cs" />
     <Compile Include="MHS\MHSSolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SAT\SATSolver.cs" />

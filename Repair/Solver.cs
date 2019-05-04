@@ -36,11 +36,13 @@ namespace GPURepair.Repair
         /// <returns>The barrier assignments.</returns>
         public Dictionary<string, bool> OptimizedSolve(List<Error> errors)
         {
-            Dictionary<string, bool> assignments = new Dictionary<string, bool>();
-            if (errors.Any())
-                assignments.Add("b1", true);
+            List<Clause> clauses = GenerateClauses(errors);
+            List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
 
-            return assignments;
+            List<Clause> soft_clauses = GenerateSoftClauses(variables);
+            MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+
+            return solver.Solve();
         }
 
         /// <summary>
@@ -58,6 +60,25 @@ namespace GPURepair.Repair
                 Clause clause = new Clause();
                 foreach (Variable variable in error.Variables)
                     clause.Add(new Literal(variable.Name, value));
+
+                clauses.Add(clause);
+            }
+
+            return clauses;
+        }
+
+        /// <summary>
+        /// Generates soft clauses based on the variables.
+        /// </summary>
+        /// <param name="variables">The variables.</param>
+        /// <returns>The soft clauses.</returns>
+        private List<Clause> GenerateSoftClauses(List<string> variables)
+        {
+            List<Clause> clauses = new List<Clause>();
+            foreach (string variable in variables)
+            {
+                Clause clause = new Clause();
+                clause.Add(new Literal(variable, false));
 
                 clauses.Add(clause);
             }
