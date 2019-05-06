@@ -27,7 +27,7 @@ namespace GPURepair.Repair
             Repairer repairer = new Repairer(filePath);
             Microsoft.Boogie.Program program = repairer.Repair();
 
-            using (TokenTextWriter writer = new TokenTextWriter(filePath + ".fixed", true))
+            using (TokenTextWriter writer = new TokenTextWriter(filePath.Replace(".cbpl", ".fixed.cbpl"), true))
                 program.Emit(writer);
         }
     }
