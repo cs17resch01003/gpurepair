@@ -1,14 +1,11 @@
 ﻿using Microsoft.Boogie;
+using System;
+using System.Linq;
 
 namespace GPURepair.Repair
 {
     public class Program
     {
-        /// <summary>
-        /// Hardcoded file name for testing purposes, has to be changed to use the command line argumnent.
-        /// </summary>
-        private static string filePath = @"D:\Projects\GPURepair\kernel.cbpl";
-
         /// <summary>
         /// The entry point of the program.
         /// </summary>
@@ -24,10 +21,17 @@ namespace GPURepair.Repair
             CommandLineOptions.Clo.DoModSetAnalysis = true;
             CommandLineOptions.Clo.PruneInfeasibleEdges = true;
 
-            Repairer repairer = new Repairer(filePath);
+            if (!CommandLineOptions.Clo.Files.Any())
+                throw new Exception("An input file must be provided!");
+            else if (CommandLineOptions.Clo.Files.Count > 1)
+                throw new Exception("GPURepair can work on only one file at a time!");
+
+            string filename = CommandLineOptions.Clo.Files.First();
+
+            Repairer repairer = new Repairer(filename);
             Microsoft.Boogie.Program program = repairer.Repair();
 
-            using (TokenTextWriter writer = new TokenTextWriter(filePath.Replace(".cbpl", ".fixed.cbpl"), true))
+            using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
                 program.Emit(writer);
         }
     }

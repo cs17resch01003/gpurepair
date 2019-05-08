@@ -1,4 +1,6 @@
 ﻿using Microsoft.Boogie;
+using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace GPURepair.Instrumentation
@@ -11,15 +13,18 @@ namespace GPURepair.Instrumentation
         /// <param name="args">The command line arguments.</param>
         public static void Main(string[] args)
         {
-            // hardcoded file name for testing purposes, has to be changed to use the command line argumnent
-            string filename = @"D:\Projects\GPURepair\kernel.gbpl";
-
             // standard command line options for Boogie
             CommandLineOptions.Install(new CommandLineOptions());
             if (!CommandLineOptions.Clo.Parse(args))
                 return;
 
             CommandLineOptions.Clo.PrintUnstructured = 2;
+            if (!CommandLineOptions.Clo.Files.Any())
+                throw new Exception("An input file must be provided!");
+            else if (CommandLineOptions.Clo.Files.Count > 1)
+                throw new Exception("GPURepair can work on only one file at a time!");
+
+            string filename = CommandLineOptions.Clo.Files.First();
 
             Microsoft.Boogie.Program program;
             Parser.Parse(filename, new List<string>() { "FILE_0" }, out program);
@@ -39,7 +44,7 @@ namespace GPURepair.Instrumentation
 
             // create the instrumented Boogie IR for the next steps
             // hardcoded file name for testing purposes, has to be changed to use the command line argumnent
-            using (TokenTextWriter writer = new TokenTextWriter(@"D:\Projects\GPURepair\kernel.repair.gbpl", true))
+            using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".gbpl", ".repair.gbpl"), true))
                 program.Emit(writer);
         }
     }
