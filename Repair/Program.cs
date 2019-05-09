@@ -1,5 +1,6 @@
 ﻿using Microsoft.Boogie;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GPURepair.Repair
@@ -28,8 +29,13 @@ namespace GPURepair.Repair
 
             string filename = CommandLineOptions.Clo.Files.First();
 
+            Dictionary<string, bool> assignments;
+
             Repairer repairer = new Repairer(filename);
-            Microsoft.Boogie.Program program = repairer.Repair();
+            Microsoft.Boogie.Program program = repairer.Repair(out assignments);
+
+            SummaryGenerator generator = new SummaryGenerator(program, assignments);
+            generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
 
             using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
                 program.Emit(writer);

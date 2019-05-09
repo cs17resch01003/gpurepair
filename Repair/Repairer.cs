@@ -24,8 +24,9 @@ namespace GPURepair.Repair
         /// <summary>
         /// Reapirs the program at the given filePath.
         /// </summary>
+        /// <param name="assignments">The assignments to the variables.</param>
         /// <returns>The fixed program if one exists.</returns>
-        public Microsoft.Boogie.Program Repair()
+        public Microsoft.Boogie.Program Repair(out Dictionary<string, bool> assignments)
         {
             List<Error> errors = new List<Error>();
             bool repaired = false;
@@ -33,8 +34,6 @@ namespace GPURepair.Repair
             while (true)
             {
                 Solver solver = new Solver();
-                Dictionary<string, bool> assignments;
-
                 assignments = repaired ? solver.OptimizedSolve(errors) : solver.Solve(errors);
 
                 Microsoft.Boogie.Program program = ReadFile(filePath);

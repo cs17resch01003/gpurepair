@@ -13,6 +13,16 @@ namespace GPURepair.Instrumentation
         private const string InstrumentationKey = "repair_instrumented";
 
         /// <summary>
+        /// The key used to mark instrumented barriers.
+        /// </summary>
+        private const string BarrierKey = "repair_barrier";
+
+        /// <summary>
+        /// The source location key.
+        /// </summary>
+        private const string SourceLocationKey = "sourceloc_num";
+
+        /// <summary>
         /// The program to be instrumented.
         /// </summary>
         private Microsoft.Boogie.Program program;
@@ -58,7 +68,10 @@ namespace GPURepair.Instrumentation
         {
             bool program_modified = false;
 
-            do program_modified = InstrumentNext();
+            do program_modified = InstrumentAssign();
+            while (program_modified);
+
+            do program_modified = InstrumentBarrier();
             while (program_modified);
         }
 
@@ -66,7 +79,7 @@ namespace GPURepair.Instrumentation
         /// Adds one barrier at a time.
         /// </summary>
         /// <returns>True if the program has changed, False otherwise.</returns>
-        private bool InstrumentNext()
+        private bool InstrumentAssign()
         {
             foreach (Implementation implementation in program.Implementations)
             {
@@ -108,12 +121,63 @@ namespace GPURepair.Instrumentation
         }
 
         /// <summary>
+        /// Instruments one uninstrumented barrier at a time.
+        /// </summary>
+        /// <returns>True if the program has changed, False otherwise.</returns>
+        private bool InstrumentBarrier()
+        {
+            foreach (Implementation implementation in program.Implementations)
+            {
+                foreach (Block block in implementation.Blocks)
+                {
+                    for (int i = 0; i < block.Cmds.Count; i++)
+                    {
+                        Cmd command = block.Cmds[i];
+                        if (command is CallCmd)
+                        {
+                            // get the call comamnd
+                            CallCmd call = command as CallCmd;
+                            if (call.callee == "$bugle_barrier" && !ContainsAttribute(call, BarrierKey))
+                            {
+                                UpdateBarrier(implementation, block, i);
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Checks if an assert command has the given attribute.
         /// </summary>
         /// <param name="assert">The assert command.</param>
         /// <param name="attribute">The attribute.</param>
         /// <returns>True if the attribute exists, False otherwise.</returns>
         private bool ContainsAttribute(AssertCmd assert, string attribute)
+        {
+            QKeyValue keyValue = assert.Attributes;
+            bool found = false;
+
+            while (keyValue != null && !found)
+            {
+                if (attribute == keyValue.Key)
+                    found = true;
+                keyValue = keyValue.Next;
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Checks if an call command has the given attribute.
+        /// </summary>
+        /// <param name="call">The call command.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns>True if the attribute exists, False otherwise.</returns>
+        private bool ContainsAttribute(CallCmd assert, string attribute)
         {
             QKeyValue keyValue = assert.Attributes;
             bool found = false;
@@ -137,43 +201,114 @@ namespace GPURepair.Instrumentation
         private void AddBarrier(Implementation implementation, Block block, int index)
         {
             CreateBugleBarrier();
-            string barrier_name = "b" + (++barrier_count);
+            string barrierName = "b" + (++barrier_count);
 
-            // get the assign and assert commands
             // create the assert command if it doesn't exist
-            AssignCmd assign = block.Cmds[index] as AssignCmd;
+            QKeyValue assertAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
             AssertCmd assert;
 
-            if (block.Cmds[index - 1] is AssertCmd)
+            if (index - 1 >= 0 && block.Cmds[index - 1] is AssertCmd)
+            {
                 assert = block.Cmds[index - 1] as AssertCmd;
+                assert.Attributes.AddLast(assertAttribute);
+            }
             else
             {
-                assert = new AssertCmd(Token.NoToken, Expr.Literal(true));
-                block.Cmds.Insert(index++, assert);
+                assert = new AssertCmd(Token.NoToken, Expr.Literal(true), assertAttribute);
+                block.Cmds.Insert(index, assert);
+
+                index = index + 1;
             }
 
-            // add the instrumentation attribute to the assert command
-            assert.Attributes.AddLast(new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null));
-            GlobalVariable variable = CreateGlobalVariable(barrier_name);
+            // create the call barrier command if it doesn't exist
+            QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
+            CallCmd call;
 
+            if (index - 2 >= 0 && block.Cmds[index - 2] is CallCmd && (block.Cmds[index - 2] as CallCmd).callee == "$bugle_barrier")
+            {
+                call = block.Cmds[index - 2] as CallCmd;
+                call.Attributes.AddLast(barrierAttribute);
+            }
+            else
+            {
+                call = new CallCmd(Token.NoToken, "$bugle_barrier", new List<Expr>() { _1bv1, _1bv1 }, new List<IdentifierExpr>(), barrierAttribute);
+                block.Cmds.Insert(index - 1, call);
+
+                int location = QKeyValue.FindIntAttribute(assert.Attributes, SourceLocationKey, -1);
+                if (location != -1)
+                {
+                    LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
+
+                    QKeyValue locationAttribute = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object> { locationValue }, null);
+                    call.Attributes.AddLast(locationAttribute);
+
+                    QKeyValue instrumentedAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
+                    call.Attributes.AddLast(instrumentedAttribute);
+                }
+
+
+                index = index + 1;
+            }
+
+            GlobalVariable variable = CreateGlobalVariable(barrierName);
             QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
 
             // move the commands to a new block to create a conditional barrier
-            Block end = new Block(Token.NoToken, barrier_name + "_end", new List<Cmd>(), block.TransferCmd);
+            Block end = new Block(Token.NoToken, barrierName + "_end", new List<Cmd>(), block.TransferCmd);
             end.Cmds.AddRange(block.Cmds.GetRange(index - 1, block.Cmds.Count - index + 1));
 
             // create the true block
-            Block true_block = new Block(Token.NoToken, barrier_name + "_true", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
+            Block true_block = new Block(Token.NoToken, barrierName + "_true", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
             true_block.Cmds.Add(new AssumeCmd(Token.NoToken, new IdentifierExpr(Token.NoToken, variable), partition));
-            true_block.Cmds.Add(new CallCmd(Token.NoToken, "$bugle_barrier", new List<Expr>() { _1bv1, _1bv1 }, new List<IdentifierExpr>()));
+            true_block.Cmds.Add(call);
 
             // create the false block
-            Block false_block = new Block(Token.NoToken, barrier_name + "_false", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
+            Block false_block = new Block(Token.NoToken, barrierName + "_false", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
             false_block.Cmds.Add(new AssumeCmd(Token.NoToken, Expr.Not(new IdentifierExpr(Token.NoToken, variable)), partition));
 
             // add the conditional barrier
             block.TransferCmd = new GotoCmd(Token.NoToken, new List<Block>() { true_block, false_block });
-            block.Cmds.RemoveRange(index - 1, block.Cmds.Count - index + 1);
+            block.Cmds.RemoveRange(index - 2, block.Cmds.Count - index + 2);
+
+            implementation.Blocks.Add(true_block);
+            implementation.Blocks.Add(false_block);
+            implementation.Blocks.Add(end);
+        }
+
+        /// <summary>
+        /// Updates the barrier to make it optional.
+        /// </summary>
+        /// <param name="implementation">The procedure where the blocks are being added.</param>
+        /// <param name="block">The block contains the shared write.</param>
+        /// <param name="index">The index of the assign command.</param>
+        private void UpdateBarrier(Implementation implementation, Block block, int index)
+        {
+            string barrierName = "b" + (++barrier_count);
+            CallCmd call = block.Cmds[index] as CallCmd;
+
+            // create the call barrier command if it doesn't exist
+            QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
+            call.Attributes.AddLast(barrierAttribute);
+
+            GlobalVariable variable = CreateGlobalVariable(barrierName);
+            QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
+
+            // move the commands to a new block to create a conditional barrier
+            Block end = new Block(Token.NoToken, barrierName + "_end", new List<Cmd>(), block.TransferCmd);
+            end.Cmds.AddRange(block.Cmds.GetRange(index + 1, block.Cmds.Count - index - 1));
+
+            // create the true block
+            Block true_block = new Block(Token.NoToken, barrierName + "_true", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
+            true_block.Cmds.Add(new AssumeCmd(Token.NoToken, new IdentifierExpr(Token.NoToken, variable), partition));
+            true_block.Cmds.Add(call);
+
+            // create the false block
+            Block false_block = new Block(Token.NoToken, barrierName + "_false", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
+            false_block.Cmds.Add(new AssumeCmd(Token.NoToken, Expr.Not(new IdentifierExpr(Token.NoToken, variable)), partition));
+
+            // add the conditional barrier
+            block.TransferCmd = new GotoCmd(Token.NoToken, new List<Block>() { true_block, false_block });
+            block.Cmds.RemoveRange(index, block.Cmds.Count - index);
 
             implementation.Blocks.Add(true_block);
             implementation.Blocks.Add(false_block);
