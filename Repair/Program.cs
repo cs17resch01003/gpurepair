@@ -1,5 +1,4 @@
-﻿using GPUVerify;
-using Microsoft.Boogie;
+﻿using Microsoft.Boogie;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +14,7 @@ namespace GPURepair.Repair
         public static void Main(string[] args)
         {
             // standard command line options for Boogie
-            CommandLineOptions.Install(new GVCommandLineOptions());
+            CommandLineOptions.Install(new CommandLineOptions());
             if (!CommandLineOptions.Clo.Parse(args))
                 return;
 

@@ -77,20 +77,7 @@ namespace GPURepair.Repair
                                 string barrier = QKeyValue.FindStringAttribute(call.Attributes, "repair_barrier");
                                 bool generated = ContainsAttribute(call, "repair_instrumented");
 
-                                BarrierMetadata metadata = barriers.FirstOrDefault(x => x.BarrierName == barrier);
-
-                                // by default unnecessary barriers are removed
-                                if (metadata == null)
-                                {
-                                    metadata = new BarrierMetadata()
-                                    {
-                                        BarrierName = barrier,
-                                        Assignment = false
-                                    };
-
-                                    barriers.Add(metadata);
-                                }
-
+                                BarrierMetadata metadata = barriers.First(x => x.BarrierName == barrier);
                                 metadata.SourceLocation = location;
                                 metadata.Generated = generated;
                             }
