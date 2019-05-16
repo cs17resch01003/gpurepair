@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solvers", "Solvers\Solvers.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solvers.UnitTests", "Solvers.UnitTests\Solvers.UnitTests.csproj", "{64ACDF0A-145A-47D4-A08B-9C73D94EF4F1}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Toolchain", "Toolchain\Toolchain.pyproj", "{7E72C525-F1F6-4D28-B1BA-87964ED5C37E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{64ACDF0A-145A-47D4-A08B-9C73D94EF4F1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{64ACDF0A-145A-47D4-A08B-9C73D94EF4F1}.Release|x86.ActiveCfg = Release|Any CPU
 		{64ACDF0A-145A-47D4-A08B-9C73D94EF4F1}.Release|x86.Build.0 = Release|Any CPU
+		{7E72C525-F1F6-4D28-B1BA-87964ED5C37E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E72C525-F1F6-4D28-B1BA-87964ED5C37E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7E72C525-F1F6-4D28-B1BA-87964ED5C37E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E72C525-F1F6-4D28-B1BA-87964ED5C37E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
