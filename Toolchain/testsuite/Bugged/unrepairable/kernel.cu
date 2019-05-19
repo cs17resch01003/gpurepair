@@ -9,7 +9,7 @@ __global__ void race (int* A)
 
   if (idx % 2 == 0)
   {
-	  int temp = A[idx] + 2;
+	  int temp = A[idx + 2];
 	  __syncthreads();
 	  A[idx] = temp;
   }
