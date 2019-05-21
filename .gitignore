@@ -8,3 +8,4 @@
 /packages
 *.user
 /**/__pycache__
+/Binaries
