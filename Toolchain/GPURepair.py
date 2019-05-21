@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 # vim: set shiftwidth=2 tabstop=2 expandtab softtabstop=2:
 from __future__ import print_function
@@ -64,6 +63,7 @@ if gvfindtools.useMono:
   if distutils.spawn.find_executable('mono') == None:
     raise ConfigurationError("Could not find the mono executable in your PATH")
 
+
 class BatchCaller(object):
   """
   This class allows functions to be registered (similar to atexit)
@@ -102,6 +102,16 @@ class BatchCaller(object):
 Tools = ["clang", "opt", "bugle", "instrumentation", "gpuverifyvcgen", "gpuverifycruncher", "repair", "gpuverifyboogiedriver"]
 Extensions = { 'clang': ".bc", 'opt': ".opt.bc", 'bugle': ".gbpl", 'instrumentation': ".repair.gbpl", 'gpuverifyvcgen': ".bpl", 'gpuverifycruncher': ".cbpl", 'repair': ".fixed.cbpl" }
 
+if os.name == "posix":
+  linux_plugin = gvfindtools.bugleBinDir + "/libbugleInlineCheckPlugin.so"
+  mac_plugin = gvfindtools.bugleBinDir + "/libbugleInlineCheckPlugin.dylib"
+  if os.path.isfile(linux_plugin):
+    bugleInlineCheckPlugin = linux_plugin
+  elif os.path.isfile(mac_plugin):
+    bugleInlineCheckPlugin = mac_plugin
+  else:
+    raise ConfigurationError('Could not find Bugle Inline Check plugin')
+
 class GPURepairInstance (object):
   def __init__ (self, args, outFile, errFile, cleanUpHandler):
     if gvfindtools.useMono:
@@ -112,9 +122,28 @@ class GPURepairInstance (object):
     else:
       self.mono = []
 
+    if args.verbose and args.num_groups and args.group_size:
+      print("Got {} groups of size {}".format("x".join(map(str,args.num_groups)),
+                                              "x".join(map(str,args.group_size))),
+            file = outFile)
+
     filename = args.kernel_name
     ext = args.kernel_ext
-    
+
+    self.skip = {"clang": False, "opt": False, "bugle": False, "vcgen": False,
+      "cruncher": False}
+
+    if ext in [ ".bc", ".opt.bc", ".gbpl", ".bpl", ".cbpl" ]:
+      self.skip["clang"] = True
+    if ext in [        ".opt.bc", ".gbpl", ".bpl", ".cbpl" ]:
+      self.skip["opt"] = True
+    if ext in [                   ".gbpl", ".bpl", ".cbpl" ]:
+      self.skip["bugle"] = True
+    if ext in [                            ".bpl", ".cbpl" ]:
+      self.skip["vcgen"] = True
+    if ext in [                                    ".cbpl" ]:
+      self.skip["cruncher"] = True
+
     # Intermediate filenames
     bcFilename = filename + '.bc'
     optFilename = filename + '.opt.bc'
@@ -155,7 +184,7 @@ class GPURepairInstance (object):
 
     self.bugleOptions = self.getBugleOptions(args)
     self.bugleOptions += ["-s", locFilename, "-o", gbplFilename, optFilename]
-
+    
     self.instrumentationOptions = self.getInstrumentationOptions(args)
     self.instrumentationOptions += [gbplFilename]
 
@@ -165,12 +194,16 @@ class GPURepairInstance (object):
 
     self.cruncherOptions = self.getCruncherOptions(args)
     self.cruncherOptions += [bplFilename]
-
+    
     self.repairOptions = self.getRepairOptions(args)
     self.repairOptions += [cbplFilename]
 
     self.boogieOptions = self.getBoogieOptions(args)
-    self.boogieOptions += [ fixedcbplFilename ]
+    if args.inference and args.mode != AnalysisMode.FINDBUGS:
+      self.boogieOptions += [ fixedcbplFilename ]
+    else:
+      self.boogieOptions += [ bplFilename ]
+      self.skip["cruncher"] = True
 
     self.timing = {}
     self.outFile = outFile
@@ -550,28 +583,35 @@ class GPURepairInstance (object):
   def invoke (self):
     """ Returns (returncode, outstring) """
 
-    success, timeout = self.runTool("clang",
-            [gvfindtools.llvmBinDir + "/clang"] +
-            self.clangOptions +
-            [("-I" + str(o)) for o in self.includes] +
-            [("-D" + str(o)) for o in self.defines])
+    if not self.skip["clang"]:
+      success, timeout = self.runTool("clang",
+              [gvfindtools.llvmBinDir + "/clang"] +
+              self.clangOptions +
+              [("-I" + str(o)) for o in self.includes] +
+              [("-D" + str(o)) for o in self.defines])
 
-    if timeout: return ErrorCodes.TIMEOUT
-    if success != 0: return ErrorCodes.CLANG_ERROR
+      if timeout: return ErrorCodes.TIMEOUT
+      if success != 0: return ErrorCodes.CLANG_ERROR
 
-    success, timeout = self.runTool("opt",
-            [gvfindtools.llvmBinDir + "/opt"] +
-            self.optOptions)
+    if not self.skip["opt"]:
+      success, timeout = self.runTool("opt",
+              [gvfindtools.llvmBinDir + "/opt"] +
+              self.optOptions)
 
-    if timeout: return ErrorCodes.TIMEOUT
-    if success != 0: return ErrorCodes.OPT_ERROR
+      if timeout: return ErrorCodes.TIMEOUT
+      if success != 0: return ErrorCodes.OPT_ERROR
 
-    success, timeout = self.runTool("bugle",
-            [gvfindtools.bugleBinDir + "/bugle"] +
-            self.bugleOptions)
+    if self.stop == 'opt': return ErrorCodes.SUCCESS
 
-    if timeout: return ErrorCodes.TIMEOUT
-    if success != 0: return ErrorCodes.BUGLE_ERROR
+    if not self.skip["bugle"]:
+      success, timeout = self.runTool("bugle",
+              [gvfindtools.bugleBinDir + "/bugle"] +
+              self.bugleOptions)
+
+      if timeout: return ErrorCodes.TIMEOUT
+      if success != 0: return ErrorCodes.BUGLE_ERROR
+
+    if self.stop == 'bugle': return ErrorCodes.SUCCESS
 
     success, timeout = self.runTool("instrumentation",
             self.mono +
@@ -581,22 +621,28 @@ class GPURepairInstance (object):
     if timeout: return ErrorCodes.TIMEOUT
     if success != 0: return ErrorCodes.INSTRUMENTATION_ERROR
 
-    success, timeout = self.runTool("gpuverifyvcgen",
-            self.mono +
-            [gvfindtools.gpuVerifyBinDir + "/GPUVerifyVCGen.exe"] +
-            self.vcgenOptions)
+    if not self.skip["vcgen"]:
+      success, timeout = self.runTool("gpuverifyvcgen",
+              self.mono +
+              [gvfindtools.gpuVerifyBinDir + "/GPUVerifyVCGen.exe"] +
+              self.vcgenOptions)
 
-    if timeout: return ErrorCodes.TIMEOUT
-    if success != 0: return ErrorCodes.GPUVERIFYVCGEN_ERROR
+      if timeout: return ErrorCodes.TIMEOUT
+      if success != 0: return ErrorCodes.GPUVERIFYVCGEN_ERROR
 
-    success, timeout = self.runTool("gpuverifycruncher",
-            self.mono +
-            [gvfindtools.gpuVerifyBinDir + "/GPUVerifyCruncher.exe"] +
-            self.cruncherOptions)
+    if self.stop == 'vcgen': return ErrorCodes.SUCCESS
 
-    if timeout: return ErrorCodes.TIMEOUT
-    if success != 0:
-      return self.interpretBoogieDriverCrucherExitCode(success)
+    if not self.skip["cruncher"]:
+      success, timeout = self.runTool("gpuverifycruncher",
+                self.mono +
+                [gvfindtools.gpuVerifyBinDir + "/GPUVerifyCruncher.exe"] +
+                self.cruncherOptions)
+
+      if timeout: return ErrorCodes.TIMEOUT
+      if success != 0:
+        return self.interpretBoogieDriverCrucherExitCode(success)
+
+    if self.stop == 'cruncher': return ErrorCodes.SUCCESS
 
     success, timeout = self.runTool("repair",
             self.mono +
@@ -664,6 +710,189 @@ class GPURepairInstance (object):
       else:
         return "- no tools ran"
 
+def json_list_kernels(kernels, json_to_kernel_map, success_cache):
+  index_width = len(str(len(json_to_kernel_map) - 1))
+  index_format = "[{: >" + str(index_width) + "}] Name: {}"
+  prefix = ' ' * (index_width + 2)
+
+  file_format     = prefix + " File: {}"
+  size_format     = prefix + " Local size = [{}] Global size = [{}]"
+  compiler_format = prefix + " Compiler flags: {}"
+  arg_format      = prefix + " Argument {}: {}"
+  arg_val_format  = prefix + " Argument {}: {} {}"
+  build_format    = prefix + " Built at {}:{}"
+  run_format      = prefix + " Ran at {}:{}"
+  cache_format    = prefix + " In success cache"
+
+  for index, k in enumerate(json_to_kernel_map):
+    print(index_format.format(index, kernels[k].entry_point))
+    print(file_format.format(kernels[k].kernel_file))
+    print(size_format.format(",".join(map(str, kernels[k].local_size)),
+                             ",".join(map(str, kernels[k].global_size))))
+    if "compiler_flags" in kernels[k]:
+      print(compiler_format.format(kernels[k].compiler_flags.original))
+    if "kernel_arguments" in kernels[k]:
+      for arg_index, arg in enumerate(kernels[k].kernel_arguments):
+        if arg.type == "scalar" and arg.value:
+          print(arg_val_format.format(arg_index, "scalar with value", arg.value))
+        elif arg.type == "array" and arg.size:
+          print(arg_val_format.format(arg_index, "array of size", arg.size))
+        else:
+          print(arg_format.format(arg_index, arg.type))
+    if "host_api_calls" in kernels[k]:
+      for call in kernels[k].host_api_calls:
+        if call.function_name == "clCreateProgramWithSource":
+          print(build_format.format(call.compilation_unit, call.line_number))
+      for call in kernels[k].host_api_calls:
+        if call.function_name == "clEnqueueNDRangeKernel":
+          print(run_format.format(call.compilation_unit, call.line_number))
+    if kernels[k] in success_cache:
+      print(cache_format)
+
+def json_verify_kernel(args, base_path, kernel, success_cache):
+  if kernel in success_cache:
+    return ErrorCodes.SUCCESS, "Verified: Found result in success cache"
+
+  kernel_args = copy.deepcopy(args)
+  kernel_name = os.path.join(base_path, kernel.kernel_file)
+  try:
+    kernel_args.kernel = open(kernel_name, "r")
+  except IOError as e:
+    raise JSONError(str(e))
+  kernel_args.kernel_name, kernel_args.kernel_ext = \
+    os.path.splitext(kernel_name)
+  kernel_args.source_language = SourceLanguage.OpenCL
+  kernel_args.group_size = kernel.local_size
+  kernel_args.global_size = kernel.global_size
+  kernel_args.num_groups = kernel.num_groups
+  if "compiler_flags" in kernel:
+    kernel_args.defines += kernel.compiler_flags.defines
+    kernel_args.includes += kernel.compiler_flags.includes
+  if "kernel_arguments" in kernel:
+    scalar_args = [arg for arg in kernel.kernel_arguments \
+                     if arg.type == "scalar" or arg.type == "sampler"]
+    scalar_vals = [arg.value if "value" in arg else "*" \
+                     for arg in scalar_args]
+    kernel_args.kernel_args = [[kernel.entry_point] + scalar_vals]
+    array_args = [arg for arg in kernel.kernel_arguments \
+                    if arg.type == "array" or arg.type == "image"]
+    array_sizes = [arg.size if "size" in arg else "*" \
+                     for arg in array_args]
+    kernel_args.kernel_arrays = [[kernel.entry_point] + array_sizes]
+  outFile = tempfile.SpooledTemporaryFile()
+  return_code = main(kernel_args, outFile, subprocess.STDOUT)
+  outFile.seek(0)
+  out_data = outFile.read()[:-1]
+  outFile.close()
+
+  if return_code == ErrorCodes.SUCCESS:
+    success_cache.append(kernel)
+
+  return return_code, out_data
+
+def json_verify_all(args, kernels, json_to_kernel_map, success_cache):
+  base_path = os.path.dirname(args.kernel.name)
+  Result = namedtuple("Result", ["error_code", "output", "kernel"])
+  results = []
+
+  progress_format = "Executed {} of " + str(len(kernels)) + \
+    " verification tasks for " + str(len(json_to_kernel_map)) + \
+    " intercepted kernels"
+  progress_text = ""
+  for i, k in enumerate(kernels):
+    progress_text = progress_format.format(i)
+    print(progress_text, end = '\r')
+    sys.stdout.flush()
+    return_code, out_data = json_verify_kernel(args, base_path, k, success_cache)
+    results.append(Result(return_code, out_data, k))
+  print(' ' * len(progress_text), end = '\r')
+
+  success = []
+  failure = []
+  for i, k in enumerate(json_to_kernel_map):
+    if results[k].error_code == ErrorCodes.SUCCESS:
+      success.append((i, results[k]))
+    else:
+      failure.append((i, results[k]))
+
+  print("GPUVerify kernel analyzer checked {} kernels.".format(len(success) + len(failure)))
+  print("Successfully verified {} kernels.".format(len(success)))
+  print("Failed to verify {} kernels.".format(len(failure)))
+
+  index_width = len(str(len(json_to_kernel_map) - 1))
+  result_format = "[{: >" + str(index_width) + "}]: Verification of {} ({}) {} with: local size = [{}] global size = [{}]"
+  if len(success) > 0:
+    print("")
+    print("Successes:")
+    for s, r in success:
+      print(result_format.format(s,
+                                 r.kernel.entry_point,
+                                 r.kernel.kernel_file,
+                                 "succeeded",
+                                 ",".join(map(str, r.kernel.local_size)),
+                                 ",".join(map(str, r.kernel.global_size))
+                                 ))
+
+  if len(success) > 0 and len(failure) > 0:
+    print("")
+
+  if len(failure) > 0:
+    print("Failures:")
+    for f, r in failure:
+      print(result_format.format(f,
+                                 r.kernel.entry_point,
+                                 r.kernel.kernel_file,
+                                 "failed",
+                                 ",".join(map(str, r.kernel.local_size)),
+                                 ",".join(map(str, r.kernel.global_size))
+                                 ))
+
+def json_verify_intercepted(args, kernels, json_to_kernel_map, success_cache):
+  if args.verify_intercepted >= len(json_to_kernel_map):
+    raise JSONError("No kernel " + str(args.verify_intercepted) + " in JSON file")
+
+  k = kernels[json_to_kernel_map[args.verify_intercepted]]
+  return_code, out_data = json_verify_kernel(args, os.path.dirname(args.kernel.name), k, success_cache)
+
+  result_format = "Verification of {} ({}) {} with: local size = [{}] global size = [{}]"
+  print(result_format.format(k.entry_point,
+                             k.kernel_file,
+                             "succeeded" if return_code == ErrorCodes.SUCCESS else "failed",
+                             ",".join(map(str, k.local_size)),
+                             ",".join(map(str, k.global_size))
+                            ))
+
+  if return_code != ErrorCodes.SUCCESS:
+    print("The error message is:")
+    print(out_data)
+
+def do_json_mode(args):
+  kernels, json_to_kernel_map = json_load(args.kernel)
+
+  if args.cache != None:
+    try:
+      success_cache = pickle.load(open(args.cache))
+    except:
+      success_cache = []
+  else:
+    success_cache = []
+
+  if args.list_intercepted:
+    json_list_kernels(kernels, json_to_kernel_map, success_cache)
+  elif args.verify_all_intercepted:
+    json_verify_all(args, kernels, json_to_kernel_map, success_cache)
+  elif args.verify_intercepted != None:
+    json_verify_intercepted(args, kernels, json_to_kernel_map, success_cache)
+  else:
+    base_path = os.path.dirname(args.kernel.name)
+    for kernel in kernels:
+      print("Verifying " + kernel.entry_point)
+      _, out_data = json_verify_kernel(args, base_path, kernel, success_cache)
+      print(out_data)
+
+  if args.cache != None:
+    pickle.dump(success_cache, open(args.cache, "w"))
+
 def main(args, out, err):
   """ This wraps GPUVerify's real main function so
       that we can handle exceptions and trigger our own exit
@@ -702,8 +931,12 @@ if __name__ == '__main__':
   try:
     args = parse_arguments(sys.argv[1:], gvfindtools.defaultSolver,
       gvfindtools.llvmBinDir, getversion)
-    rc = main(args, sys.stdout, sys.stderr)
-    sys.exit(rc)
+    if args.json:
+      do_json_mode(args)
+      sys.exit(ErrorCodes.SUCCESS)
+    else:
+      rc = main(args, sys.stdout, sys.stderr)
+      sys.exit(rc)
   except ConfigurationError as e:
     print(str(e), file=sys.stderr)
     sys.exit(ErrorCodes.CONFIGURATION_ERROR)
