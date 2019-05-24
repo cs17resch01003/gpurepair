@@ -38,8 +38,9 @@ namespace GPURepair.Repair
         /// <summary>
         /// Generate a summary for the barrier changes.
         /// </summary>
-        /// <param name="filename"></param>
-        public void GenerateSummary(string filename)
+        /// <param name="filename">The file path.</param>
+        /// <return>The number of changes.</return>
+        public int GenerateSummary(string filename)
         {
             PopulateMetadata();
 
@@ -54,7 +55,9 @@ namespace GPURepair.Repair
                     lines.Add(string.Format("Add a barrier at location {0}.", location.ToString()));
             }
 
-            File.AppendAllLines(filename, lines);
+            if (lines.Count != 0)
+                File.AppendAllLines(filename, lines);
+            return lines.Count;
         }
 
         /// <summary>

@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>7e72c525-f1f6-4d28-b1ba-87964ed5c37e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>GPURepair.py</StartupFile>
+    <StartupFile>grtester.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -12,7 +12,7 @@
     <Name>Toolchain</Name>
     <RootNamespace>Toolchain</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>D:\Projects\GPURepair\Toolchain\testsuite\CUDA\align\kernel.cu --blockDim=2 --gridDim=2 --no-inline</CommandLineArguments>
+    <CommandLineArguments>temp --threads 1</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -33,6 +33,7 @@
     <Compile Include="GPUVerifyScript\json_loader.py" />
     <Compile Include="GPUVerifyScript\util.py" />
     <Compile Include="GPUVerifyScript\__init__.py" />
+    <Compile Include="grtester.py"/>
     <Compile Include="gvfindtools.py" />
     <Compile Include="gvtester.py" />
   </ItemGroup>

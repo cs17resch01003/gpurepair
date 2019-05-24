@@ -16,5 +16,6 @@ class ErrorCodes(object):
   BOOGIE_OTHER_ERROR = 12 # Uncategorised failure of Boogie Driver or Cruncher
   # The following is only used by gvtester.
   REGEX_MISMATCH_ERROR = 100
+  # The following is only used for GPURepair
   INSTRUMENTATION_ERROR = 200
   REPAIR_ERROR = 201

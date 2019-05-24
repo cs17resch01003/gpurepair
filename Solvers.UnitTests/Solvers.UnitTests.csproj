@@ -73,9 +73,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Solvers\Solvers.csproj">
       <Project>{6ee42d59-e836-4e94-bcd1-72119d97b9a1}</Project>
       <Name>Solvers</Name>
