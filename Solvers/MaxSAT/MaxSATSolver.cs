@@ -255,7 +255,8 @@ namespace GPURepair.Solvers
         private Model SAT(List<BoolExpr> clauses, Context context)
         {
             Solver solver = context.MkSolver();
-            Status status = solver.Check(clauses);
+            solver.Assert(clauses.ToArray());
+            Status status = solver.Check();
 
             if (status != Status.SATISFIABLE)
                 return null;

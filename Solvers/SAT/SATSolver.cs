@@ -95,7 +95,8 @@ namespace GPURepair.Solvers
         private bool SAT(List<BoolExpr> clauses, Context context)
         {
             Microsoft.Z3.Solver solver = context.MkSolver();
-            Status status = solver.Check(clauses);
+            solver.Assert(clauses.ToArray());
+            Status status = solver.Check();
 
             if (status == Status.SATISFIABLE)
                 return true;
