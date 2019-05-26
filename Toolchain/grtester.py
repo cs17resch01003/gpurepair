@@ -250,6 +250,8 @@ class GPUVerifyTestKernel(object):
                     print(line)
                 for line in stdout.split('\n'):
                     print(line)
+                sys.stdout.flush()
+
         else:
             self.testPassed=True
             logging.info(threadStr + self.path + " PASSED (" +
@@ -259,8 +261,8 @@ class GPUVerifyTestKernel(object):
             #Print csv output for user to see
             for line in stdout.split('\n'):
                 commaSplitLine = line.split(',')
-                if len(commaSplitLine) == 9:
-                    self.csvFile.write(line + '\n')
+                if len(commaSplitLine) == 11:
+                    self.csvFile.write(line)
                     self.csvFile.flush()
                     break
         del self.csvFile # We cannot serialise this object so we need to remove it from this class!
@@ -834,7 +836,7 @@ def main(arg):
   logging.info("Running tests...")
 
   if args.time_as_csv:
-    print("kernel,status,clang,opt,bugle,vcgen,cruncher,boogiedriver,total", file=csvFile)
+    print("kernel,status,clang,opt,bugle,instrumentation,vcgen,cruncher,repair,boogiedriver,total", file=csvFile)
 
   start = time.time()
   for test in tests:
