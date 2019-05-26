@@ -262,7 +262,7 @@ class GPUVerifyTestKernel(object):
             for line in stdout.split('\n'):
                 commaSplitLine = line.split(',')
                 if len(commaSplitLine) == 11:
-                    self.csvFile.write(line)
+                    self.csvFile.write(line + '\n')
                     self.csvFile.flush()
                     break
         del self.csvFile # We cannot serialise this object so we need to remove it from this class!
