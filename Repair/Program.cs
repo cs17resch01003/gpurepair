@@ -2,6 +2,7 @@
 using Microsoft.Boogie;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace GPURepair.Repair
@@ -17,7 +18,7 @@ namespace GPURepair.Repair
             try
             {
                 // standard command line options for Boogie
-                CommandLineOptions.Install(new GVCommandLineOptions());
+                CommandLineOptions.Install(new GRCommandLineOptions());
                 if (!CommandLineOptions.Clo.Parse(args))
                     return;
 
@@ -31,6 +32,12 @@ namespace GPURepair.Repair
                     throw new Exception("GPURepair can work on only one file at a time!");
 
                 string filename = CommandLineOptions.Clo.Files.First();
+                Watch.LogEvent += (milliseconds) =>
+                {
+                    string logFile = ((GRCommandLineOptions)CommandLineOptions.Clo).TimeLog;
+                    if (logFile != null)
+                        File.AppendAllLines(logFile, new string[] { string.Format("{0},{1}", filename, milliseconds) });
+                };
 
                 Dictionary<string, bool> assignments;
 

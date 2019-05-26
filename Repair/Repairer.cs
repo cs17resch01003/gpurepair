@@ -47,8 +47,12 @@ namespace GPURepair.Repair
                 string tempFile = WriteFile(program);
                 program = ReadFile(tempFile);
 
-                Verifier verifier = new Verifier(program);
-                Error error = verifier.GetError();
+                Error error;
+                using (Watch watch = new Watch())
+                {
+                    Verifier verifier = new Verifier(program);
+                    error = verifier.GetError();
+                }
 
                 File.Delete(tempFile);
                 if (error == null)

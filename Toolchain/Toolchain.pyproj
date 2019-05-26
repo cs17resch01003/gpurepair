@@ -12,7 +12,7 @@
     <Name>Toolchain</Name>
     <RootNamespace>Toolchain</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>testsuite --threads=1</CommandLineArguments>
+    <CommandLineArguments>testsuite --threads=1 --time-as-csv --csv-file=time.csv</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
