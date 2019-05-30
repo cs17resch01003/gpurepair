@@ -99,7 +99,7 @@ class BatchCaller(object):
       call.function(*(call.nargs), **(call.kargs))
 
 """ Timing for the toolchain pipeline """
-Tools = ["clang", "opt", "bugle", "instrumentation", "gpuverifyvcgen", "gpuverifycruncher", "repair", "gpuverifyboogiedriver"]
+Tools = ["clang", "opt", "bugle", "instrumentation", "gpuverifyvcgen", "gpuverifycruncher", "repair"]
 Extensions = { 'clang': ".bc", 'opt': ".opt.bc", 'bugle': ".gbpl", 'instrumentation': ".repair.gbpl", 'gpuverifyvcgen': ".bpl", 'gpuverifycruncher': ".cbpl", 'repair': ".fixed.cbpl" }
 
 if os.name == "posix":
@@ -653,36 +653,7 @@ class GPURepairInstance (object):
             self.repairOptions)
 
     if timeout: return ErrorCodes.TIMEOUT
-    if success != 0: return ErrorCodes.REPAIR_ERROR
-
-    success, timeout = self.runTool("gpuverifyboogiedriver",
-            self.mono +
-            [gvfindtools.gpuVerifyBinDir + "/GPUVerifyBoogieDriver.exe"] +
-            self.boogieOptions)
-
-    if timeout: return ErrorCodes.TIMEOUT
-    if success != 0:
-      return self.interpretBoogieDriverCrucherExitCode(success)
-
-    if self.silent:
-      return ErrorCodes.SUCCESS
-
-    if self.mode == AnalysisMode.FINDBUGS:
-      print("No defects were found while analysing: " + ", ".join(self.sourceFiles), file=self.outFile)
-      print("Notes:", file=self.outFile)
-      print("- Use --loop-unwind=N with N > " + str(self.loopUnwindDepth) + " to search for deeper bugs.", file=self.outFile)
-      print("- Re-run in verification mode to try to prove absence of defects.", file=self.outFile)
-    else:
-      print("Verified: " + ", ".join(self.sourceFiles), file=self.outFile)
-      if not self.onlyDivergence:
-        print("- no data races within " + ("work groups" if self.SL == SourceLanguage.OpenCL else "thread blocks"), file=self.outFile)
-        if not self.onlyIntraGroup:
-          print("- no data races between " + ("work groups" if self.SL == SourceLanguage.OpenCL else "thread blocks"), file=self.outFile)
-      print("- no barrier divergence", file=self.outFile)
-      print("- no assertion failures", file=self.outFile)
-      if args.check_array_bounds:
-        print("- no out-of-bounds array accesses (for arrays where size information is available)", file=self.outFile)
-      print("(but absolutely no warranty provided)", file=self.outFile)
+    return success
 
     return ErrorCodes.SUCCESS
 

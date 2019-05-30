@@ -1,4 +1,5 @@
-﻿using GPUVerify;
+﻿using GPURepair.Repair.Exceptions;
+using GPUVerify;
 using Microsoft.Boogie;
 using System;
 using System.Collections.Generic;
@@ -82,7 +83,7 @@ namespace GPURepair.Repair
                                 else if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "race"))
                                     errorType = ErrorType.Race;
                                 else
-                                    throw new Exception("The program cannot be repaired since it has errors besides race and divergence errors!");
+                                    throw new AssertionError("The program cannot be repaired since it has errors besides race and divergence errors!");
 
                                 IEnumerable<string> variables = GetVariables(callCounterexample, errorType);
                                 return new Error
@@ -94,7 +95,7 @@ namespace GPURepair.Repair
                             }
                             else
                             {
-                                throw new Exception("The program cannot be repaired since it has errors besides race and divergence errors!");
+                                throw new AssertionError("The program cannot be repaired since it has errors besides race and divergence errors!");
                             }
                         }
                     }

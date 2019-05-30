@@ -18,4 +18,5 @@ class ErrorCodes(object):
   REGEX_MISMATCH_ERROR = 100
   # The following is only used for GPURepair
   INSTRUMENTATION_ERROR = 200
-  REPAIR_ERROR = 201
+  ASSERTION_ERROR = 201
+  REPAIR_ERROR = 202

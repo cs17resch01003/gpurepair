@@ -76,6 +76,8 @@
     <Compile Include="ConstraintGenerator.cs" />
     <Compile Include="Error.cs" />
     <Compile Include="ErrorType.cs" />
+    <Compile Include="Exceptions\AssertionError.cs" />
+    <Compile Include="Exceptions\RepairError.cs" />
     <Compile Include="GRCommandLineOptions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

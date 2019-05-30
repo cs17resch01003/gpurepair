@@ -1,4 +1,4 @@
-﻿using GPUVerify;
+﻿using GPURepair.Repair.Exceptions;
 using Microsoft.Boogie;
 using System;
 using System.Collections.Generic;
@@ -47,14 +47,21 @@ namespace GPURepair.Repair
                 SummaryGenerator generator = new SummaryGenerator(program, assignments);
                 int changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
 
-                Console.WriteLine("The program needs {0} changes.", changes);
+                Console.WriteLine("Number of changes required: {0}.", changes);
+                Environment.Exit(500 +  changes);
+
                 using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
                     program.Emit(writer);
             }
-            catch (Exception ex)
+            catch (AssertionError ex)
             {
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(201);
+            }
+            catch (RepairError ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                Environment.Exit(202);
             }
         }
     }
