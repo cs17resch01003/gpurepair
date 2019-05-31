@@ -48,8 +48,6 @@ namespace GPURepair.Repair
                 int changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
 
                 Console.WriteLine("Number of changes required: {0}.", changes);
-                Environment.Exit(500 +  changes);
-
                 using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
                     program.Emit(writer);
             }
