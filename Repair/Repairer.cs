@@ -88,7 +88,7 @@ namespace GPURepair.Repair
         /// <returns>The temp file path.</returns>
         private string WriteFile(Microsoft.Boogie.Program program)
         {
-            string tempFile = filePath + "." + DateTime.Now.ToString("hhmmss") + ".temp";
+            string tempFile = filePath.Replace(".cbpl", ".temp.cbpl");
             using (TokenTextWriter writer = new TokenTextWriter(tempFile, true))
                 program.Emit(writer);
 

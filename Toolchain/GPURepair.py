@@ -100,7 +100,7 @@ class BatchCaller(object):
 
 """ Timing for the toolchain pipeline """
 Tools = ["clang", "opt", "bugle", "instrumentation", "gpuverifyvcgen", "gpuverifycruncher", "repair"]
-Extensions = { 'clang': ".bc", 'opt': ".opt.bc", 'bugle': ".gbpl", 'instrumentation': ".repair.gbpl", 'gpuverifyvcgen': ".bpl", 'gpuverifycruncher': ".cbpl", 'repair': ".fixed.cbpl" }
+Extensions = { 'clang': ".bc", 'opt': ".opt.bc", 'bugle': ".gbpl", 'instrumentation': ".repair.gbpl", 'gpuverifyvcgen': ".bpl", 'gpuverifycruncher': ".cbpl", 'repair': ".temp.cbpl" }
 
 if os.name == "posix":
   linux_plugin = gvfindtools.bugleBinDir + "/libbugleInlineCheckPlugin.so"
@@ -152,7 +152,7 @@ class GPURepairInstance (object):
     repairgbplFilename = filename + '.repair.gbpl'
     bplFilename = filename + '.bpl'
     cbplFilename = filename + '.cbpl'
-    fixedcbplFilename = filename + '.fixed.cbpl'
+    tempcbplFilename = filename + '.temp.cbpl'
 
     if not args.keep_temps:
       def DeleteFile(filename):
@@ -171,7 +171,7 @@ class GPURepairInstance (object):
       cleanUpHandler.register(DeleteFile, repairgbplFilename)
       cleanUpHandler.register(DeleteFile, bplFilename)
       cleanUpHandler.register(DeleteFile, cbplFilename)
-      cleanUpHandler.register(DeleteFile, fixedcbplFilename)
+      cleanUpHandler.register(DeleteFile, tempcbplFilename)
 
     self.defines = self.getDefines(args)
     self.includes = self.getIncludes(args)
@@ -197,13 +197,6 @@ class GPURepairInstance (object):
     
     self.repairOptions = self.getRepairOptions(args)
     self.repairOptions += [cbplFilename]
-
-    self.boogieOptions = self.getBoogieOptions(args)
-    if args.inference and args.mode != AnalysisMode.FINDBUGS:
-      self.boogieOptions += [ fixedcbplFilename ]
-    else:
-      self.boogieOptions += [ bplFilename ]
-      self.skip["cruncher"] = True
 
     self.timing = {}
     self.outFile = outFile
