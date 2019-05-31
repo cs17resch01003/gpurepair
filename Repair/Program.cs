@@ -48,8 +48,11 @@ namespace GPURepair.Repair
                 int changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
 
                 Console.WriteLine("Number of changes required: {0}.", changes);
-                using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
-                    program.Emit(writer);
+                if (changes > 0)
+                {
+                    using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
+                        program.Emit(writer);
+                }
             }
             catch (AssertionError ex)
             {
