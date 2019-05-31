@@ -261,7 +261,7 @@ class GPUVerifyTestKernel(object):
             #Print csv output for user to see
             for line in stdout.split('\n'):
                 commaSplitLine = line.split(',')
-                if len(commaSplitLine) == 11:
+                if len(commaSplitLine) == 10:
                     self.csvFile.write(line + '\n')
                     self.csvFile.flush()
                     break
@@ -836,7 +836,7 @@ def main(arg):
   logging.info("Running tests...")
 
   if args.time_as_csv:
-    print("kernel,status,clang,opt,bugle,instrumentation,vcgen,cruncher,repair,boogiedriver,total", file=csvFile)
+    print("kernel,status,clang,opt,bugle,instrumentation,vcgen,cruncher,repair,total", file=csvFile)
 
   start = time.time()
   for test in tests:
