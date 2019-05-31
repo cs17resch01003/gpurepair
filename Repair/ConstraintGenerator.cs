@@ -56,12 +56,15 @@ namespace GPURepair.Repair
         {
             foreach (dynamic pair in pairs)
             {
-                procedure.Requires.Add(new Requires(false, new NAryExpr(Token.NoToken,
-                    new BinaryOperator(Token.NoToken, BinaryOperator.Opcode.Eq), new List<Expr>()
-                    {
-                        new IdentifierExpr(Token.NoToken, pair.Variable),
-                        new LiteralExpr(Token.NoToken, pair.Assignment)
-                    })));
+                if (pair.Assignment)
+                {
+                    procedure.Requires.Add(new Requires(false, new NAryExpr(Token.NoToken,
+                        new BinaryOperator(Token.NoToken, BinaryOperator.Opcode.Eq), new List<Expr>()
+                        {
+                            new IdentifierExpr(Token.NoToken, pair.Variable),
+                            new LiteralExpr(Token.NoToken, pair.Assignment)
+                        })));
+                }
             }
         }
     }

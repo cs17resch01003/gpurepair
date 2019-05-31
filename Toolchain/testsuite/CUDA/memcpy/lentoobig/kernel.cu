@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--gridDim=1 --blockDim=2 --no-inline
 
 //This kernel is racy.
