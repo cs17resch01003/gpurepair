@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--blockDim=1024 --gridDim=1 --boogie-file=${KERNEL_DIR}/axioms.bpl --no-inline
 //error: possible null pointer access
 

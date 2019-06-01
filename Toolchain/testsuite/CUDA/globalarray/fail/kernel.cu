@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--blockDim=8 --gridDim=1 --no-inline
 
 // The statically given values for A are not preserved when we translate CUDA

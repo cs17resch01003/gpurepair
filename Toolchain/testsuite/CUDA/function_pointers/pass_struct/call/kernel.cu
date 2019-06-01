@@ -1,4 +1,4 @@
-//XFAIL:NOT_ALL_VERIFIED
+//XFAIL:ASSERTION_ERROR
 //--blockDim=1024 --gridDim=1 --no-inline
 
 struct wrapped {

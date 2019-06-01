@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--blockDim=64 --gridDim=64 --no-inline
 //
 

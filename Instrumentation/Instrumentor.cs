@@ -66,7 +66,7 @@ namespace GPURepair.Instrumentation
         /// </summary>
         public void Instrument()
         {
-            bool program_modified = false;
+            bool program_modified;
 
             do program_modified = InstrumentAssign();
             while (program_modified);
@@ -250,7 +250,7 @@ namespace GPURepair.Instrumentation
                 index = index + 1;
             }
 
-            GlobalVariable variable = CreateGlobalVariable(barrierName);
+            Constant constant = CreateConstant(barrierName);
             QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
 
             // move the commands to a new block to create a conditional barrier
@@ -259,12 +259,12 @@ namespace GPURepair.Instrumentation
 
             // create the true block
             Block true_block = new Block(Token.NoToken, barrierName + "_true", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
-            true_block.Cmds.Add(new AssumeCmd(Token.NoToken, new IdentifierExpr(Token.NoToken, variable), partition));
+            true_block.Cmds.Add(new AssumeCmd(Token.NoToken, new IdentifierExpr(Token.NoToken, constant), partition));
             true_block.Cmds.Add(call);
 
             // create the false block
             Block false_block = new Block(Token.NoToken, barrierName + "_false", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
-            false_block.Cmds.Add(new AssumeCmd(Token.NoToken, Expr.Not(new IdentifierExpr(Token.NoToken, variable)), partition));
+            false_block.Cmds.Add(new AssumeCmd(Token.NoToken, Expr.Not(new IdentifierExpr(Token.NoToken, constant)), partition));
 
             // add the conditional barrier
             block.TransferCmd = new GotoCmd(Token.NoToken, new List<Block>() { true_block, false_block });
@@ -290,7 +290,7 @@ namespace GPURepair.Instrumentation
             QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
             call.Attributes.AddLast(barrierAttribute);
 
-            GlobalVariable variable = CreateGlobalVariable(barrierName);
+            Constant constant = CreateConstant(barrierName);
             QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
 
             // move the commands to a new block to create a conditional barrier
@@ -299,12 +299,12 @@ namespace GPURepair.Instrumentation
 
             // create the true block
             Block true_block = new Block(Token.NoToken, barrierName + "_true", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
-            true_block.Cmds.Add(new AssumeCmd(Token.NoToken, new IdentifierExpr(Token.NoToken, variable), partition));
+            true_block.Cmds.Add(new AssumeCmd(Token.NoToken, new IdentifierExpr(Token.NoToken, constant), partition));
             true_block.Cmds.Add(call);
 
             // create the false block
             Block false_block = new Block(Token.NoToken, barrierName + "_false", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
-            false_block.Cmds.Add(new AssumeCmd(Token.NoToken, Expr.Not(new IdentifierExpr(Token.NoToken, variable)), partition));
+            false_block.Cmds.Add(new AssumeCmd(Token.NoToken, Expr.Not(new IdentifierExpr(Token.NoToken, constant)), partition));
 
             // add the conditional barrier
             block.TransferCmd = new GotoCmd(Token.NoToken, new List<Block>() { true_block, false_block });
@@ -341,13 +341,13 @@ namespace GPURepair.Instrumentation
         }
 
         /// <summary>
-        /// Creates a global variable with the given name.
+        /// Creates a global constant with the given name.
         /// </summary>
         /// <param name="name">The name of the variable.</param>
         /// <returns>A reference to the variable.</returns>
-        private GlobalVariable CreateGlobalVariable(string name)
+        private Constant CreateConstant(string name)
         {
-            GlobalVariable variable = new GlobalVariable(Token.NoToken,
+            Constant constant = new Constant(Token.NoToken,
                 new TypedIdent(Token.NoToken, name, Type.Bool));
 
             Dictionary<string, object> attributes = new Dictionary<string, object>();
@@ -358,10 +358,10 @@ namespace GPURepair.Instrumentation
             attributes.Add("source_elem_width", Expr.Literal(32));
             attributes.Add("source_dimensions", "*");
 
-            variable.Attributes = ConvertAttributes(attributes);
-            program.AddTopLevelDeclaration(variable);
+            constant.Attributes = ConvertAttributes(attributes);
+            program.AddTopLevelDeclaration(constant);
 
-            return variable;
+            return constant;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--blockDim=128 --gridDim=16 --no-inline
 //assert\(false\)
 

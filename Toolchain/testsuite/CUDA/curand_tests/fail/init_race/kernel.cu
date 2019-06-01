@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--blockDim=2 --gridDim=1 --no-inline
 //Write by thread .+kernel.cu:8:4:
 

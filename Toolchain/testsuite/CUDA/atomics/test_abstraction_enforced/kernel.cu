@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--blockDim=2 --gridDim=1
 //assert
 
