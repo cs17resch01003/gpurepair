@@ -155,8 +155,8 @@ namespace GPURepair.Repair
                         {
                             Line = Convert.ToInt32(source[0]),
                             Column = Convert.ToInt32(source[1]),
-                            File = source[2],
-                            Directory = source[3]
+                            File = new FileInfo(source[2]).FullName,
+                            Directory = new DirectoryInfo(source[3]).FullName
                         };
                     }
                 }
