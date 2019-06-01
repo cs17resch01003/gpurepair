@@ -50,12 +50,17 @@ namespace GPURepair.Repair
             foreach (BarrierMetadata metadata in barriers)
             {
                 Location location = GetLocation(metadata.SourceLocation, filename.Replace(".summary", ".loc"));
-                changes.Add(location);
 
                 if (!metadata.Generated && !metadata.Assignment)
+                {
                     lines.Add(string.Format("Remove the barrier at location {0}.", location.ToString()));
+                    changes.Add(location);
+                }
                 else if (metadata.Generated && metadata.Assignment)
+                {
                     lines.Add(string.Format("Add a barrier at location {0}.", location.ToString()));
+                    changes.Add(location);
+                }
             }
 
             if (lines.Count != 0)

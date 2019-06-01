@@ -56,7 +56,7 @@ namespace GPURepair.Repair
                 }
 
                 foreach (Location location in changes)
-                    if (location.File != new FileInfo(filename).FullName)
+                    if (new FileInfo(location.File).FullName != new FileInfo(filename).FullName)
                         throw new RepairError("There are changes needed in external files: " + location.ToString());
             }
             catch (AssertionError ex)
