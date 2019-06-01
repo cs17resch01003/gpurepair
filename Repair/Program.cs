@@ -48,7 +48,7 @@ namespace GPURepair.Repair
                 SummaryGenerator generator = new SummaryGenerator(program, assignments);
                 IEnumerable<Location> changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
 
-                Console.WriteLine("Number of changes required: {0}.", changes);
+                Console.WriteLine("Number of changes required: {0}.", changes.Count());
                 if (changes.Any())
                 {
                     using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
@@ -57,7 +57,7 @@ namespace GPURepair.Repair
 
                 foreach (Location location in changes)
                     if (location.File != new FileInfo(filename).FullName)
-                        throw new RepairError("There are changes needed in external files!");
+                        throw new RepairError("There are changes needed in external files: " + location.ToString());
             }
             catch (AssertionError ex)
             {
