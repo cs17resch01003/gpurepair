@@ -39,15 +39,18 @@ namespace GPURepair.Repair
         /// Generate a summary for the barrier changes.
         /// </summary>
         /// <param name="filename">The file path.</param>
-        /// <return>The number of changes.</return>
-        public int GenerateSummary(string filename)
+        /// <return>The changes.</return>
+        public IEnumerable<Location> GenerateSummary(string filename)
         {
             PopulateMetadata();
 
             List<string> lines = new List<string>();
+            List<Location> changes = new List<Location>();
+
             foreach (BarrierMetadata metadata in barriers)
             {
                 Location location = GetLocation(metadata.SourceLocation, filename.Replace(".summary", ".loc"));
+                changes.Add(location);
 
                 if (!metadata.Generated && !metadata.Assignment)
                     lines.Add(string.Format("Remove the barrier at location {0}.", location.ToString()));
@@ -57,7 +60,8 @@ namespace GPURepair.Repair
 
             if (lines.Count != 0)
                 File.AppendAllLines(filename, lines);
-            return lines.Count;
+
+            return changes;
         }
 
         /// <summary>
@@ -185,7 +189,7 @@ namespace GPURepair.Repair
         /// <summary>
         /// The location.
         /// </summary>
-        private class Location
+        public class Location
         {
             /// <summary>
             /// The line in the source file.

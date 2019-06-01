@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static GPURepair.Repair.SummaryGenerator;
 
 namespace GPURepair.Repair
 {
@@ -45,14 +46,18 @@ namespace GPURepair.Repair
                 Microsoft.Boogie.Program program = repairer.Repair(out assignments);
 
                 SummaryGenerator generator = new SummaryGenerator(program, assignments);
-                int changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
+                IEnumerable<Location> changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
 
                 Console.WriteLine("Number of changes required: {0}.", changes);
-                if (changes > 0)
+                if (changes.Any())
                 {
                     using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
                         program.Emit(writer);
                 }
+
+                foreach (Location location in changes)
+                    if (location.File != new FileInfo(filename).FullName)
+                        throw new RepairError("There are changes needed in external files!");
             }
             catch (AssertionError ex)
             {
