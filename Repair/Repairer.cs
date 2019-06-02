@@ -1,4 +1,5 @@
 ﻿using Microsoft.Boogie;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -38,7 +39,7 @@ namespace GPURepair.Repair
                 Microsoft.Boogie.Program program = ReadFile(filePath);
 
                 ConstraintGenerator constraintGenerator = new ConstraintGenerator(program);
-                constraintGenerator.ConstraintProgram(assignments);
+                constraintGenerator.ConstraintProgram(errors, assignments);
 
                 if (repaired)
                     return program;

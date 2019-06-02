@@ -23,89 +23,46 @@ namespace GPURepair.Repair
         /// <summary>
         /// Applies the required constraints to the program.
         /// </summary>
+        /// <param name="errors">The errors.</param>
         /// <param name="assignments">The assignments provided by the solver.</param>
-        public void ConstraintProgram(Dictionary<string, bool> assignments)
+        public void ConstraintProgram(IEnumerable<Error> errors, Dictionary<string, bool> assignments)
         {
-            Dictionary<string, Axiom> axioms = new Dictionary<string, Axiom>();
-            foreach (Axiom axiom in program.Axioms)
+            IEnumerable<Implementation> implementations = errors.Select(x => x.Implementation).Distinct();
+            foreach (Implementation implementation in implementations)
             {
-                if (ContainsAttribute(axiom, "repair"))
-                {
-                    NAryExpr expression = axiom.Expr as NAryExpr;
-                    IdentifierExpr identifier = expression.Args.Where(x => x is IdentifierExpr)
-                        .Select(x => x as IdentifierExpr).First();
+                Procedure procedure = program.Procedures.Where(x => x.Name == implementation.Name).First();
+                IEnumerable<Variable> variables = errors.Where(x => x.Implementation == implementation)
+                    .SelectMany(x => x.Variables).Distinct();
 
-                    axioms.Add(identifier.Name, axiom);
-                }
-            }
+                var pairs = from assignment in assignments
+                            join variable in variables
+                            on assignment.Key equals variable.Name
+                            select new
+                            {
+                                Variable = variable,
+                                Assignment = assignment.Value
+                            };
 
-            foreach (string variable in assignments.Keys)
-            {
-                IdentifierExpr identifier = new IdentifierExpr(Token.NoToken, variable, Type.Bool);
-                LiteralExpr literal = new LiteralExpr(Token.NoToken, assignments[variable]);
-
-                IAppliable function = new BinaryOperator(Token.NoToken, BinaryOperator.Opcode.Eq);
-                NAryExpr expression = new NAryExpr(Token.NoToken, function,
-                    new List<Expr>() { identifier, literal });
-
-                if (axioms.ContainsKey(variable))
-                {
-                    Axiom axiom = axioms[variable];
-                    axiom.Expr = expression;
-                }
-                else
-                {
-                    Axiom axiom = new Axiom(Token.NoToken, expression);
-
-                    Dictionary<string, object> attributes = new Dictionary<string, object>();
-                    attributes.Add("repair", null);
-
-                    axiom.Attributes = ConvertAttributes(attributes);
-                    program.AddTopLevelDeclaration(axiom);
-                }
+                ApplyAssignments(procedure, pairs);
             }
         }
 
         /// <summary>
-        /// Checks if an axiom has the given attribute.
+        /// Apply the assignments in the form of requires statements.
         /// </summary>
-        /// <param name="axiom">The axiom.</param>
-        /// <param name="attribute">The attribute.</param>
-        /// <returns>True if the attribute exists, False otherwise.</returns>
-        private bool ContainsAttribute(Axiom axiom, string attribute)
+        /// <param name="procedure">The procdeure.</param>
+        /// <param name="pairs">The key-value pairs representing the variable and it's assignment value.</param>
+        private void ApplyAssignments(Procedure procedure, IEnumerable<dynamic> pairs)
         {
-            QKeyValue keyValue = axiom.Attributes;
-            bool found = false;
-
-            while (keyValue != null && !found)
+            foreach (dynamic pair in pairs)
             {
-                if (attribute == keyValue.Key)
-                    found = true;
-                keyValue = keyValue.Next;
+                procedure.Requires.Add(new Requires(false, new NAryExpr(Token.NoToken,
+                    new BinaryOperator(Token.NoToken, BinaryOperator.Opcode.Eq), new List<Expr>()
+                    {
+                        new IdentifierExpr(Token.NoToken, pair.Variable),
+                        new LiteralExpr(Token.NoToken, pair.Assignment)
+                    })));
             }
-
-            return found;
-        }
-
-        /// <summary>
-        /// Generates a key-value chain from the given attributes.
-        /// </summary>
-        /// <param name="attributes">The attributes.</param>
-        /// <returns>The first node in the attribute chain.</returns>
-        private QKeyValue ConvertAttributes(Dictionary<string, object> attributes)
-        {
-            QKeyValue value = null;
-            foreach (KeyValuePair<string, object> pair in attributes)
-            {
-                List<object> array = new List<object>();
-                if (pair.Value != null)
-                    array.Add(pair.Value);
-
-                QKeyValue temp = new QKeyValue(Token.NoToken, pair.Key, array, value);
-                value = temp;
-            }
-
-            return value;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using GPURepair.Repair.Exceptions;
 using GPUVerify;
 using Microsoft.Boogie;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -25,11 +26,11 @@ namespace GPURepair.Repair
             Regex regex = new Regex(@"^b\d+$");
 
             foreach (Declaration declaration in program.TopLevelDeclarations)
-                if (declaration is Constant)
+                if (declaration is GlobalVariable)
                 {
-                    Constant constant = declaration as Constant;
-                    if (regex.IsMatch(constant.Name))
-                        barriers.Add(constant.Name, constant);
+                    GlobalVariable globalVariable = declaration as GlobalVariable;
+                    if (regex.IsMatch(globalVariable.Name))
+                        barriers.Add(globalVariable.Name, globalVariable);
                 }
         }
 
