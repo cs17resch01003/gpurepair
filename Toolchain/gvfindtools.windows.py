@@ -49,7 +49,7 @@ gpuVerifyBinDir = rootDir + r"\gpuverify\Binaries"
 
 # The path to the directory containing the GPURepair binaries.
 # GPURepair.Instrumentation.exe and GPURepair.Repair.exe should be there
-gpuRepairBinDir = rootDir + r"\gpurepair\Binaries"
+gpuRepairBinDir = r"D:\Projects\GPURepair\Binaries"
 
 # The path to the z3 Source directory.
 z3SrcDir = rootDir + r"\z3"

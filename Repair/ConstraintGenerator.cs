@@ -50,7 +50,7 @@ namespace GPURepair.Repair
         /// <summary>
         /// Apply the assignments in the form of requires statements.
         /// </summary>
-        /// <param name="procedure">The procdeure.</param>
+        /// <param name="procedure">The procedure.</param>
         /// <param name="pairs">The key-value pairs representing the variable and it's assignment value.</param>
         private void ApplyAssignments(Procedure procedure, IEnumerable<dynamic> pairs)
         {
