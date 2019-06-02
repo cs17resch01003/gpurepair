@@ -94,7 +94,8 @@ namespace GPURepair.Instrumentation
                             // assert commands are used to store the metadata related to the assign command
                             AssignCmd assign = command as AssignCmd;
                             AssertCmd assert = null;
-                            if (block.Cmds[i - 1] is AssertCmd)
+
+                            if (i - 1 >= 0 && block.Cmds[i - 1] is AssertCmd)
                                 assert = block.Cmds[i - 1] as AssertCmd;
 
                             // parse the expression to check for global variables
@@ -105,8 +106,17 @@ namespace GPURepair.Instrumentation
                             // if there is a global variable
                             if (collector.Variables.Any())
                             {
+                                if (assert == null)
+                                {
+                                    LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
+                                    assert = new AssertCmd(Token.NoToken, literal);
+
+                                    block.Cmds.Insert(0, assert);
+                                    i = i + 1;
+                                }
+
                                 // and we haven't instrumented it already
-                                if (assert == null || !ContainsAttribute(assert, InstrumentationKey))
+                                if (!ContainsAttribute(assert, InstrumentationKey))
                                 {
                                     AddBarrier(implementation, block, i);
                                     return true;

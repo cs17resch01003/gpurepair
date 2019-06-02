@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--gridDim=1 --blockDim=512 --no-inline
 //Write by thread 200
 //Write by thread 15

@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--warp-sync=32 --blockDim=32 --gridDim=1 --equality-abstraction --no-inline
 //kernel.cu:10
 

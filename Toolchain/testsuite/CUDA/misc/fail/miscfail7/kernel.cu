@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--blockDim=1024 --gridDim=1
 //null pointer access
 

@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--gridDim=1 --blockDim=4 --no-inline
 //attempt to modify constant memory
 

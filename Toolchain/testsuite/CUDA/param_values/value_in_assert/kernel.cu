@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--blockDim=16 --gridDim=16 --no-inline
 //a = 12
 //b = 36
