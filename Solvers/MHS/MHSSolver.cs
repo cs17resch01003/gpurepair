@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GPURepair.Solvers
@@ -26,19 +27,35 @@ namespace GPURepair.Solvers
         public Dictionary<string, bool> Solve()
         {
             MHSSolution solution = new MHSSolution(Clauses);
-            Solve(solution);
+            bool result = Solve(solution);
 
-            return solution.Assignments;
+            // Use the SATSolver as a backup if the MHSSolver fails
+            if (result == true)
+                return solution.Assignments;
+            else
+            {
+                SATSolver solver = new SATSolver(Clauses);
+                Dictionary<string, bool> assignments = solver.Solve();
+
+                if (assignments == null)
+                    throw new Exception("The given clauses cannot be satisfied!");
+                return assignments;
+            }
         }
 
         /// <summary>
         /// Solves the clauses and sets the assignements.
         /// </summary>
         /// <param name="solution">The solution object that needs to be populated.</param>
-        private void Solve(MHSSolution solution)
+        /// <returns>true if a solution has been found and false otherwise.</returns>
+        private bool Solve(MHSSolution solution)
         {
             while (solution.IsSolutionFound() == false)
             {
+                // The MHSSolver has ended in an unsatisfiable assignment
+                if (solution.Assignments.Count == solution.VariableLookup.Count)
+                    return false;
+
                 List<Clause> clauses = solution.GetActiveUnitClauses();
                 if (clauses.Any())
                 {
@@ -53,6 +70,8 @@ namespace GPURepair.Solvers
                 if (reference.Any())
                     ApplyMHS(solution, reference);
             }
+
+            return true;
         }
 
         /// <summary>
@@ -68,7 +87,7 @@ namespace GPURepair.Solvers
                     if (!solution.Assignments.ContainsKey(literal.Variable))
                     {
                         solution.SetAssignment(literal.Variable, literal.Value);
-                        break;
+                        return;
                     }
             }
         }
@@ -88,12 +107,14 @@ namespace GPURepair.Solvers
 
             foreach (string variable in variables)
             {
-                int unsat_clauses = clauses.Count(x => x.Literals.Select(y => y.Variable).Contains(variable));
-
-                if (unsat_clauses > max_unsat_clauses)
+                if (!solution.Assignments.ContainsKey(variable))
                 {
-                    max_unsat_clauses = unsat_clauses;
-                    chosen = variable;
+                    int unsat_clauses = clauses.Count(x => x.Literals.Select(y => y.Variable).Contains(variable));
+                    if (unsat_clauses > max_unsat_clauses)
+                    {
+                        max_unsat_clauses = unsat_clauses;
+                        chosen = variable;
+                    }
                 }
             }
 

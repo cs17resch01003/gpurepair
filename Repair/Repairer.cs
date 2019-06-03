@@ -50,7 +50,7 @@ namespace GPURepair.Repair
                 Error error;
                 using (Watch watch = new Watch())
                 {
-                    Verifier verifier = new Verifier(program);
+                    Verifier verifier = new Verifier(program, assignments);
                     error = verifier.GetError();
                 }
 

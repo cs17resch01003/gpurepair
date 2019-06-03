@@ -40,12 +40,20 @@ namespace GPURepair.Repair
         private Microsoft.Boogie.Program program;
 
         /// <summary>
+        /// The current assignments to the variables.
+        /// </summary>
+        private Dictionary<string, bool> assignments;
+
+        /// <summary>
         /// Initialize the variables.
         /// </summary>
         /// <param name="program">The source Boogie program.</param>
-        public Verifier(Microsoft.Boogie.Program program)
+        /// <param name="assignments">The current assignments to the variables.</param>
+        public Verifier(Microsoft.Boogie.Program program, Dictionary<string, bool> assignments)
         {
             this.program = program;
+            this.assignments = assignments;
+
             if (barriers == null)
                 PopulateBarriers(this.program);
 
@@ -113,15 +121,17 @@ namespace GPURepair.Repair
         /// <returns></returns>
         private IEnumerable<string> GetVariables(CallCounterexample callCounterexample, ErrorType errorType)
         {
+            Regex regex = new Regex(@"^b\d+$");
             Model.Boolean element = callCounterexample.Model.Elements.Where(x => x is Model.Boolean)
                 .Where(x => (x as Model.Boolean).Value == (errorType == ErrorType.Race ? false : true))
                 .Select(x => x as Model.Boolean).FirstOrDefault();
 
-            Regex regex = new Regex(@"^b\d+$");
             IEnumerable<string> variables = element.References.Select(x => x.Func)
                 .Where(x => regex.IsMatch(x.Name)).Select(x => x.Name);
+            IEnumerable<string> current_assignments = assignments.Where(x => x.Value == ((errorType == ErrorType.Race ? false : true)))
+                .Select(x => x.Key);
 
-            return variables;
+            return variables.Union(current_assignments);
         }
     }
 }

@@ -21,10 +21,10 @@ namespace GPURepair.Solvers
         }
 
         /// <summary>
-        /// Determines if the given clauses can be satisfiable.
+        /// Solves the given clauses.
         /// </summary>
-        /// <returns>true if the clauses can be satisfied and false otherwise.</returns>
-        public bool IsSatisfiable()
+        /// <returns>The assignments if the clauses can be satisfied and null otherwise.</returns>
+        public Dictionary<string, bool> Solve()
         {
             // Use Z3 and figure out the variable assignments
             using (Context context = new Context())
@@ -32,8 +32,18 @@ namespace GPURepair.Solvers
                 Dictionary<string, dynamic> variables = GetVariables(context);
                 List<BoolExpr> clauses = GenerateClauses(variables, context);
 
-                return SAT(clauses, context);
+                return SAT(variables, clauses, context);
             }
+        }
+
+        /// <summary>
+        /// Determines if the given clauses can be satisfiable.
+        /// </summary>
+        /// <returns>true if the clauses can be satisfied and false otherwise.</returns>
+        public bool IsSatisfiable()
+        {
+            Dictionary<string, bool> assignments = Solve();
+            return assignments != null;
         }
 
         /// <summary>
@@ -89,18 +99,30 @@ namespace GPURepair.Solvers
         /// <summary>
         /// Determines if the given clauses can be satisfiable.
         /// </summary>
+        /// <param name="variables">The variables.</param>
         /// <param name="clauses">The clauses.</param>
         /// <param name="context">The Z3 context.</param>
-        /// <returns>true if the clauses can be satisfied and false otherwise.</returns>
-        private bool SAT(List<BoolExpr> clauses, Context context)
+        /// <returns>The assignments if the clauses can be satisfied and null otherwise.</returns>
+        private Dictionary<string, bool> SAT(Dictionary<string, dynamic> variables, List<BoolExpr> clauses, Context context)
         {
-            Microsoft.Z3.Solver solver = context.MkSolver();
-            solver.Assert(clauses.ToArray());
-            Status status = solver.Check();
+            Dictionary<string, bool> assignments = null;
 
+            Solver solver = context.MkSolver();
+            solver.Assert(clauses.ToArray());
+
+            Status status = solver.Check();
             if (status == Status.SATISFIABLE)
-                return true;
-            return false;
+            {
+                assignments = new Dictionary<string, bool>();
+                foreach (string variable in variables.Keys)
+                {
+                    Expr expr = solver.Model.Evaluate(variables[variable].Positive);
+                    if (expr.BoolValue != Z3_lbool.Z3_L_UNDEF)
+                        assignments.Add(variable, expr.BoolValue == Z3_lbool.Z3_L_TRUE ? true : false);
+                }
+            }
+
+            return assignments;
         }
     }
 }
