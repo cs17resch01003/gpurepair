@@ -1,6 +1,5 @@
 //xfail:ASSERTION_ERROR
 //--blockDim=2 --gridDim=2
-//assert
 
 typedef struct {
   unsigned int a, b;

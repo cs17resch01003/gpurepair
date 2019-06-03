@@ -1,8 +1,5 @@
 //xfail:REPAIR_ERROR
 //--gridDim=1 --blockDim=512 --no-inline
-//Write by thread 200
-//Write by thread 15
-//x = 185
 
 __global__ void example(float * A, int x) {
     __requires(x >= 0);

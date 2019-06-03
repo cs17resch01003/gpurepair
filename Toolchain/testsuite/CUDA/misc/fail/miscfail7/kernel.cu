@@ -1,6 +1,5 @@
 //xfail:ASSERTION_ERROR
 //--blockDim=1024 --gridDim=1
-//null pointer access
 
 __global__ void foo(int *H) {
   size_t tmp = (size_t)H;

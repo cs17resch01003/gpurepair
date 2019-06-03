@@ -1,6 +1,5 @@
 //xfail:ASSERTION_ERROR
 //--blockDim=1024 --gridDim=1 --no-inline
-//error: possible null pointer access
 
 #define tid (blockIdx.x * blockDim.x + threadIdx.x)
 

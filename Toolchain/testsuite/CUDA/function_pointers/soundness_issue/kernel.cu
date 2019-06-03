@@ -1,6 +1,5 @@
 //xfail:ASSERTION_ERROR
 //--blockDim=128 --gridDim=16 --no-inline
-//assert\(false\)
 
 #define tid (blockIdx.x*blockDim.x + threadIdx.x)
 

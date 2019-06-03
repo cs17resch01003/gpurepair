@@ -1,7 +1,5 @@
 //xfail:REPAIR_ERROR
 //--blockDim=32 --gridDim=64 --no-inline
-//error: possible write-write race on
-
 
 #include "cuda.h"
 
