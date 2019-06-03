@@ -1,6 +1,5 @@
 //xfail:ASSERTION_ERROR
 //--blockDim=1024 --gridDim=1 --no-inline
-//error: possible null pointer access
 
 __device__ float multiplyByTwo(float *v, unsigned int tid)
 {

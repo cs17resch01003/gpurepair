@@ -1,6 +1,5 @@
 //xfail:REPAIR_ERROR
 //--blockDim=2048 --gridDim=64
-//possible write-write race on q.p\[0\]
 
 struct s {
   float *p;

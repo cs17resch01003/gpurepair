@@ -1,6 +1,5 @@
 //xfail:ASSERTION_ERROR
 //--blockDim=2 --gridDim=1
-//assert
 
 __global__ void f(int *c) {
 
