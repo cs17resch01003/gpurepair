@@ -58,6 +58,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestSuite\MHSSolver\testcase3.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <Content Include="TestSuite\MaxSATSolver\testcase3.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -88,8 +88,7 @@ namespace GPURepair.Solvers
 
             foreach (string variable in variables)
             {
-                int unsat_clauses = solution.VariableLookup[variable]
-                    .Where(x => solution.ClauseLookup[x].Sat == false).Count();
+                int unsat_clauses = clauses.Count(x => x.Literals.Select(y => y.Variable).Contains(variable));
 
                 if (unsat_clauses > max_unsat_clauses)
                 {
