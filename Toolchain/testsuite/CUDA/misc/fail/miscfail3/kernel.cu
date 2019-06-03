@@ -1,7 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--blockDim=1024 --gridDim=1 --no-inline
-//kernel.cu: error: possible read-write race
-//GPUVerify kernel analyser finished with 1 verified, 1 error
 
 // In CUDA providing the inline keyword should still keep a copy of
 // the function around (contrary to OpenCL). However, by default a

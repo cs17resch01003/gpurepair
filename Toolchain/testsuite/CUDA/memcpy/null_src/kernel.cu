@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//xfail:ASSERTION_ERROR
 //--gridDim=1 --blockDim=2 --no-inline
 
 //This kernel has a null pointer access.
