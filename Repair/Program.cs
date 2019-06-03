@@ -55,10 +55,12 @@ namespace GPURepair.Repair
                         program.Emit(writer);
                 }
 
-                string source = new FileInfo(filename).FullName.Replace(".cbpl", ".cu");
+                string cu_source = new FileInfo(filename).FullName.Replace(".cbpl", ".cu");
+                string cl_source = new FileInfo(filename).FullName.Replace(".cbpl", ".cl");
+
                 foreach (Location location in changes)
                 {
-                    if (source != location.File)
+                    if (cu_source != location.File && cl_source != location.File)
                         throw new RepairError("There are changes needed in external files: " + location.ToString());
                 }
             }
