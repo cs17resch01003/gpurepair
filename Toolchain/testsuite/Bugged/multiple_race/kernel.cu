@@ -13,6 +13,6 @@ __global__ void race (int* A, int* B)
   int temp = A[idx + 1];
   A[idx] = temp;
   
-  int temp = B[idx + 1];
+  temp = B[idx + 1];
   B[idx] = temp;
 }
