@@ -1,6 +1,5 @@
 //pass
 //--local_size=16 --num_groups=16 --debug
-//Found 3 barrier interval\(s\)
 
 #define tid get_local_id(0)
 

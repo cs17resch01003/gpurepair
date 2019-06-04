@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--local_size=1024 --global_size=1024 --only-divergence
-//barrier may be reached by non-uniform control flow
 
 kernel void foo (global int * restrict A, global int * restrict B) {
   int tmp = A[get_global_id(0)];

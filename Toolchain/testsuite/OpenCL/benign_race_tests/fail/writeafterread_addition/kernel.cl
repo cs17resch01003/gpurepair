@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--local_size=64 --num_groups=1 --equality-abstraction --no-inline
-//kernel.cl: error: possible read-write race on
 
 __kernel void foo(__local int* A) {
   int v;

@@ -1,7 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--local_size=1024 --num_groups=1 --no-inline
-//B\[tid\] = v;
-//v = atomic_add\(B\+i,v\);
 
 // This is to test whether GPUVerify can correctly report the relevant atomic line
 __kernel void blarp (global int* A, global int* B, global int* C, int x)

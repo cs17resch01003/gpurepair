@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--local_size=1024 --num_groups=2 --no-inline
-//error: possible write-atomic race on A\[1\] \(byte 0\):
 
 __kernel void atomicTest(__local int *A, int B)
 {

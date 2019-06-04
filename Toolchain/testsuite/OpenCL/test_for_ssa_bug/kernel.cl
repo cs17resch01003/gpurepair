@@ -1,9 +1,6 @@
 //pass
 //--local_size=2 --num_groups=1 --no-inline
 
-
-
-
 __kernel void foo(__local unsigned int* A)
 {
     for (unsigned int k = 0; k < 8; ++k)

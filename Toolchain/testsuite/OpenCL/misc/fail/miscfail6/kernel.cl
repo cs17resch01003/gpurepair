@@ -1,7 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--local_size=1024 --num_groups=1 --no-inline
-//kernel.cl: error: possible read-write race
-//GPUVerify kernel analyser finished with 0 verified, 1 error
 
 // The always_inline attribute ensures that the 'inlined' function is actually
 // inlined in 'inline_test'. The inline keyword ensures that the body of
