@@ -88,15 +88,11 @@ namespace GPURepair.Instrumentation
                     for (int i = 0; i < block.Cmds.Count; i++)
                     {
                         Cmd command = block.Cmds[i];
+
+                        bool instrument = false;
                         if (command is AssignCmd)
                         {
-                            // get the assign and assert commands
-                            // assert commands are used to store the metadata related to the assign command
                             AssignCmd assign = command as AssignCmd;
-                            AssertCmd assert = null;
-
-                            if (i - 1 >= 0 && block.Cmds[i - 1] is AssertCmd)
-                                assert = block.Cmds[i - 1] as AssertCmd;
 
                             // parse the expression to check for global variables
                             AccessCollector collector = new AccessCollector();
@@ -106,24 +102,45 @@ namespace GPURepair.Instrumentation
                             foreach (Expr rhs in assign.Rhss)
                                 collector.Visit(rhs);
 
-                            // if there is a global variable
-                            if (collector.Variables.Any())
+                            instrument = collector.Variables.Any();
+                        }
+                        else if (command is CallCmd)
+                        {
+                            CallCmd call = command as CallCmd;
+
+                            // parse the expression to check for global variables
+                            AccessCollector collector = new AccessCollector();
+                            foreach (Expr _in in call.Ins)
+                                collector.Visit(_in);
+
+                            foreach (Expr _out in call.Outs)
+                                collector.Visit(_out);
+
+                            instrument = collector.Variables.Any();
+                        }
+
+                        // if there is a global variable
+                        if (instrument)
+                        {
+                            // assert commands are used to store the metadata related to the actual command
+                            AssertCmd assert = null;
+                            if (i - 1 >= 0 && block.Cmds[i - 1] is AssertCmd)
+                                assert = block.Cmds[i - 1] as AssertCmd;
+
+                            if (assert == null)
                             {
-                                if (assert == null)
-                                {
-                                    LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
-                                    assert = new AssertCmd(Token.NoToken, literal);
+                                LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
+                                assert = new AssertCmd(Token.NoToken, literal);
 
-                                    block.Cmds.Insert(0, assert);
-                                    i = i + 1;
-                                }
+                                block.Cmds.Insert(0, assert);
+                                i = i + 1;
+                            }
 
-                                // and we haven't instrumented it already
-                                if (!ContainsAttribute(assert, InstrumentationKey))
-                                {
-                                    AddBarrier(implementation, block, i);
-                                    return true;
-                                }
+                            // and we haven't instrumented it already
+                            if (!ContainsAttribute(assert, InstrumentationKey))
+                            {
+                                AddBarrier(implementation, block, i);
+                                return true;
                             }
                         }
                     }
