@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--local_size=64 --num_groups=12 --no-inline
 //kernel.cl:9
 

@@ -1,4 +1,4 @@
-//pass
+//xfail:NOT_ALL_VERIFIED
 //--local_size=64 --num_groups=64 --no-inline
 
 

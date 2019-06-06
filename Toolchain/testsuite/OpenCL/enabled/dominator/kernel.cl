@@ -1,4 +1,4 @@
-//PASS
+//xfail:NOT_ALL_VERIFIED
 //--local_size=32 --num_groups=1
 
 __kernel void foo()

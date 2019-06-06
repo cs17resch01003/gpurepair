@@ -1,9 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--local_size=16 --num_groups=2 --no-inline
-//possible write-read race
-//Read by work item.+kernel.cl:16:(9|11)
-//Write by work item.+from external source location
-
 
 void __spec_foo(__local int * p) {
     __writes_to(p);

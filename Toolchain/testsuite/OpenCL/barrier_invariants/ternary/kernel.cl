@@ -1,4 +1,4 @@
-//pass
+//xfail:ASSERTION_ERROR
 //--local_size=8 --num_groups=1 --no-inline
 
 #define N 8
