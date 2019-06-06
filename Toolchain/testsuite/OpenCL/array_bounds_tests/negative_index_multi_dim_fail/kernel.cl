@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--local_size=1,10 --num_groups=1,10 --check-array-bounds
-//kernel.cl:7:[\d]+:[\s]+error:[\s]+possible array out-of-bounds access on array L
 
 __kernel void foo() {
   local int L[10][10];

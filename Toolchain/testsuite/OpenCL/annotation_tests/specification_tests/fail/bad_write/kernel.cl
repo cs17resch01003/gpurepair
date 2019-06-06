@@ -1,10 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--local_size=1024 --num_groups=1024 --no-inline
-//
-
-
-
-// Purpose of this test is to check a simple spec
 
 void __spec_bar(__global int* p) {
   __requires(__no_read(p));

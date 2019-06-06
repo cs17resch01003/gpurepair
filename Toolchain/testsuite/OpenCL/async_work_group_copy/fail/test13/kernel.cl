@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--local_size=1024 --num_groups=1
 
 kernel void foo(global int* __restrict p, global int* __restrict q) {

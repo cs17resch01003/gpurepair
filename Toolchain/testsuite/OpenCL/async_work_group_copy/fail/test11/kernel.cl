@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--local_size=64 --num_groups=128
 
 #define N 64

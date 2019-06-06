@@ -1,8 +1,6 @@
 //pass
 //--local_size=1024 --num_groups=1024 --equality-abstraction --no-inline
 
-
-
 __kernel void foo()
 {
   __local int A[1024];

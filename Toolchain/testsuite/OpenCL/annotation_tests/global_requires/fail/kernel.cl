@@ -1,8 +1,6 @@
 //xfail:NOT_ALL_VERIFIED
 //--local_size=1024 --num_groups=1024 --no-inline
 
-
-
 void baz(int x) {
 
 }

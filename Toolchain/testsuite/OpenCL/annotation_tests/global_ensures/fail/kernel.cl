@@ -1,8 +1,6 @@
 //xfail:NOT_ALL_VERIFIED
 //--local_size=1024 --num_groups=1024 --no-inline
 
-
-
 void bar(__local int* A) {
   __requires(!__read(A));
   __global_ensures(!__read(A));

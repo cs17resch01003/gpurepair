@@ -103,6 +103,9 @@ namespace GPURepair.Instrumentation
                             foreach (AssignLhs lhs in assign.Lhss)
                                 collector.Visit(lhs);
 
+                            foreach (Expr rhs in assign.Rhss)
+                                collector.Visit(rhs);
+
                             // if there is a global variable
                             if (collector.Variables.Any())
                             {
