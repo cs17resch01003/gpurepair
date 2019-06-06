@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--local_size=64 --num_groups=32 --no-inline
 
 #define MAX 1024

@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--local_size=2 --num_groups=2 --no-inline
-//possible null pointer access
 
 __kernel void testKernel() {
   char *bufptr, *next;

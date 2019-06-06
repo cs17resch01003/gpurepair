@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--local_size=128 --num_groups=64 --no-inline
-//insufficient permission
 
 #define SZ 128
 

@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:ASSERTION_ERROR
 //--local_size=1024 --num_groups=1024 --no-inline
-//error: this assertion might not hold for work item
 
 __kernel void foo()
 {
