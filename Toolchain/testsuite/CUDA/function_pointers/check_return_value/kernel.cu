@@ -1,4 +1,4 @@
-//pass
+//xfail:ASSERTION_ERROR
 //--blockDim=1024 --gridDim=1 --no-inline
 
 typedef int(*funcType)(int);
