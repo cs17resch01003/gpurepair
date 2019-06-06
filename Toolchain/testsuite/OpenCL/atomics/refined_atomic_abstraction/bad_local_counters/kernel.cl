@@ -1,6 +1,5 @@
 //xfail:REPAIR_ERROR
 //--local_size=64 --num_groups=12 --no-inline
-//kernel.cl:9
 
 __kernel void foo(__local unsigned *localCounter, __global unsigned *globalArray) {
     unsigned localIndex = atomic_inc(localCounter);
