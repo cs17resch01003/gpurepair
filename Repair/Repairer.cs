@@ -51,7 +51,7 @@ namespace GPURepair.Repair
                 using (Watch watch = new Watch())
                 {
                     Verifier verifier = new Verifier(program, assignments);
-                    current_errors = verifier.GetError();
+                    current_errors = verifier.GetErrors();
                 }
 
                 File.Delete(tempFile);

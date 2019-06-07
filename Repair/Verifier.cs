@@ -62,10 +62,10 @@ namespace GPURepair.Repair
         }
 
         /// <summary>
-        /// Gets the error and associated metadata after verifying the program.
+        /// Gets the errors and associated metadata after verifying the program.
         /// </summary>
         /// <returns>The metadata of the errors.</returns>
-        public IEnumerable<Error> GetError()
+        public IEnumerable<Error> GetErrors()
         {
             List<Error> errors = new List<Error>();
 
@@ -75,50 +75,53 @@ namespace GPURepair.Repair
                 if (declaration is Implementation)
                 {
                     Implementation implementation = declaration as Implementation;
-                    List<Counterexample> counterexamples;
+                    List<Counterexample> examples;
 
-                    ConditionGeneration.Outcome outcome = gen.VerifyImplementation(implementation, out counterexamples);
+                    ConditionGeneration.Outcome outcome = gen.VerifyImplementation(implementation, out examples);
                     if (outcome == ConditionGeneration.Outcome.Errors)
+                        foreach (Counterexample example in examples)
+                            errors.Add(new Error()
+                            {
+                                CounterExample = example,
+                                Implementation = implementation
+                            });
+                }
+            }
+
+            List<Error> valid_errors = new List<Error>();
+            foreach (Error error in errors)
+            {
+                if (error.CounterExample is CallCounterexample)
+                {
+                    CallCounterexample callCounterexample = error.CounterExample as CallCounterexample;
+                    if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "barrier_divergence"))
+                        error.ErrorType = ErrorType.Divergence;
+                    else if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "race"))
+                        error.ErrorType = ErrorType.Race;
+
+                    if (error.ErrorType.HasValue)
                     {
-                        foreach (Counterexample counterexample in counterexamples)
-                        {
-                            if (counterexample is CallCounterexample)
-                            {
-                                CallCounterexample callCounterexample = counterexample as CallCounterexample;
-                                ErrorType errorType;
+                        IEnumerable<string> variables = GetVariables(callCounterexample, error.ErrorType.Value);
+                        error.Variables = barriers.Where(x => variables.Contains(x.Key)).Select(x => x.Value);
 
-                                if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "barrier_divergence"))
-                                    errorType = ErrorType.Divergence;
-                                else if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "race"))
-                                    errorType = ErrorType.Race;
-                                else
-                                    throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
-
-                                IEnumerable<string> variables = GetVariables(callCounterexample, errorType);
-                                errors.Add(new Error
-                                {
-                                    ErrorType = errorType,
-                                    Implementation = implementation,
-                                    Variables = barriers.Where(x => variables.Contains(x.Key)).Select(x => x.Value)
-                                });
-
-                                if (errors.Where(x => !x.Variables.Any()).Any())
-                                    throw new RepairError("Encountered a race/divergence counterexample without any barrier assignments!");
-                            }
-                            else if (!counterexamples.Any(x => x is CallCounterexample))
-                            {
-                                if (counterexamples.Any(x => x is AssertCounterexample))
-                                    throw new AssertionError("Assertions do not hold!");
-
-                                throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
-                            }
-                        }
+                        if (error.Variables.Any())
+                            valid_errors.Add(error);
                     }
                 }
             }
 
+            if (!valid_errors.Any() && errors.Any())
+            {
+                if (errors.Any(x => x.CounterExample is AssertCounterexample))
+                    throw new AssertionError("Assertions do not hold!");
+                if (errors.Any(x => x.CounterExample is CallCounterexample))
+                    throw new RepairError("Encountered a race/divergence counterexample without any barrier assignments!");
+
+                throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
+            }
+
             gen.Close();
-            return errors;
+            return valid_errors;
         }
 
         /// <summary>
