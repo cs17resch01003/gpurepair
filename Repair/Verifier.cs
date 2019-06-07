@@ -104,7 +104,7 @@ namespace GPURepair.Repair
                                 });
 
                                 if (errors.Where(x => !x.Variables.Any()).Any())
-                                    throw new RepairError("Encountered a counterexample without any barrier assignments.");
+                                    throw new RepairError("Encountered a race/divergence counterexample without any barrier assignments.");
                             }
                             else if (counterexamples.Count == 1)
                             {
