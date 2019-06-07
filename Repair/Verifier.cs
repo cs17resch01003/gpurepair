@@ -112,10 +112,6 @@ namespace GPURepair.Repair
                             }
                         }
                     }
-                    else if (outcome != ConditionGeneration.Outcome.Correct)
-                    {
-                        throw new InconclusiveError("GPUVerify reached an inconclusive state!");
-                    }
                 }
             }
 

@@ -79,11 +79,6 @@ namespace GPURepair.Repair
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(203);
             }
-            catch (InconclusiveError ex)
-            {
-                Console.Error.WriteLine(ex.Message);
-                Environment.Exit(204);
-            }
         }
     }
 }
