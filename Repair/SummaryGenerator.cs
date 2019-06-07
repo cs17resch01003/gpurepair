@@ -1,4 +1,5 @@
-﻿using Microsoft.Boogie;
+﻿using GPURepair.Repair.Exceptions;
+using Microsoft.Boogie;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -88,6 +89,9 @@ namespace GPURepair.Repair
                                 int location = QKeyValue.FindIntAttribute(call.Attributes, "sourceloc_num", -1);
                                 string barrier = QKeyValue.FindStringAttribute(call.Attributes, "repair_barrier");
                                 bool generated = ContainsAttribute(call, "repair_instrumented");
+
+                                if (location == -1)
+                                    throw new SummaryGeneratorError("Identified a barrier without source location mapping!");
 
                                 BarrierMetadata metadata = barriers.FirstOrDefault(x => x.BarrierName == barrier);
 

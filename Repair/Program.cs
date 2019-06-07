@@ -74,6 +74,11 @@ namespace GPURepair.Repair
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(202);
             }
+            catch (SummaryGeneratorError ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                Environment.Exit(203);
+            }
         }
     }
 }

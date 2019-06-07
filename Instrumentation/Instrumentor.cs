@@ -68,7 +68,7 @@ namespace GPURepair.Instrumentation
         {
             bool program_modified;
 
-            do program_modified = InstrumentAssign();
+            do program_modified = InstrumentCommand();
             while (program_modified);
 
             do program_modified = InstrumentBarrier();
@@ -79,7 +79,7 @@ namespace GPURepair.Instrumentation
         /// Adds one barrier at a time.
         /// </summary>
         /// <returns>True if the program has changed, False otherwise.</returns>
-        private bool InstrumentAssign()
+        private bool InstrumentCommand()
         {
             foreach (Implementation implementation in program.Implementations)
             {
@@ -90,6 +90,8 @@ namespace GPURepair.Instrumentation
                         Cmd command = block.Cmds[i];
 
                         bool instrument = false;
+                        int location = -1;
+
                         if (command is AssignCmd)
                         {
                             AssignCmd assign = command as AssignCmd;
@@ -117,6 +119,7 @@ namespace GPURepair.Instrumentation
                                 collector.Visit(_out);
 
                             instrument = collector.Variables.Any();
+                            location = QKeyValue.FindIntAttribute(call.Attributes, SourceLocationKey, -1);
                         }
 
                         // if there is a global variable
@@ -132,7 +135,13 @@ namespace GPURepair.Instrumentation
                                 LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
                                 assert = new AssertCmd(Token.NoToken, literal);
 
-                                block.Cmds.Insert(0, assert);
+                                if (location != -1)
+                                {
+                                    QKeyValue sourceLocationKey = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object>() { location }, null);
+                                    assert.Attributes.AddLast(sourceLocationKey);
+                                }
+
+                                block.Cmds.Insert(i, assert);
                                 i = i + 1;
                             }
 
@@ -233,22 +242,11 @@ namespace GPURepair.Instrumentation
             CreateBugleBarrier();
             string barrierName = "b" + (++barrier_count);
 
-            // create the assert command if it doesn't exist
+            // add the instrumentation key to the assert command
             QKeyValue assertAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
-            AssertCmd assert;
 
-            if (index - 1 >= 0 && block.Cmds[index - 1] is AssertCmd)
-            {
-                assert = block.Cmds[index - 1] as AssertCmd;
-                assert.Attributes.AddLast(assertAttribute);
-            }
-            else
-            {
-                assert = new AssertCmd(Token.NoToken, Expr.Literal(true), assertAttribute);
-                block.Cmds.Insert(index, assert);
-
-                index = index + 1;
-            }
+            AssertCmd assert = block.Cmds[index - 1] as AssertCmd;
+            assert.Attributes.AddLast(assertAttribute);
 
             // create the call barrier command if it doesn't exist
             QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
@@ -275,7 +273,6 @@ namespace GPURepair.Instrumentation
                     QKeyValue instrumentedAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
                     call.Attributes.AddLast(instrumentedAttribute);
                 }
-
 
                 index = index + 1;
             }
@@ -316,7 +313,7 @@ namespace GPURepair.Instrumentation
             string barrierName = "b" + (++barrier_count);
             CallCmd call = block.Cmds[index] as CallCmd;
 
-            // create the call barrier command if it doesn't exist
+            // add the instrumentation key
             QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
             call.Attributes.AddLast(barrierAttribute);
 
