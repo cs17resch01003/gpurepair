@@ -1,7 +1,6 @@
 ﻿using GPURepair.Repair.Exceptions;
 using GPUVerify;
 using Microsoft.Boogie;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -106,8 +105,11 @@ namespace GPURepair.Repair
                                 if (errors.Where(x => !x.Variables.Any()).Any())
                                     throw new RepairError("Encountered a race/divergence counterexample without any barrier assignments!");
                             }
-                            else if (counterexamples.Count == 1)
+                            else if (!counterexamples.Any(x => x is CallCounterexample))
                             {
+                                if (counterexamples.Any(x => x is AssertCounterexample))
+                                    throw new AssertionError("Assertions do not hold!");
+
                                 throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
                             }
                         }
@@ -115,6 +117,7 @@ namespace GPURepair.Repair
                 }
             }
 
+            gen.Close();
             return errors;
         }
 
