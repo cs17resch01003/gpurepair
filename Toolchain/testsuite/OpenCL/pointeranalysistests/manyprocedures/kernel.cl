@@ -1,4 +1,4 @@
-//xfail:ASSERTION_ERROR
+//xfail:TIMEOUT
 //--local_size=1024 --num_groups=1024 --no-inline
 
 
