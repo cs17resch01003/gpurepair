@@ -93,7 +93,7 @@ namespace GPURepair.Repair
                                 else if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "race"))
                                     errorType = ErrorType.Race;
                                 else
-                                    throw new AssertionError("The program cannot be repaired since it has errors besides race and divergence errors!");
+                                    throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
 
                                 IEnumerable<string> variables = GetVariables(callCounterexample, errorType);
                                 errors.Add(new Error
@@ -104,13 +104,17 @@ namespace GPURepair.Repair
                                 });
 
                                 if (errors.Where(x => !x.Variables.Any()).Any())
-                                    throw new RepairError("Encountered a race/divergence counterexample without any barrier assignments.");
+                                    throw new RepairError("Encountered a race/divergence counterexample without any barrier assignments!");
                             }
                             else if (counterexamples.Count == 1)
                             {
-                                throw new AssertionError("The program cannot be repaired since it has errors besides race and divergence errors!");
+                                throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
                             }
                         }
+                    }
+                    else if (outcome != ConditionGeneration.Outcome.Correct)
+                    {
+                        throw new InconclusiveError("GPUVerify reached an inconclusive state!");
                     }
                 }
             }

@@ -64,7 +64,7 @@ namespace GPURepair.Repair
                         throw new RepairError("There are changes needed in external files: " + location.ToString());
                 }
             }
-            catch (AssertionError ex)
+            catch (NonBarrierError ex)
             {
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(201);
@@ -78,6 +78,11 @@ namespace GPURepair.Repair
             {
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(203);
+            }
+            catch (InconclusiveError ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                Environment.Exit(204);
             }
         }
     }

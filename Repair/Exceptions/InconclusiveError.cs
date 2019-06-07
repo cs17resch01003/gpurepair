@@ -2,14 +2,14 @@
 {
     using System;
 
-    public class AssertionError: Exception
+    public class InconclusiveError : Exception
     {
-        public AssertionError()
+        public InconclusiveError()
             : base()
         {
         }
 
-        public AssertionError(string message)
+        public InconclusiveError(string message)
             : base(message)
         {
         }
