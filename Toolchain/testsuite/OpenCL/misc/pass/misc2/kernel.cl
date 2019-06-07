@@ -1,4 +1,4 @@
-//pass
+//xfail:REPAIR_ERROR
 //--local_size=32 --num_groups=1 --no-inline
 
 __kernel void foo(__local int *shared)
