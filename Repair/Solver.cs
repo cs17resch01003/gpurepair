@@ -21,7 +21,7 @@ namespace GPURepair.Repair
             bool result = satSolver.IsSatisfiable();
 
             if (result == false)
-                throw new RepairError("The program cannot be repaired!");
+                throw new RepairError("The program cannot be repaired since the clauses cannot be satisfied!");
 
             MHSSolver mhsSolver = new MHSSolver(clauses);
             Dictionary<string, bool> assignments = mhsSolver.Solve();

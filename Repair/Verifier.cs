@@ -65,21 +65,23 @@ namespace GPURepair.Repair
         /// <summary>
         /// Gets the error and associated metadata after verifying the program.
         /// </summary>
-        /// <returns>The error metadata.</returns>
-        public Error GetError()
+        /// <returns>The metadata of the errors.</returns>
+        public IEnumerable<Error> GetError()
         {
+            List<Error> errors = new List<Error>();
+
             VCGen gen = new VCGen(program, CommandLineOptions.Clo.SimplifyLogFilePath, CommandLineOptions.Clo.SimplifyLogFileAppend, new List<Checker>());
             foreach (Declaration declaration in program.TopLevelDeclarations)
             {
                 if (declaration is Implementation)
                 {
                     Implementation implementation = declaration as Implementation;
-                    List<Counterexample> errors;
+                    List<Counterexample> counterexamples;
 
-                    ConditionGeneration.Outcome outcome = gen.VerifyImplementation(implementation, out errors);
+                    ConditionGeneration.Outcome outcome = gen.VerifyImplementation(implementation, out counterexamples);
                     if (outcome == ConditionGeneration.Outcome.Errors)
                     {
-                        foreach (Counterexample counterexample in errors)
+                        foreach (Counterexample counterexample in counterexamples)
                         {
                             if (counterexample is CallCounterexample)
                             {
@@ -94,14 +96,17 @@ namespace GPURepair.Repair
                                     throw new AssertionError("The program cannot be repaired since it has errors besides race and divergence errors!");
 
                                 IEnumerable<string> variables = GetVariables(callCounterexample, errorType);
-                                return new Error
+                                errors.Add(new Error
                                 {
                                     ErrorType = errorType,
                                     Implementation = implementation,
                                     Variables = barriers.Where(x => variables.Contains(x.Key)).Select(x => x.Value)
-                                };
+                                });
+
+                                if (errors.Where(x => !x.Variables.Any()).Any())
+                                    throw new RepairError("Encountered a counterexample without any barrier assignments.");
                             }
-                            else
+                            else if (counterexamples.Count == 1)
                             {
                                 throw new AssertionError("The program cannot be repaired since it has errors besides race and divergence errors!");
                             }
@@ -110,7 +115,7 @@ namespace GPURepair.Repair
                 }
             }
 
-            return null;
+            return errors;
         }
 
         /// <summary>

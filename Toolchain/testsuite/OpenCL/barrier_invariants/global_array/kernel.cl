@@ -1,4 +1,4 @@
-//pass
+//xfail:ASSERTION_ERROR
 //--local_size=128 --num_groups=1 --no-inline
 
 __kernel void foo(__global int *A) {

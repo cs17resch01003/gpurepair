@@ -1,4 +1,4 @@
-//pass
+//xfail:ASSERTION_ERROR
 //--local_size=128 --num_groups=64 --no-barrier-access-checks
 
 #define SZ 128

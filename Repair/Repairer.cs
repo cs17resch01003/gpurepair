@@ -1,7 +1,7 @@
 ﻿using Microsoft.Boogie;
-using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace GPURepair.Repair
 {
@@ -47,18 +47,18 @@ namespace GPURepair.Repair
                 string tempFile = WriteFile(program);
                 program = ReadFile(tempFile);
 
-                Error error;
+                IEnumerable<Error> current_errors;
                 using (Watch watch = new Watch())
                 {
                     Verifier verifier = new Verifier(program, assignments);
-                    error = verifier.GetError();
+                    current_errors = verifier.GetError();
                 }
 
                 File.Delete(tempFile);
-                if (error == null)
+                if (!current_errors.Any())
                     repaired = true;
                 else
-                    errors.Add(error);
+                    errors.AddRange(current_errors);
             }
         }
 
