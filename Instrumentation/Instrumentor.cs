@@ -137,8 +137,10 @@ namespace GPURepair.Instrumentation
 
                                 if (location != -1)
                                 {
-                                    QKeyValue sourceLocationKey = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object>() { location }, null);
-                                    assert.Attributes.AddLast(sourceLocationKey);
+                                    LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
+                                    QKeyValue sourceLocationKey = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object>() { locationValue }, null);
+
+                                    assert.Attributes = sourceLocationKey;
                                 }
 
                                 block.Cmds.Insert(i, assert);
