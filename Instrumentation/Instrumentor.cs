@@ -248,7 +248,10 @@ namespace GPURepair.Instrumentation
             QKeyValue assertAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
 
             AssertCmd assert = block.Cmds[index - 1] as AssertCmd;
-            assert.Attributes.AddLast(assertAttribute);
+            if (assert.Attributes != null)
+                assert.Attributes.AddLast(assertAttribute);
+            else
+                assert.Attributes = assertAttribute;
 
             // create the call barrier command if it doesn't exist
             QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
