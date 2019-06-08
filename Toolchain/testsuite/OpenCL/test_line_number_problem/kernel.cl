@@ -1,10 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--local_size=1024 --num_groups=64 --no-inline
-//kernel.cl: error: possible write-read race on A\[[\d]+\]:[\s]
-//Read by work item [\d]+ with local id [\d]+ in work group [\d]+.+kernel.cl:17:(14|16):[\s]+temp = A\[tid - i\];
-//Write by work item[\s]+[\d]+ with local id [\d]+ in work group [\d]+.+kernel.cl:20:[\d]+:[\s]+A\[tid\] = A\[tid\] \+ temp;
-
-
 
 #define sz get_local_size(0)
 #define tid get_local_id(0)

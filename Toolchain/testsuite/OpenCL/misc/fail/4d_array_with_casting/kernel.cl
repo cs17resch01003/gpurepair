@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--local_size=[64] --global_size=[256]
-//kernel.cl: error: possible write-write race on L\[1\]\[2\]\[3\]\[3\] \(byte 2\)
                                                          
 kernel void example(global int *G) {
     local int L[2][3][4][5];

@@ -1,9 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--local_size=8 --num_groups=8 --no-inline
-//kernel.cl:[\s]+error:[\s]+possible[\s]+write-write[\s]+race on p\[0]
-//Write by work item[\s]+[\d]+[\s]+with local id[\s]+[\d]+[\s]+in work group[\s]+[\d], .+kernel.cl:21:[\d]+:[\s]+p\[0\] = get_global_id\(0\) \+ c;
-
-
 
 __constant int A[64] = { };
 

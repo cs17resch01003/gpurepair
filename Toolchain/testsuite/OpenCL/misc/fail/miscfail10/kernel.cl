@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--local_size=64 --num_groups=64
-//race
 
 __kernel void foo(__global uint *h1, __global uint *h2, int i)
 {

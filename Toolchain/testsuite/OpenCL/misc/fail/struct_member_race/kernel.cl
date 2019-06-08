@@ -1,6 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--local_size=64 --global_size=256
-//kernel.cl: error: possible write-write race on G\[3\] \(bytes 4..7\)
 
 typedef struct {
     int x;

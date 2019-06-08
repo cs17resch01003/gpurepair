@@ -1,15 +1,5 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--local_size=16 --num_groups=2 --no-inline
-//kernel.cl: error: possible read-write race on p
-//Write by work item [\d]+ with local id [\d]+ in work group \d, .+kernel.cl:39:[\d]+
-//p\[tid \+ 1\] = tid;
-//Read by work item [\d]+ with local id [\d]+ in work group \d, possible sources are:
-//kernel.cl:18:(9|11)
-//kernel.cl:19:(9|11)
-//kernel.cl:20:(9|11)
-//kernel.cl:29:(12|14)
-//kernel.cl:29:(25|27)
-//kernel.cl:34:(12|14)
 
 #define tid get_local_id(0)
 
