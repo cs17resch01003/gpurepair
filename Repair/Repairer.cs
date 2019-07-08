@@ -25,8 +25,9 @@ namespace GPURepair.Repair
         /// Reapirs the program at the given filePath.
         /// </summary>
         /// <param name="assignments">The assignments to the variables.</param>
+        /// <param name="efficientSolving">Specifies if the MHS solver should be used or the regular SAT Solver.</param>
         /// <returns>The fixed program if one exists.</returns>
-        public Microsoft.Boogie.Program Repair(out Dictionary<string, bool> assignments)
+        public Microsoft.Boogie.Program Repair(out Dictionary<string, bool> assignments, bool efficientSolving = true)
         {
             List<Error> errors = new List<Error>();
             bool repaired = false;
@@ -34,7 +35,7 @@ namespace GPURepair.Repair
             while (true)
             {
                 Solver solver = new Solver();
-                assignments = repaired ? solver.OptimizedSolve(errors) : solver.Solve(errors);
+                assignments = repaired ? solver.OptimizedSolve(errors) : solver.Solve(errors, efficientSolving);
 
                 Microsoft.Boogie.Program program = ReadFile(filePath);
 

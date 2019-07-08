@@ -37,16 +37,6 @@ namespace GPURepair.Solvers
         }
 
         /// <summary>
-        /// Determines if the given clauses can be satisfiable.
-        /// </summary>
-        /// <returns>true if the clauses can be satisfied and false otherwise.</returns>
-        public bool IsSatisfiable()
-        {
-            Dictionary<string, bool> assignments = Solve();
-            return assignments != null;
-        }
-
-        /// <summary>
         /// Generates variables for the Z3 solver.
         /// </summary>
         /// <param name="context">The Z3 context.</param>

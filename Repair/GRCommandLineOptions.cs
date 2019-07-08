@@ -6,6 +6,8 @@ namespace GPURepair.Repair
     {
         public string TimeLog { get; set; }
 
+        public bool EnableEfficientSolving { get; set; } = true;
+
         public GRCommandLineOptions()
             : base()
         {
@@ -17,6 +19,12 @@ namespace GPURepair.Repair
             {
                 if (ps.ConfirmArgumentCount(1))
                     TimeLog = ps.args[ps.i];
+                return true;
+            }
+            else if (name == "efficientSolving")
+            {
+                if (ps.ConfirmArgumentCount(1))
+                    EnableEfficientSolving = bool.Parse(ps.args[ps.i]);
                 return true;
             }
 
