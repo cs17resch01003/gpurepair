@@ -47,7 +47,7 @@ namespace GPURepair.Repair
                 Microsoft.Boogie.Program program = repairer.Repair(out assignments, ((GRCommandLineOptions)CommandLineOptions.Clo).EnableEfficientSolving);
 
                 if (logFile != null)
-                    File.AppendAllLines(logFile, new string[] { string.Format("{0},{1}", filename, "BarrierCount: " + assignments.Keys) });
+                    File.AppendAllLines(logFile, new string[] { string.Format("{0},{1}", filename, "BarrierCount: " + assignments.Keys.Count) });
 
                 SummaryGenerator generator = new SummaryGenerator(program, assignments);
                 IEnumerable<Location> changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
