@@ -4,7 +4,7 @@ namespace GPURepair.Repair
 {
     public class GRCommandLineOptions : GVCommandLineOptions
     {
-        public bool RepairLogging { get; set; } = true;
+        public string RepairLog { get; set; } = null;
 
         public bool EnableEfficientSolving { get; set; } = true;
 
@@ -15,10 +15,10 @@ namespace GPURepair.Repair
 
         protected override bool ParseOption(string name, CommandLineParseState ps)
         {
-            if (name == "repairLogging")
+            if (name == "repairLog")
             {
                 if (ps.ConfirmArgumentCount(1))
-                    RepairLogging = bool.Parse(ps.args[ps.i]);
+                    RepairLog = ps.args[ps.i];
                 return true;
             }
             else if (name == "efficientSolving")

@@ -486,7 +486,7 @@ class GPURepairInstance (object):
     options = self.getSharedCruncherAndBoogieOptions(args)
 
     if args.time_as_csv is not None:
-      options.append("/timeLog:" + os.path.dirname(os.path.abspath(__file__)) + os.sep + "repair_timelog.csv")
+      options.append("/repairLog:" + os.path.dirname(os.path.abspath(__file__)) + os.sep + "repair.log")
 
     if args.mode == AnalysisMode.FINDBUGS:
       options.append("/loopUnroll:" + str(args.loop_unwind))

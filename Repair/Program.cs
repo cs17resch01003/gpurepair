@@ -34,11 +34,9 @@ namespace GPURepair.Repair
                     throw new Exception("GPURepair can work on only one file at a time!");
 
                 string filename = CommandLineOptions.Clo.Files.First();
-                if (((GRCommandLineOptions)CommandLineOptions.Clo).RepairLogging == true)
-                {
-                    Logger.EnableLogging = true;
-                    Logger.Identifier = filename;
-                }
+
+                Logger.LogFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
+                Logger.Identifier = filename;
 
                 Dictionary<string, bool> assignments;
 
