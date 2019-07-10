@@ -15,7 +15,7 @@ namespace GPURepair.Solvers
             if (LogFile != null)
             {
                 File.AppendAllLines(LogFile, new string[] { string.Format("{0},{1},{2}", Identifier,
-                    DateTime.Now.ToString("yyyyMMdd-hhmmss", CultureInfo.InvariantCulture), content) });
+                    DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff", CultureInfo.InvariantCulture), content) });
             }
         }
     }
