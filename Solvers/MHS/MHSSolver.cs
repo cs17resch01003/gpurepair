@@ -31,7 +31,10 @@ namespace GPURepair.Solvers
 
             // Use the SATSolver as a backup if the MHSSolver fails
             if (result == true)
+            {
+                Logger.Log("MHSSolver Succeeded!");
                 return solution.Assignments;
+            }
             else
             {
                 SATSolver solver = new SATSolver(Clauses);
