@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using GPURepair.Solvers;
 
 namespace GPURepair.Repair
 {
     public class Watch : IDisposable
     {
-        public static event Log LogEvent;
-
-        public delegate void Log(long milliseconds);
-
         private Stopwatch watch;
 
         public Watch()
@@ -19,7 +16,7 @@ namespace GPURepair.Repair
 
         public void Dispose()
         {
-            LogEvent?.Invoke(watch.ElapsedMilliseconds);
+            Logger.Log(watch.ElapsedMilliseconds.ToString());
             watch.Stop();
         }
     }

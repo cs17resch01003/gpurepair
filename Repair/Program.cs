@@ -1,4 +1,5 @@
 ﻿using GPURepair.Repair.Exceptions;
+using GPURepair.Solvers;
 using Microsoft.Boogie;
 using System;
 using System.Collections.Generic;
@@ -33,21 +34,16 @@ namespace GPURepair.Repair
                     throw new Exception("GPURepair can work on only one file at a time!");
 
                 string filename = CommandLineOptions.Clo.Files.First();
-                string logFile = ((GRCommandLineOptions)CommandLineOptions.Clo).TimeLog;
-
-                Watch.LogEvent += (milliseconds) =>
+                if (((GRCommandLineOptions)CommandLineOptions.Clo).RepairLogging == true)
                 {
-                    if (logFile != null)
-                        File.AppendAllLines(logFile, new string[] { string.Format("{0},{1}", filename, milliseconds) });
-                };
+                    Logger.EnableLogging = true;
+                    Logger.Identifier = filename;
+                }
 
                 Dictionary<string, bool> assignments;
 
                 Repairer repairer = new Repairer(filename);
                 Microsoft.Boogie.Program program = repairer.Repair(out assignments, ((GRCommandLineOptions)CommandLineOptions.Clo).EnableEfficientSolving);
-
-                if (logFile != null)
-                    File.AppendAllLines(logFile, new string[] { string.Format("{0},{1}", filename, "BarrierCount: " + assignments.Keys.Count) });
 
                 SummaryGenerator generator = new SummaryGenerator(program, assignments);
                 IEnumerable<Location> changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));

@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Clause.cs" />
     <Compile Include="Literal.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="MaxSAT\MaxSATSolver.cs" />
     <Compile Include="MHS\MHSSolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
