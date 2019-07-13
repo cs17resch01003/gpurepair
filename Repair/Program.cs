@@ -34,9 +34,7 @@ namespace GPURepair.Repair
                     throw new Exception("GPURepair can work on only one file at a time!");
 
                 string filename = CommandLineOptions.Clo.Files.First();
-
-                Logger.LogFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
-                Logger.Identifier = filename;
+                string logFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
 
                 Dictionary<string, bool> assignments;
 
@@ -45,6 +43,8 @@ namespace GPURepair.Repair
 
                 SummaryGenerator generator = new SummaryGenerator(program, assignments);
                 IEnumerable<Location> changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
+
+                Logger.Log(logFile, filename);
 
                 Console.WriteLine("Number of changes required: {0}.", changes.Count());
                 if (changes.Any())

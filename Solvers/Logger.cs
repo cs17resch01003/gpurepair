@@ -1,21 +1,34 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace GPURepair.Solvers
 {
     public static class Logger
     {
-        public static string LogFile;
+        private static List<long> repairTimes = new List<long>();
 
-        public static string Identifier;
+        private static List<bool> solverStatuses = new List<bool>();
 
-        public static void Log(string content)
+        public static int Barriers;
+
+        public static void LogRepairTime(long time)
         {
-            if (LogFile != null)
+            repairTimes.Add(time);
+        }
+
+        public static void LogSolverStatus(bool status)
+        {
+            solverStatuses.Add(status);
+        }
+
+        public static void Log(string logFile, string sourceFile)
+        {
+            if (logFile != null)
             {
-                File.AppendAllLines(LogFile, new string[] { string.Format("{0},{1},{2}", Identifier,
-                    DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff", CultureInfo.InvariantCulture), content) });
+                File.AppendAllLines(logFile, new string[] { string.Format("{0},{1},{2},{3},{4}", sourceFile, Barriers,
+                    solverStatuses.Count(x => x == true), solverStatuses.Count(x => x == false),
+                    string.Join(",", repairTimes)) });
             }
         }
     }

@@ -45,7 +45,7 @@ namespace GPURepair.Repair
         public IEnumerable<Location> GenerateSummary(string filename)
         {
             PopulateMetadata();
-            Logger.Log(barriers.Count.ToString());
+            Logger.Barriers = barriers.Count;
 
             List<string> lines = new List<string>();
             List<Location> changes = new List<Location>();
