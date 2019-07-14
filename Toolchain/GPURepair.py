@@ -485,7 +485,7 @@ class GPURepairInstance (object):
   def getRepairOptions(self, args):
     options = self.getSharedCruncherAndBoogieOptions(args)
 
-    options.append("/efficientSolving:" + "false")
+    options.append("/efficientSolving:" + "true")
     if args.time_as_csv is not None:
       options.append("/repairLog:" + os.path.dirname(os.path.abspath(__file__)) + os.sep + "repair.log")
 
