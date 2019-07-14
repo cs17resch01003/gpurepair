@@ -1,5 +1,4 @@
 ﻿using GPURepair.Repair.Exceptions;
-using GPURepair.Solvers;
 using Microsoft.Boogie;
 using System;
 using System.Collections.Generic;
@@ -45,7 +44,6 @@ namespace GPURepair.Repair
         public IEnumerable<Location> GenerateSummary(string filename)
         {
             PopulateMetadata();
-            Logger.Barriers = barriers.Count;
 
             List<string> lines = new List<string>();
             List<Location> changes = new List<Location>();

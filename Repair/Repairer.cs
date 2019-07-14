@@ -1,4 +1,5 @@
-﻿using Microsoft.Boogie;
+﻿using GPURepair.Solvers;
+using Microsoft.Boogie;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,6 +20,9 @@ namespace GPURepair.Repair
         public Repairer(string filePath)
         {
             this.filePath = filePath;
+
+            Microsoft.Boogie.Program program = ReadFile(filePath);
+            LogBarriers(program);
         }
 
         /// <summary>
@@ -94,6 +98,61 @@ namespace GPURepair.Repair
                 program.Emit(writer);
 
             return tempFile;
+        }
+
+        /// <summary>
+        /// Logs the number of barriers.
+        /// </summary>
+        /// <param name="program">The program.</param>
+        private void LogBarriers(Microsoft.Boogie.Program program)
+        {
+            List<string> barriers = new List<string>();
+
+            foreach (Implementation implementation in program.Implementations)
+            {
+                foreach (Block block in implementation.Blocks)
+                {
+                    foreach (Cmd command in block.Cmds)
+                    {
+                        if (command is CallCmd)
+                        {
+                            CallCmd call = command as CallCmd;
+                            if (call.callee.Contains("$bugle_barrier"))
+                            {
+                                int location = QKeyValue.FindIntAttribute(call.Attributes, "sourceloc_num", -1);
+                                string barrier = QKeyValue.FindStringAttribute(call.Attributes, "repair_barrier");
+                                bool generated = ContainsAttribute(call, "repair_instrumented");
+
+                                if (location != -1 && generated == true)
+                                    barriers.Add(barrier);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Logger.Barriers = barriers.Distinct().Count();
+        }
+
+        /// <summary>
+        /// Checks if an call command has the given attribute.
+        /// </summary>
+        /// <param name="call">The call command.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns>True if the attribute exists, False otherwise.</returns>
+        private bool ContainsAttribute(CallCmd assert, string attribute)
+        {
+            QKeyValue keyValue = assert.Attributes;
+            bool found = false;
+
+            while (keyValue != null && !found)
+            {
+                if (attribute == keyValue.Key)
+                    found = true;
+                keyValue = keyValue.Next;
+            }
+
+            return found;
         }
     }
 }
