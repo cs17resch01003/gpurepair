@@ -11,6 +11,10 @@ namespace GPURepair.Repair
 {
     public class Program
     {
+        private static string logFile;
+
+        private static string filename;
+
         /// <summary>
         /// The entry point of the program.
         /// </summary>
@@ -33,8 +37,8 @@ namespace GPURepair.Repair
                 else if (CommandLineOptions.Clo.Files.Count > 1)
                     throw new Exception("GPURepair can work on only one file at a time!");
 
-                string filename = CommandLineOptions.Clo.Files.First();
-                string logFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
+                filename = CommandLineOptions.Clo.Files.First();
+                logFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
 
                 Dictionary<string, bool> assignments;
 
@@ -43,8 +47,6 @@ namespace GPURepair.Repair
 
                 SummaryGenerator generator = new SummaryGenerator(program, assignments);
                 IEnumerable<Location> changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
-
-                Logger.Log(logFile, filename);
 
                 Console.WriteLine("Number of changes required: {0}.", changes.Count());
                 if (changes.Any())
@@ -61,26 +63,40 @@ namespace GPURepair.Repair
                     if (cu_source != location.File && cl_source != location.File)
                         throw new RepairError("There are changes needed in external files: " + location.ToString());
                 }
+
+                Logger.Log(logFile, filename);
             }
             catch (AssertionError ex)
             {
+                Logger.Log(logFile, filename);
+
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(201);
             }
             catch (RepairError ex)
             {
+                Logger.Log(logFile, filename);
+
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(202);
             }
             catch (NonBarrierError ex)
             {
+                Logger.Log(logFile, filename);
+
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(203);
             }
             catch (SummaryGeneratorError ex)
             {
+                Logger.Log(logFile, filename);
+
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(204);
+            }
+            catch (Exception)
+            {
+                Logger.Log(logFile, filename);
             }
         }
     }
