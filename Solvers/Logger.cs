@@ -26,9 +26,9 @@ namespace GPURepair.Solvers
         {
             if (logFile != null)
             {
-                File.AppendAllLines(logFile, new string[] { string.Format("{0},{1},{2},{3},{4},{5}", sourceFile, Barriers,
+                File.AppendAllLines(logFile, new string[] { string.Format("{0},{1},{2},{3},{4},{5},{6}", sourceFile, Barriers,
                     solverStatuses.Count(x => x == true), solverStatuses.Count(x => x == false), repairTimes.Count,
-                    string.Join(",", repairTimes)) });
+                    (repairTimes.Sum() / 1000.0), string.Join(",", repairTimes)) });
             }
         }
     }
