@@ -294,16 +294,6 @@ def __build_parser(default_solver, version):
   development.add_argument("--boogie-opt=", dest='boogie_options', default = [],
     action = 'append', help = "Specify option to be passed to Boogie")
 
-  stopping = advanced.add_mutually_exclusive_group()
-  stopping.add_argument("--stop-at-opt",  dest = 'stop', action = 'store_const',
-    const = "opt", help = "Stop after LLVM optimization pass")
-  stopping.add_argument("--stop-at-gbpl", dest = 'stop', action = 'store_const',
-    const = "bugle", help = "Stop after generating gbpl file")
-  stopping.add_argument("--stop-at-bpl",  dest = 'stop', action = 'store_const',
-    const = "vcgen", help = "Stop after generating bpl file")
-  stopping.add_argument("--stop-at-cbpl", dest = 'stop', action = 'store_const',
-    const = "cruncher", help = "Stop after generating an annotated bpl file")
-
   inference = parser.add_argument_group("INVARIANT INFERENCE OPTIONS")
   inference.add_argument("--no-infer", dest = 'inference',
     action = 'store_false', help = "Turn off invariant inference")
@@ -313,20 +303,6 @@ def __build_parser(default_solver, version):
     help = "Prints information about the invariant inference process")
   inference.add_argument("--k-induction-depth=", type = __positive, default = 0,
     metavar = "X", help = "Applies k-induction with k=X to all loops")
-
-  json = parser.add_argument_group("JSON MODE")
-  json.add_argument("--json", action = 'store_true', help = "The kernels to be \
-    verified are specified through a JSON file")
-
-  json_options = json.add_mutually_exclusive_group()
-  json_options.add_argument("--list-intercepted", action = 'store_true',
-    help = "List the kernels specified in the JSON file")
-  json_options.add_argument("--verify-intercepted=", type = __non_negative,
-    metavar = "X", help = "Verify kernel 'X' from the JSON file")
-  json_options.add_argument("--verify-all-intercepted", action = 'store_true',
-    help = "Verify all the kernels from the JSON file")
-
-  json.add_argument("--cache=", metavar = "X", help = "Use 'X' as result cache")
 
   return parser
 
@@ -424,21 +400,6 @@ def parse_arguments(argv, default_solver, llvm_bin_dir, version):
     args.loop_unwind = 2
 
   if args.version:
-    return args
-
-  if args.json:
-    if args.group_size or args.num_groups or \
-       args.global_size or args.global_offset:
-      parser.error("Sizing arguments incompatible with JSON mode")
-  else:
-    if args.list_intercepted or args.verify_all_intercepted or \
-       args.verify_intercepted != None or args.cache != None:
-      parser.error("JSON options require JSON mode")
-
-  if not args.stop:
-    args.stop = "boogie"
-
-  if args.json:
     return args
 
   args.kernel_name, args.kernel_ext = __split_filename_ext(args.kernel.name)
