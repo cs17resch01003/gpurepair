@@ -68,19 +68,22 @@ namespace GPURepair.Instrumentation
                 // identify merge points
                 if (node.Parents.Count > 1)
                 {
-                    BlockNode lca = GetLCA(node.Parents);
-                    if (lca != null)
-                    {
-                        // if-else diamond structures
-                        List<BlockNode> intermediateNodes = GetIntermediateNodes(lca, node);
-                        if (intermediateNodes.Any(x => x.GlobalVariablePresent))
-                            list.Add(node);
-                    }
-                    else if (node.GetDescendants().Contains(node))
+                    if (node.GetDescendants().Contains(node))
                     {
                         // loop structures
                         if (node.GetDescendants().Any(x => x.GlobalVariablePresent))
                             list.Add(node);
+                    }
+                    else
+                    {
+                        // if-else diamond structures
+                        BlockNode lca = GetLCA(node.Parents);
+                        if (lca != null)
+                        {
+                            List<BlockNode> intermediateNodes = GetIntermediateNodes(lca, node);
+                            if (intermediateNodes.Any(x => x.GlobalVariablePresent))
+                                list.Add(node);
+                        }
                     }
                 }
             }
@@ -163,27 +166,27 @@ namespace GPURepair.Instrumentation
         private static List<BlockNode> GetIntermediateNodes(BlockNode start, BlockNode end)
         {
             Queue<BlockNode> queue = new Queue<BlockNode>();
-            foreach (BlockNode child in start.Children)
-                // skip paths which do not have the end node in them
-                if (child.GetDescendants().Contains(end))
-                    queue.Enqueue(child);
+            queue.Enqueue(start);
 
             List<BlockNode> nodes = new List<BlockNode>();
             while (queue.Any())
             {
                 BlockNode node = queue.Dequeue();
-                nodes.Add(node);
-
                 if (!node.Children.Contains(end))
                 {
                     foreach (BlockNode child in node.Children)
+                    {
                         // skip paths which do not have the end node in them
-                        if (child.GetDescendants().Contains(end))
+                        if (!nodes.Contains(child) && child.GetDescendants().Contains(end))
+                        {
+                            nodes.Add(child);
                             queue.Enqueue(child);
+                        }
+                    }
                 }
             }
 
-            return nodes.Distinct().ToList();
+            return nodes;
         }
     }
 }
