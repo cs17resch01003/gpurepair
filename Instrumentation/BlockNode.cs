@@ -31,12 +31,24 @@ namespace GPURepair.Instrumentation
         {
             if (descendants != null)
                 return descendants;
+            descendants = new List<BlockNode>();
 
-            descendants = new List<BlockNode>(Children);
-            foreach (BlockNode child in Children)
-                descendants.AddRange(child.GetDescendants());
+            Queue<BlockNode> queue = new Queue<BlockNode>();
+            queue.Enqueue(this);
 
-            descendants = descendants.Distinct().ToList();
+            while (queue.Any())
+            {
+                BlockNode node = queue.Dequeue();
+                foreach (BlockNode child in node.Children)
+                {
+                    if (!descendants.Contains(child))
+                    {
+                        descendants.Add(child);
+                        queue.Enqueue(child);
+                    }
+                }
+            }
+
             return descendants;
         }
     }

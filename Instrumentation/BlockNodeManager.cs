@@ -60,7 +60,7 @@ namespace GPURepair.Instrumentation
         {
             List<BlockNode> list = new List<BlockNode>();
 
-            // look for diamond structures in the code
+            // look for diamond structures and loops in the code
             // this is useful for fixing errors where the usage of the global variable is inside the if/else block
             // but the solution needs a barrier outside the block
             foreach (BlockNode node in nodes.Values)
@@ -71,8 +71,15 @@ namespace GPURepair.Instrumentation
                     BlockNode lca = GetLCA(node.Parents);
                     if (lca != null)
                     {
+                        // if-else diamond structures
                         List<BlockNode> intermediateNodes = GetIntermediateNodes(lca, node);
                         if (intermediateNodes.Any(x => x.GlobalVariablePresent))
+                            list.Add(node);
+                    }
+                    else if (node.GetDescendants().Contains(node))
+                    {
+                        // loop structures
+                        if (node.GetDescendants().Any(x => x.GlobalVariablePresent))
                             list.Add(node);
                     }
                 }
