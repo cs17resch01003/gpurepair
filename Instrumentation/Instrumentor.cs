@@ -59,6 +59,7 @@ namespace GPURepair.Instrumentation
                 }
 
             _1bv1 = new LiteralExpr(Token.NoToken, BigNum.ONE, 1);
+            BlockNodeManager.GenerateNodes(program);
         }
 
         /// <summary>
@@ -73,6 +74,11 @@ namespace GPURepair.Instrumentation
 
             do program_modified = InstrumentBarrier();
             while (program_modified);
+
+            List<BlockNode> nodes = BlockNodeManager.GetMergeNodes();
+            foreach (BlockNode node in nodes)
+                // insert a barrier at the beginning of the merge block
+                AddBarrier(node.Implementation, node.Block, 1);
         }
 
         /// <summary>
@@ -125,6 +131,8 @@ namespace GPURepair.Instrumentation
                         // if there is a global variable
                         if (instrument)
                         {
+                            BlockNodeManager.SetGlobalVariablePresent(implementation.Name, block.Label);
+
                             // assert commands are used to store the metadata related to the actual command
                             AssertCmd assert = null;
                             if (i - 1 >= 0 && block.Cmds[i - 1] is AssertCmd)

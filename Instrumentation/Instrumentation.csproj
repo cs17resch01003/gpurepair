@@ -71,6 +71,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessCollector.cs" />
+    <Compile Include="BlockNode.cs" />
+    <Compile Include="BlockNodeManager.cs" />
     <Compile Include="Instrumentor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
