@@ -39,7 +39,7 @@ namespace GPURepair.Repair
             while (true)
             {
                 Solver solver = new Solver();
-                assignments = repaired ? solver.OptimizedSolve(errors) : solver.Solve(errors, efficientSolving);
+                assignments = solver.OptimizedSolve(errors);
 
                 Microsoft.Boogie.Program program = ReadFile(filePath);
 
