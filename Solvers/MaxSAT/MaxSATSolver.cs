@@ -1,5 +1,5 @@
-﻿using Microsoft.Z3;
-using System;
+﻿using GPURepair.Solvers.Exceptions;
+using Microsoft.Z3;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -46,7 +46,7 @@ namespace GPURepair.Solvers
                 relaxed += 1;
             }
 
-            throw new Exception("The given clauses cannot be satisfied!");
+            throw new SolverError("The given clauses cannot be satisfied!");
         }
 
         /// <summary>

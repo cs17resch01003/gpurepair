@@ -1,5 +1,6 @@
 ﻿using GPURepair.Repair.Exceptions;
 using GPURepair.Solvers;
+using GPURepair.Solvers.Exceptions;
 using Microsoft.Boogie;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,13 +45,20 @@ namespace GPURepair.Repair
         /// <returns>The barrier assignments.</returns>
         public Dictionary<string, bool> OptimizedSolve(List<Error> errors)
         {
-            List<Clause> clauses = GenerateClauses(errors);
-            List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
+            try
+            {
+                List<Clause> clauses = GenerateClauses(errors);
+                List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
 
-            List<Clause> soft_clauses = GenerateSoftClauses(variables);
-            MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+                List<Clause> soft_clauses = GenerateSoftClauses(variables);
+                MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
 
-            return solver.Solve();
+                return solver.Solve();
+            }
+            catch (SolverError)
+            {
+                throw new RepairError("The program cannot be repaired since the clauses cannot be satisfied!");
+            }
         }
 
         /// <summary>

@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Clause.cs" />
+    <Compile Include="Exceptions\SolverError.cs" />
     <Compile Include="Literal.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="MaxSAT\MaxSATSolver.cs" />

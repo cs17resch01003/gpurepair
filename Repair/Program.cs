@@ -94,9 +94,12 @@ namespace GPURepair.Repair
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(204);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 Logger.Log(logFile, filename);
+
+                Console.Error.WriteLine(ex.Message);
+                Environment.Exit(-1);
             }
         }
     }
