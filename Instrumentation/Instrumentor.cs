@@ -78,6 +78,9 @@ namespace GPURepair.Instrumentation
             List<BlockNode> nodes = BlockNodeManager.GetMergeNodes();
             foreach (BlockNode node in nodes)
             {
+                if (!node.Block.Cmds.Any())
+                    continue;
+
                 // skips asserts to preserve the invariants at the loop head
                 int i = 1;
                 if (node.Block.Cmds.Count > 1)
