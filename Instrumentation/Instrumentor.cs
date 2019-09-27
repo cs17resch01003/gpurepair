@@ -95,11 +95,15 @@ namespace GPURepair.Instrumentation
                     }
                 }
 
-                node.Block.Cmds.Insert(i, node.Block.Cmds[0] as AssertCmd);
-                node.Block.Cmds.RemoveAt(0);
+                // the block should have source location information for instrumentation to work
+                if (node.Block.Cmds[0] is AssertCmd)
+                {
+                    node.Block.Cmds.Insert(i, node.Block.Cmds[0] as AssertCmd);
+                    node.Block.Cmds.RemoveAt(0);
 
-                // insert a barrier at the beginning of the merge block
-                AddBarrier(node.Implementation, node.Block, i);
+                    // insert a barrier at the beginning of the merge block
+                    AddBarrier(node.Implementation, node.Block, i);
+                }
             }
         }
 
@@ -271,13 +275,18 @@ namespace GPURepair.Instrumentation
         /// <param name="index">The index of the assign command.</param>
         private void AddBarrier(Implementation implementation, Block block, int index)
         {
+            // an assert statement is needed to obtain the source location
+            // skipping instrumentation if it doesn't exist
+            AssertCmd assert = block.Cmds[index - 1] as AssertCmd;
+            if (assert == null)
+                return;
+
             CreateBugleBarrier();
             string barrierName = "b" + (++barrier_count);
 
             // add the instrumentation key to the assert command
             QKeyValue assertAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
 
-            AssertCmd assert = block.Cmds[index - 1] as AssertCmd;
             if (assert.Attributes != null)
                 assert.Attributes.AddLast(assertAttribute);
             else
