@@ -1,4 +1,4 @@
-//pass
+//xfail:NOT_ALL_VERIFIED
 //--gridDim=1                --blockDim=32
 
 typedef unsigned int clock_t;

@@ -1,5 +1,5 @@
-//pass
-//--gridDim=64 --blockDim=256 --warp-sync=32 4
+//xfail:NOT_ALL_VERIFIED
+//--gridDim=64 --blockDim=256 --warp-sync=32
 
 template <class T, unsigned int blockSize, bool nIsPow2> __global__ void reduce6(T *g_idata, T *g_odata, unsigned int n);
 template __global__ void reduce6<int,256,false>(int *g_idata, int *g_odata, unsigned int n);

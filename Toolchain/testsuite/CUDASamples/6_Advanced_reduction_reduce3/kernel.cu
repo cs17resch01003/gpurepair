@@ -1,4 +1,4 @@
-//pass
+//xfail:NOT_ALL_VERIFIED
 //--gridDim=64 --blockDim=256
 
 template <class T> __global__ void reduce3(T *g_idata, T *g_odata, unsigned int n);

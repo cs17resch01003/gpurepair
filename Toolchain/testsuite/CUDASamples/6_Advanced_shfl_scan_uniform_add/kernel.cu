@@ -1,5 +1,5 @@
-//pass
-//--gridDim=255              --blockDim=256 1
+//xfail:NOT_ALL_VERIFIED
+//--gridDim=255 --blockDim=256
 
 __global__ void uniform_add(int *data, int *partial_sums, int len)
 {

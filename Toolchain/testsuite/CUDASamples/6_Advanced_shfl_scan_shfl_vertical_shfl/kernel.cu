@@ -1,5 +1,5 @@
-//pass
-//--gridDim=[60,1]       --blockDim=[32,8] 4
+//xfail:NOT_ALL_VERIFIED
+//--gridDim=[60,1] --blockDim=[32,8]
 
 __global__ void shfl_vertical_shfl(unsigned int *img, int width, int height)
 {

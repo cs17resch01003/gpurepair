@@ -1,4 +1,4 @@
-//pass
+//xfail:NOT_ALL_VERIFIED
 //--gridDim=[20,67] --blockDim=[32,8]
 
 #define blockSize_x 32

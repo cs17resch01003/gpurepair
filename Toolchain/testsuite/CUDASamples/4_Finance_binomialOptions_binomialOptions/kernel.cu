@@ -1,4 +1,4 @@
-//pass
+//xfail:NOT_ALL_VERIFIED
 //--gridDim=512 --blockDim=256
 
 //REQUIRES: const array as formal (imperial edit)

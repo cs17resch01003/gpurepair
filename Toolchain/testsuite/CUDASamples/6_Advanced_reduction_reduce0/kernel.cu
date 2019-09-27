@@ -1,5 +1,5 @@
-//pass
-//--gridDim=64 --blockDim=256 2
+//xfail:NOT_ALL_VERIFIED
+//--gridDim=64 --blockDim=256
 
 template <class T> __global__ void reduce0(T *g_idata, T *g_odata, unsigned int n);
 template __global__ void reduce0<int>(int *g_idata, int *g_odata, unsigned int n);

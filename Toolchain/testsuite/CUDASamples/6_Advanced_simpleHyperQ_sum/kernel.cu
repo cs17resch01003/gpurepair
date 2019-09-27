@@ -1,5 +1,5 @@
-//pass
-//--gridDim=1                --blockDim=32 2
+//xfail:NOT_ALL_VERIFIED
+//--gridDim=1 --blockDim=32
 
 typedef unsigned int clock_t;
 #define syncthreads __syncthreads

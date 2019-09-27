@@ -1,4 +1,4 @@
-//pass
+//xfail:NOT_ALL_VERIFIED
 //--gridDim=[56,1,1] --blockDim=[256,1,1]
 
 template<class T>

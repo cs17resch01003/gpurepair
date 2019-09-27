@@ -1,5 +1,5 @@
-//pass
-//--gridDim=256              --blockDim=256 2
+//xfail:NOT_ALL_VERIFIED
+//--gridDim=256 --blockDim=256
 
 __global__ void shfl_scan_test(int *data, int width, int *partial_sums=NULL)
 {

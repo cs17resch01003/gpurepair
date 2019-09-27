@@ -1,5 +1,5 @@
-//pass
-//--gridDim=1 --blockDim=256 5
+//xfail:NOT_ALL_VERIFIED
+//--gridDim=1 --blockDim=256
 
 #include "common.h"
 

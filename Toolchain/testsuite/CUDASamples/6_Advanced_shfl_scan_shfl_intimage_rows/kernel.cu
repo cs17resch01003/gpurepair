@@ -1,4 +1,4 @@
-//pass
+//xfail:NOT_ALL_VERIFIED
 //--gridDim=1080             --blockDim=120
 
 __device__ static __attribute__((always_inline)) uchar4 int_to_uchar4(unsigned int in)
