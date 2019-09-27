@@ -77,8 +77,27 @@ namespace GPURepair.Instrumentation
 
             List<BlockNode> nodes = BlockNodeManager.GetMergeNodes();
             foreach (BlockNode node in nodes)
+            {
+                // skips asserts to preserve the invariants at the loop head
+                int i = 1;
+                if (node.Block.Cmds.Count > 1)
+                {
+                    while (node.Block.Cmds[i] is AssertCmd)
+                    {
+                        AssertCmd assert = node.Block.Cmds[i] as AssertCmd;
+                        if (!ContainsAttribute(assert, "originated_from_invariant"))
+                            break;
+
+                        i = i + 1;
+                    }
+                }
+
+                node.Block.Cmds.Insert(i, node.Block.Cmds[0] as AssertCmd);
+                node.Block.Cmds.RemoveAt(0);
+
                 // insert a barrier at the beginning of the merge block
-                AddBarrier(node.Implementation, node.Block, 1);
+                AddBarrier(node.Implementation, node.Block, i);
+            }
         }
 
         /// <summary>
