@@ -83,16 +83,13 @@ namespace GPURepair.Instrumentation
 
                 // skips asserts to preserve the invariants at the loop head
                 int i = 1;
-                if (node.Block.Cmds.Count > 1)
+                while (node.Block.Cmds.Count > i && node.Block.Cmds[i] is AssertCmd)
                 {
-                    while (node.Block.Cmds[i] is AssertCmd)
-                    {
-                        AssertCmd assert = node.Block.Cmds[i] as AssertCmd;
-                        if (!ContainsAttribute(assert, "originated_from_invariant"))
-                            break;
+                    AssertCmd assert = node.Block.Cmds[i] as AssertCmd;
+                    if (!ContainsAttribute(assert, "originated_from_invariant"))
+                        break;
 
-                        i = i + 1;
-                    }
+                    i = i + 1;
                 }
 
                 // the block should have source location information for instrumentation to work
