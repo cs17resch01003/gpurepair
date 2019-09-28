@@ -143,6 +143,10 @@ namespace GPURepair.Instrumentation
                         {
                             CallCmd call = command as CallCmd;
 
+                            // don't instrument invariants
+                            if (call.callee.Contains("_invariant"))
+                                continue;
+
                             // parse the expression to check for global variables
                             AccessCollector collector = new AccessCollector();
                             foreach (Expr _in in call.Ins)
