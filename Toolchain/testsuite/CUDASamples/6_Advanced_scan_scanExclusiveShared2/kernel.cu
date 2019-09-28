@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:REPAIR_ERROR
 //--gridDim=26               --blockDim=256
 
 #include "common.h"
