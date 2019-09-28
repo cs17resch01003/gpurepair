@@ -1,4 +1,4 @@
-//pass
+//xfail:ASSERTION_ERROR
 //--equality-abstraction --local_size=1024 --num_groups=2 --invariants-as-candidates
 
 kernel void foo(__global unsigned *A) {
