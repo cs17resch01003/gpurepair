@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--local_size=64 --num_groups=64 --no-inline
 
 

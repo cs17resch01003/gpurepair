@@ -1,4 +1,4 @@
-//xfail:ASSERTION_ERROR
+//pass
 //--warp-sync=32 --blockDim=32 --gridDim=1 --equality-abstraction --no-inline
 
 __global__ void foo(int * A, int * B) {

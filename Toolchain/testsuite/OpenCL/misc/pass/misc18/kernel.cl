@@ -1,4 +1,4 @@
-//xfail:ASSERTION_ERROR
+//pass
 //--local_size=2 --num_groups=2
 
 #define LOCAL_SIZE 64
