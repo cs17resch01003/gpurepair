@@ -1,0 +1,27 @@
+﻿using Microsoft.Boogie;
+
+namespace GPURepair.Repair
+{
+    public class Barrier
+    {
+        /// <summary>
+        /// The name of the barrier.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// The varibale corresponding to the barrier.
+        /// </summary>
+        public Variable Variable { get; set; }
+
+        /// <summary>
+        /// The location of the barrier.
+        /// </summary>
+        public int Location { get; set; }
+
+        /// <summary>
+        /// Indicates if the barrier was generated.
+        /// </summary>
+        public bool Generated { get; set; }
+    }
+}

@@ -43,7 +43,7 @@ namespace GPURepair.Repair
                 Dictionary<string, bool> assignments;
 
                 Repairer repairer = new Repairer(filename);
-                Microsoft.Boogie.Program program = repairer.Repair(out assignments, ((GRCommandLineOptions)CommandLineOptions.Clo).EnableEfficientSolving);
+                Microsoft.Boogie.Program program = repairer.Repair(out assignments);
 
                 SummaryGenerator generator = new SummaryGenerator(program, assignments);
                 IEnumerable<Location> changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
