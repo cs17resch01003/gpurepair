@@ -6,7 +6,7 @@ namespace GPURepair.Repair
     {
         public static double VerificationTime;
 
-        public static int? VerifierCalls;
+        public static int VerifierCalls = 0;
 
         public static int? Barriers;
 
