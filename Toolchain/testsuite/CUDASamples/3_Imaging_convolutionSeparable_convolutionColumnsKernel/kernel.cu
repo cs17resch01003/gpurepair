@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--gridDim=[192,48]     --blockDim=[16,8]
 
 // in host invocation

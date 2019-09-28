@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--gridDim=64               --blockDim=256
 
 #include "common.h"

@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--gridDim=[20,10,1]      --blockDim=[32,32,1]
 
 //instantiate for BLOCK_SIZE=32

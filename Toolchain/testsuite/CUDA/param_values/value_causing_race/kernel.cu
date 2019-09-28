@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--gridDim=1 --blockDim=512 --no-inline
 
 __global__ void example(float * A, int x) {

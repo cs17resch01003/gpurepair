@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--gridDim=[1,100,1] --blockDim=[64,1,1]
 
 #define n_directions 32

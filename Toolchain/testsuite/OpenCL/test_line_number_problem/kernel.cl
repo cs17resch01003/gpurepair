@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--local_size=1024 --num_groups=64 --no-inline
 
 #define sz get_local_size(0)

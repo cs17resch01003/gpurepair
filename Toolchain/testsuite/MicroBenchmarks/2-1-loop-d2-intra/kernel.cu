@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--blockDim=32 --gridDim=1 --no-inline
 
 #include <cuda.h>

@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//pass
 //--gridDim=6624 --blockDim=256
 
 typedef unsigned int uint;

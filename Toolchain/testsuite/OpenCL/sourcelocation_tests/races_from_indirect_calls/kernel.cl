@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--local_size=16 --num_groups=2 --no-inline
 
 #define tid get_local_id(0)
