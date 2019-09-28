@@ -47,7 +47,9 @@ namespace GPURepair.Repair
                 SummaryGenerator generator = new SummaryGenerator(program, assignments);
                 IEnumerable<Location> changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
 
+                Logger.Changes = changes.Count();
                 Console.WriteLine("Number of changes required: {0}.", changes.Count());
+
                 if (changes.Any())
                 {
                     using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
