@@ -16,7 +16,7 @@ namespace GPURepair.Repair
 
         public void Dispose()
         {
-            Logger.LogRepairTime(watch.ElapsedMilliseconds);
+            Logger.AddRepairTime(watch.ElapsedMilliseconds);
             watch.Stop();
         }
     }

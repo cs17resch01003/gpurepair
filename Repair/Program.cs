@@ -1,5 +1,4 @@
 ﻿using GPURepair.Repair.Exceptions;
-using GPURepair.Solvers;
 using Microsoft.Boogie;
 using System;
 using System.Collections.Generic;
@@ -63,43 +62,27 @@ namespace GPURepair.Repair
                     if (cu_source != location.File && cl_source != location.File)
                         throw new RepairError("There are changes needed in external files: " + location.ToString());
                 }
-
-                Logger.Log(logFile, filename);
-            }
-            catch (AssertionError ex)
-            {
-                Logger.Log(logFile, filename);
-
-                Console.Error.WriteLine(ex.Message);
-                Environment.Exit(201);
-            }
-            catch (RepairError ex)
-            {
-                Logger.Log(logFile, filename);
-
-                Console.Error.WriteLine(ex.Message);
-                Environment.Exit(202);
-            }
-            catch (NonBarrierError ex)
-            {
-                Logger.Log(logFile, filename);
-
-                Console.Error.WriteLine(ex.Message);
-                Environment.Exit(203);
-            }
-            catch (SummaryGeneratorError ex)
-            {
-                Logger.Log(logFile, filename);
-
-                Console.Error.WriteLine(ex.Message);
-                Environment.Exit(204);
             }
             catch (Exception ex)
             {
-                Logger.Log(logFile, filename);
-
+                Logger.ExceptionMessage = ex.Message;
                 Console.Error.WriteLine(ex.Message);
-                Environment.Exit(-1);
+
+                int statusCode = -1;
+                if (ex is AssertionError)
+                    statusCode = 201;
+                else if (ex is RepairError)
+                    statusCode = 202;
+                else if (ex is NonBarrierError)
+                    statusCode = 203;
+                else if (ex is SummaryGeneratorError)
+                    statusCode = 204;
+
+                Environment.Exit(statusCode);
+            }
+            finally
+            {
+                Logger.Log(logFile, filename);
             }
         }
     }

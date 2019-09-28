@@ -82,6 +82,7 @@
     <Compile Include="Exceptions\RepairError.cs" />
     <Compile Include="Exceptions\SummaryGeneratorError.cs" />
     <Compile Include="GRCommandLineOptions.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repairer.cs" />

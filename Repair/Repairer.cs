@@ -73,6 +73,8 @@ namespace GPURepair.Repair
                                 barrier.Generated = generated;
                             }
                         }
+
+            Logger.Barriers = barriers.Count;
         }
 
         /// <summary>
