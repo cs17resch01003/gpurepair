@@ -4,7 +4,7 @@ namespace GPURepair.Repair
 {
     public static class Logger
     {
-        public static long RepairTime;
+        public static long VerificationTime;
 
         public static int VerifierCalls;
 
@@ -12,9 +12,9 @@ namespace GPURepair.Repair
 
         public static string ExceptionMessage;
 
-        public static void AddRepairTime(long time)
+        public static void AddVerificationTime(long time)
         {
-            RepairTime += time;
+            VerificationTime += time;
             VerifierCalls++;
         }
 
@@ -23,7 +23,7 @@ namespace GPURepair.Repair
             if (logFile != null)
             {
                 File.AppendAllLines(logFile, new string[] { string.Format("{0},{1},{2},{3},{4}",
-                    sourceFile, VerifierCalls, Barriers, RepairTime / 1000, ExceptionMessage) });
+                    sourceFile, VerifierCalls, Barriers, VerificationTime / 1000, ExceptionMessage) });
             }
         }
     }
