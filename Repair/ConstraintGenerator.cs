@@ -61,17 +61,15 @@ namespace GPURepair.Repair
 
             foreach (Implementation implementation in program.Implementations)
             {
-                if (errors.Any(x => x.Implementation.Name == implementation.Name))
-                {
-                    Dictionary<string, bool> current_assignments = new Dictionary<string, bool>();
-                    IEnumerable<string> barrierNames = barriers.Where(x => x.Value.Implementation.Name == implementation.Name).Select(x => x.Value.Name);
+                Dictionary<string, bool> current_assignments = new Dictionary<string, bool>();
+                IEnumerable<string> barrierNames = barriers.Where(x => x.Value.Implementation.Name == implementation.Name).Select(x => x.Value.Name);
 
-                    foreach (string barrierName in barrierNames)
-                        if (assignments.ContainsKey(barrierName))
-                            current_assignments.Add(barrierName, assignments[barrierName]);
+                foreach (string barrierName in barrierNames)
+                    if (assignments.ContainsKey(barrierName))
+                        current_assignments.Add(barrierName, assignments[barrierName]);
 
-                    ApplyAssignments(implementation, assignments);
-                }
+                if (current_assignments.Any())
+                    ApplyAssignments(implementation, current_assignments);
             }
 
             string tempFile = WriteFile(program);
