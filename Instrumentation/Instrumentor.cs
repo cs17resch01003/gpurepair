@@ -95,11 +95,15 @@ namespace GPURepair.Instrumentation
                 // the block should have source location information for instrumentation to work
                 if (node.Block.Cmds[0] is AssertCmd)
                 {
-                    node.Block.Cmds.Insert(i, node.Block.Cmds[0] as AssertCmd);
-                    node.Block.Cmds.RemoveAt(0);
+                    AssertCmd assert = node.Block.Cmds[0] as AssertCmd;
+                    if (ContainsAttribute(assert, SourceLocationKey))
+                    {
+                        node.Block.Cmds.Insert(i, assert);
+                        node.Block.Cmds.RemoveAt(0);
 
-                    // insert a barrier at the beginning of the merge block
-                    AddBarrier(node.Implementation, node.Block, i);
+                        // insert a barrier at the beginning of the merge block
+                        AddBarrier(node.Implementation, node.Block, i);
+                    }
                 }
             }
         }
