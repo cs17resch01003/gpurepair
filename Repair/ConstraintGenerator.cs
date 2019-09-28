@@ -13,33 +13,19 @@ namespace GPURepair.Repair
         private string filePath;
 
         /// <summary>
+        /// The barriers.
+        /// </summary>
+        private Dictionary<string, Barrier> barriers;
+
+        /// <summary>
         /// Initialize the variables.
         /// </summary>
         /// <param name="filePath">The file path.</param>
-        public ConstraintGenerator(string filePath)
+        /// <param name="barriers">The barriers.</param>
+        public ConstraintGenerator(string filePath, Dictionary<string, Barrier> barriers)
         {
             this.filePath = filePath;
-        }
-
-        /// <summary>
-        /// Applies the required constraints to the program.
-        /// </summary>
-        /// <param name="assignments">The assignments provided by the solver.</param>
-        public Microsoft.Boogie.Program ConstraintProgram(Dictionary<string, bool> assignments)
-        {
-            Microsoft.Boogie.Program program = ReadFile(filePath);
-            if (assignments == null || !assignments.Any())
-                return program;
-
-
-            foreach (Implementation implementation in program.Implementations)
-                if (ContainsAttribute(implementation, "kernel"))
-                    ApplyAssignments(implementation, assignments);
-
-            string tempFile = WriteFile(program);
-            program = ReadFile(tempFile);
-
-            return program;
+            this.barriers = barriers;
         }
 
         /// <summary>
@@ -47,7 +33,7 @@ namespace GPURepair.Repair
         /// </summary>
         /// <param name="filePath">The file path.</param>
         /// <returns>The program.</returns>
-        private Microsoft.Boogie.Program ReadFile(string filePath)
+        public static Microsoft.Boogie.Program ReadFile(string filePath)
         {
             Microsoft.Boogie.Program program;
             Parser.Parse(filePath, new List<string>() { "FILE_0" }, out program);
@@ -57,6 +43,39 @@ namespace GPURepair.Repair
 
             program.Typecheck();
             new ModSetCollector().DoModSetAnalysis(program);
+
+            return program;
+        }
+
+        /// <summary>
+        /// Applies the required constraints to the program.
+        /// </summary>
+        /// <param name="assignments">The assignments provided by the solver.</param>
+        /// <param name="errors">The errors.</param>
+        public Microsoft.Boogie.Program ConstraintProgram(
+            Dictionary<string, bool> assignments, IEnumerable<Error> errors)
+        {
+            Microsoft.Boogie.Program program = ReadFile(filePath);
+            if (assignments == null || !assignments.Any())
+                return program;
+
+            foreach (Implementation implementation in program.Implementations)
+            {
+                if (errors.Any(x => x.Implementation.Name == implementation.Name))
+                {
+                    Dictionary<string, bool> current_assignments = new Dictionary<string, bool>();
+                    IEnumerable<string> barrierNames = barriers.Where(x => x.Value.Implementation.Name == implementation.Name).Select(x => x.Value.Name);
+
+                    foreach (string barrierName in barrierNames)
+                        if (assignments.ContainsKey(barrierName))
+                            current_assignments.Add(barrierName, assignments[barrierName]);
+
+                    ApplyAssignments(implementation, assignments);
+                }
+            }
+
+            string tempFile = WriteFile(program);
+            program = ReadFile(tempFile);
 
             return program;
         }

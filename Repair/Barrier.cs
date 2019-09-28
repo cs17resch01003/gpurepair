@@ -10,6 +10,16 @@ namespace GPURepair.Repair
         public string Name { get; set; }
 
         /// <summary>
+        /// The implementation corresponding to the barrier.
+        /// </summary>
+        public Implementation Implementation { get; set; }
+
+        /// <summary>
+        /// The block corresponding to the barrier.
+        /// </summary>
+        public Block Block { get; set; }
+
+        /// <summary>
         /// The varibale corresponding to the barrier.
         /// </summary>
         public Variable Variable { get; set; }

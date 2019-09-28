@@ -24,10 +24,10 @@ namespace GPURepair.Repair
         /// <param name="filePath">The file path.</param>
         public Repairer(string filePath)
         {
-            constraintGenerator = new ConstraintGenerator(filePath);
-
-            Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(null);
+            Microsoft.Boogie.Program program = ConstraintGenerator.ReadFile(filePath);
             PopulateBarriers(program);
+
+            constraintGenerator = new ConstraintGenerator(filePath, barriers);
         }
 
         /// <summary>
@@ -53,21 +53,26 @@ namespace GPURepair.Repair
                     }
                 }
 
-            IEnumerable<Cmd> commands = program.Implementations.SelectMany(x => x.Blocks).SelectMany(x => x.Cmds);
-            foreach (Cmd command in commands)
-                if (command is CallCmd)
-                {
-                    CallCmd call = command as CallCmd;
-                    if (call.callee.Contains("$bugle_barrier"))
-                    {
-                        int location = QKeyValue.FindIntAttribute(call.Attributes, "sourceloc_num", -1);
-                        string barrier = QKeyValue.FindStringAttribute(call.Attributes, "repair_barrier");
-                        bool generated = ContainsAttribute(call, "repair_instrumented");
+            foreach (Implementation implementation in program.Implementations)
+                foreach (Block block in implementation.Blocks)
+                    foreach (Cmd command in block.Cmds)
+                        if (command is CallCmd)
+                        {
+                            CallCmd call = command as CallCmd;
+                            if (call.callee.Contains("$bugle_barrier"))
+                            {
+                                int location = QKeyValue.FindIntAttribute(call.Attributes, "sourceloc_num", -1);
+                                string barrierName = QKeyValue.FindStringAttribute(call.Attributes, "repair_barrier");
+                                bool generated = ContainsAttribute(call, "repair_instrumented");
 
-                        barriers[barrier].Location = location;
-                        barriers[barrier].Generated = generated;
-                    }
-                }
+                                Barrier barrier = barriers[barrierName];
+
+                                barrier.Implementation = implementation;
+                                barrier.Block = block;
+                                barrier.Location = location;
+                                barrier.Generated = generated;
+                            }
+                        }
         }
 
         /// <summary>
@@ -85,9 +90,9 @@ namespace GPURepair.Repair
                     Solver solver = new Solver();
                     assignments = solver.OptimizedSolve(errors);
 
-                    IEnumerable<Error> current_errors = VerifyProgram(assignments);
+                    IEnumerable<Error> current_errors = VerifyProgram(assignments, errors);
                     if (!current_errors.Any())
-                        return constraintGenerator.ConstraintProgram(assignments);
+                        return constraintGenerator.ConstraintProgram(assignments, errors);
                     else
                         errors.AddRange(current_errors);
                 }
@@ -97,9 +102,9 @@ namespace GPURepair.Repair
                     foreach (Barrier barrier in barriers.Values)
                         assignments.Add(barrier.Name, !barrier.Generated);
 
-                    IEnumerable<Error> current_errors = VerifyProgram(assignments);
+                    IEnumerable<Error> current_errors = VerifyProgram(assignments, errors);
                     if (!current_errors.Any())
-                        return constraintGenerator.ConstraintProgram(assignments);
+                        return constraintGenerator.ConstraintProgram(assignments, errors);
 
                     throw;
                 }
@@ -110,10 +115,11 @@ namespace GPURepair.Repair
         /// Verifies the program and returns the errors.
         /// </summary>
         /// <param name="assignments">The assignements</param>
+        /// <param name="errors">The errors.</param>
         /// <returns>The errors.</returns>
-        private IEnumerable<Error> VerifyProgram(Dictionary<string, bool> assignments)
+        private IEnumerable<Error> VerifyProgram(Dictionary<string, bool> assignments, IEnumerable<Error> errors)
         {
-            Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments);
+            Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments, errors);
 
             IEnumerable<Error> current_errors;
             using (Watch watch = new Watch())
