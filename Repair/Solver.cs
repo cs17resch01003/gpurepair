@@ -10,35 +10,6 @@ namespace GPURepair.Repair
     public class Solver
     {
         /// <summary>
-        /// Determine the barrier assignments based on the error traces.
-        /// </summary>
-        /// <param name="errors">The errors.</param>
-        /// <param name="efficientSolving">Specifies if the MHS solver should be used or the regular SAT Solver.</param>
-        /// <returns>The barrier assignments.</returns>
-        public Dictionary<string, bool> Solve(List<Error> errors, bool efficientSolving = true)
-        {
-            List<Clause> clauses = GenerateClauses(errors);
-
-            SATSolver satSolver = new SATSolver(clauses);
-            Dictionary<string, bool> result = satSolver.Solve();
-
-            if (result == null)
-                throw new RepairError("The program cannot be repaired since the clauses cannot be satisfied!");
-
-            if (efficientSolving)
-            {
-                MHSSolver mhsSolver = new MHSSolver(clauses);
-                Dictionary<string, bool> assignments = mhsSolver.Solve();
-
-                return assignments;
-            }
-            else
-            {
-                return result;
-            }
-        }
-
-        /// <summary>
         /// Determine the optimized barrier assignments based on the error traces.
         /// </summary>
         /// <param name="errors">The errors.</param>
