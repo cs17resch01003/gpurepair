@@ -37,34 +37,36 @@ namespace GPURepair.Solvers
         /// <param name="solution">The solution object that needs to be populated.</param>
         private void Solve(MHSSolution solution)
         {
-            // find MHS for all positive clauses
-            while (true)
+            // unit literal propogation
+            List<Clause> unit_clauses = solution.GetActiveUnitClauses();
+            while (!unit_clauses.Any())
             {
-                List<Clause> positive_clauses = solution.GetActivePositiveClauses();
-                if (!positive_clauses.Any())
-                    break;
+                UnitLiteralPropogation(solution, unit_clauses);
+                unit_clauses = solution.GetActiveUnitClauses();
+            }
 
+            // find MHS for all positive clauses
+            List<Clause> positive_clauses = solution.GetActivePositiveClauses();
+            while (!positive_clauses.Any())
+            {
                 ApplyMHS(solution, positive_clauses);
+                positive_clauses = solution.GetActivePositiveClauses();
             }
 
             // unit literal propogation
-            while (true)
+            unit_clauses = solution.GetActiveUnitClauses();
+            while (!unit_clauses.Any())
             {
-                List<Clause> unit_clauses = solution.GetActiveUnitClauses();
-                if (!unit_clauses.Any())
-                    break;
-
                 UnitLiteralPropogation(solution, unit_clauses);
+                unit_clauses = solution.GetActiveUnitClauses();
             }
 
             // find MHS for all negative clauses
-            while (true)
+            List<Clause> negative_clauses = solution.GetActiveNegativeClauses();
+            while (!negative_clauses.Any())
             {
-                List<Clause> negative_clauses = solution.GetActiveNegativeClauses();
-                if (!negative_clauses.Any())
-                    break;
-
                 ApplyMHS(solution, negative_clauses);
+                negative_clauses = solution.GetActiveNegativeClauses();
             }
         }
 

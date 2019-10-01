@@ -64,7 +64,7 @@ namespace GPURepair.Solvers
 
             // throw an error if this assignment causes a clause to go unsat
             IEnumerable<Clause> unsat_clauses = clauseLookup
-                .Where(x => x.Value.Sat == Status.UNSATISFIABLE && x.Value.UnassignedLiterals == 0).Select(x => x.Key);
+                .Where(x => x.Value.Sat == Status.UNKNOWN && x.Value.UnassignedLiterals == 0).Select(x => x.Key);
             if (unsat_clauses.Any())
                 throw new SatisfiabilityError();
         }
