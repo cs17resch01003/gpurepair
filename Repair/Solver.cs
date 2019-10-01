@@ -1,5 +1,4 @@
-﻿using GPURepair.Repair.Exceptions;
-using GPURepair.Solvers;
+﻿using GPURepair.Solvers;
 using GPURepair.Solvers.Exceptions;
 using Microsoft.Boogie;
 using System.Collections.Generic;
@@ -14,10 +13,18 @@ namespace GPURepair.Repair
         /// </summary>
         /// <param name="errors">The errors.</param>
         /// <returns>The barrier assignments.</returns>
-        public Dictionary<string, bool> OptimizedSolve(List<Error> errors)
+        public Dictionary<string, bool> Solve(List<Error> errors)
         {
             try
             {
+                List<Clause> clauses = GenerateClauses(errors);
+                MHSSolver solver = new MHSSolver(clauses);
+
+                return solver.Solve();
+            }
+            catch (SatisfiabilityError)
+            {
+                // fall back to MaxSAT if MHS fails
                 List<Clause> clauses = GenerateClauses(errors);
                 List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
 
@@ -25,10 +32,6 @@ namespace GPURepair.Repair
                 MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
 
                 return solver.Solve();
-            }
-            catch (SatisfiabilityError)
-            {
-                throw new RepairError("The program cannot be repaired since the clauses cannot be satisfied!");
             }
         }
 

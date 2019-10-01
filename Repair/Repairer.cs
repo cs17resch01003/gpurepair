@@ -90,7 +90,7 @@ namespace GPURepair.Repair
                 try
                 {
                     Solver solver = new Solver();
-                    assignments = solver.OptimizedSolve(errors);
+                    assignments = solver.Solve(errors);
 
                     IEnumerable<Error> current_errors = VerifyProgram(assignments, errors);
                     if (!current_errors.Any())
