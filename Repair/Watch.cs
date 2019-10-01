@@ -19,15 +19,15 @@ namespace GPURepair.Repair
 
         public void Dispose()
         {
-            Logger.AddTime(measure.ToString(), watch.ElapsedMilliseconds);
+            Logger.AddTime(((int)measure).ToString(), watch.ElapsedMilliseconds);
             watch.Stop();
         }
 
-        public enum Measure
+        public enum Measure : int
         {
-            MaxSAT_SolutionTime,
-            MHS_SolutionTime,
-            VerificationTime,
+            MaxSAT_SolutionTime = 1,
+            MHS_SolutionTime = 2,
+            VerificationTime = 3,
         }
     }
 }
