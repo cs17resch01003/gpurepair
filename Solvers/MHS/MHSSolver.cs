@@ -39,7 +39,7 @@ namespace GPURepair.Solvers
         {
             // unit literal propogation
             List<Clause> unit_clauses = solution.GetActiveUnitClauses();
-            while (!unit_clauses.Any())
+            while (unit_clauses.Any())
             {
                 UnitLiteralPropogation(solution, unit_clauses);
                 unit_clauses = solution.GetActiveUnitClauses();
@@ -47,7 +47,7 @@ namespace GPURepair.Solvers
 
             // find MHS for all positive clauses
             List<Clause> positive_clauses = solution.GetActivePositiveClauses();
-            while (!positive_clauses.Any())
+            while (positive_clauses.Any())
             {
                 ApplyMHS(solution, positive_clauses);
                 positive_clauses = solution.GetActivePositiveClauses();
@@ -55,7 +55,7 @@ namespace GPURepair.Solvers
 
             // unit literal propogation
             unit_clauses = solution.GetActiveUnitClauses();
-            while (!unit_clauses.Any())
+            while (unit_clauses.Any())
             {
                 UnitLiteralPropogation(solution, unit_clauses);
                 unit_clauses = solution.GetActiveUnitClauses();
@@ -63,7 +63,7 @@ namespace GPURepair.Solvers
 
             // find MHS for all negative clauses
             List<Clause> negative_clauses = solution.GetActiveNegativeClauses();
-            while (!negative_clauses.Any())
+            while (negative_clauses.Any())
             {
                 ApplyMHS(solution, negative_clauses);
                 negative_clauses = solution.GetActiveNegativeClauses();
