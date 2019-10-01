@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using GPURepair.Solvers;
 
 namespace GPURepair.Repair
 {
@@ -8,16 +7,27 @@ namespace GPURepair.Repair
     {
         private Stopwatch watch;
 
-        public Watch()
+        private Measure measure;
+
+        public Watch(Measure measure)
         {
+            this.measure = measure;
+
             watch = new Stopwatch();
             watch.Start();
         }
 
         public void Dispose()
         {
-            Logger.AddVerificationTime(watch.ElapsedMilliseconds);
+            Logger.AddTime(measure.ToString(), watch.ElapsedMilliseconds);
             watch.Stop();
+        }
+
+        public enum Measure
+        {
+            MaxSAT_SolutionTime,
+            MHS_SolutionTime,
+            VerificationTime,
         }
     }
 }

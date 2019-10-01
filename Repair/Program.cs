@@ -20,6 +20,8 @@ namespace GPURepair.Repair
         /// <param name="args">The command line arguments.</param>
         public static void Main(string[] args)
         {
+            int? statusCode = null;
+
             try
             {
                 // standard command line options for Boogie
@@ -70,7 +72,6 @@ namespace GPURepair.Repair
                 Logger.ExceptionMessage = ex.Message;
                 Console.Error.WriteLine(ex.Message);
 
-                int statusCode = -1;
                 if (ex is AssertionError)
                     statusCode = 201;
                 else if (ex is RepairError)
@@ -79,13 +80,14 @@ namespace GPURepair.Repair
                     statusCode = 203;
                 else if (ex is SummaryGeneratorError)
                     statusCode = 204;
-
-                Environment.Exit(statusCode);
             }
             finally
             {
                 Logger.Log(logFile, filename);
             }
+
+            if (statusCode != null)
+                Environment.Exit(statusCode.Value);
         }
     }
 }

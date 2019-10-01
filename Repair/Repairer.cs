@@ -129,7 +129,7 @@ namespace GPURepair.Repair
             Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments, errors);
 
             IEnumerable<Error> current_errors;
-            using (Watch watch = new Watch())
+            using (Watch watch = new Watch(Watch.Measure.VerificationTime))
             {
                 Verifier verifier = new Verifier(program, assignments);
                 current_errors = verifier.GetErrors();
