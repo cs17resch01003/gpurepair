@@ -15,30 +15,42 @@ namespace GPURepair.Repair
         /// <returns>The barrier assignments.</returns>
         public Dictionary<string, bool> Solve(List<Error> errors)
         {
-            try
+            using (Watch watch = new Watch(Watch.Measure.MaxSAT_SolutionTime))
             {
-                using (Watch watch = new Watch(Watch.Measure.MHS_SolutionTime))
-                {
-                    List<Clause> clauses = GenerateClauses(errors);
-                    MHSSolver solver = new MHSSolver(clauses);
+                // fall back to MaxSAT if MHS fails
+                List<Clause> clauses = GenerateClauses(errors);
+                List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
 
-                    return solver.Solve();
-                }
+                List<Clause> soft_clauses = GenerateSoftClauses(variables);
+                MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+
+                return solver.Solve();
             }
-            catch (SatisfiabilityError)
-            {
-                using (Watch watch = new Watch(Watch.Measure.MaxSAT_SolutionTime))
-                {
-                    // fall back to MaxSAT if MHS fails
-                    List<Clause> clauses = GenerateClauses(errors);
-                    List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
 
-                    List<Clause> soft_clauses = GenerateSoftClauses(variables);
-                    MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+            //try
+            //{
+            //    using (Watch watch = new Watch(Watch.Measure.MHS_SolutionTime))
+            //    {
+            //        List<Clause> clauses = GenerateClauses(errors);
+            //        MHSSolver solver = new MHSSolver(clauses);
 
-                    return solver.Solve();
-                }
-            }
+            //        return solver.Solve();
+            //    }
+            //}
+            //catch (SatisfiabilityError)
+            //{
+            //    using (Watch watch = new Watch(Watch.Measure.MaxSAT_SolutionTime))
+            //    {
+            //        // fall back to MaxSAT if MHS fails
+            //        List<Clause> clauses = GenerateClauses(errors);
+            //        List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
+
+            //        List<Clause> soft_clauses = GenerateSoftClauses(variables);
+            //        MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+
+            //        return solver.Solve();
+            //    }
+            //}
         }
 
         /// <summary>
