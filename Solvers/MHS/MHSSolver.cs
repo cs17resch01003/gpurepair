@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace GPURepair.Solvers
@@ -9,7 +8,7 @@ namespace GPURepair.Solvers
         /// <summary>
         /// The clauses.
         /// </summary>
-        public List<Clause> Clauses { get; set; }
+        private List<Clause> clauses { get; set; }
 
         /// <summary>
         /// The constructor.
@@ -17,7 +16,7 @@ namespace GPURepair.Solvers
         /// <param name="clauses">The clauses.</param>
         public MHSSolver(List<Clause> clauses)
         {
-            Clauses = clauses;
+            this.clauses = clauses;
         }
 
         /// <summary>
@@ -26,52 +25,47 @@ namespace GPURepair.Solvers
         /// <returns>The solution.</returns>
         public Dictionary<string, bool> Solve()
         {
-            MHSSolution solution = new MHSSolution(Clauses);
-            bool result = Solve(solution);
+            MHSSolution solution = new MHSSolution(clauses);
 
-            // Use the SATSolver as a backup if the MHSSolver fails
-            if (result == true)
-                return solution.Assignments;
-            else
-            {
-                SATSolver solver = new SATSolver(Clauses);
-                Dictionary<string, bool> assignments = solver.Solve();
-
-                if (assignments == null)
-                    throw new Exception("The given clauses cannot be satisfied!");
-                return assignments;
-            }
+            Solve(solution);
+            return solution.Assignments;
         }
 
         /// <summary>
         /// Solves the clauses and sets the assignements.
         /// </summary>
         /// <param name="solution">The solution object that needs to be populated.</param>
-        /// <returns>true if a solution has been found and false otherwise.</returns>
-        private bool Solve(MHSSolution solution)
+        private void Solve(MHSSolution solution)
         {
-            while (solution.IsSolutionFound() == false)
+            // find MHS for all positive clauses
+            while (true)
             {
-                // The MHSSolver has ended in an unsatisfiable assignment
-                if (solution.Assignments.Count == solution.VariableLookup.Count)
-                    return false;
+                List<Clause> positive_clauses = solution.GetActivePositiveClauses();
+                if (!positive_clauses.Any())
+                    break;
 
-                List<Clause> clauses = solution.GetActiveUnitClauses();
-                if (clauses.Any())
-                {
-                    UnitLiteralPropogation(solution, clauses);
-                    continue;
-                }
-
-                List<Clause> reference = solution.GetActivePositiveClauses();
-                if (!reference.Any())
-                    reference = solution.GetActiveNegativeClauses();
-
-                if (reference.Any())
-                    ApplyMHS(solution, reference);
+                ApplyMHS(solution, positive_clauses);
             }
 
-            return true;
+            // unit literal propogation
+            while (true)
+            {
+                List<Clause> unit_clauses = solution.GetActiveUnitClauses();
+                if (!unit_clauses.Any())
+                    break;
+
+                UnitLiteralPropogation(solution, unit_clauses);
+            }
+
+            // find MHS for all negative clauses
+            while (true)
+            {
+                List<Clause> negative_clauses = solution.GetActiveNegativeClauses();
+                if (!negative_clauses.Any())
+                    break;
+
+                ApplyMHS(solution, negative_clauses);
+            }
         }
 
         /// <summary>

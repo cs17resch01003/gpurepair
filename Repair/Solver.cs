@@ -26,7 +26,7 @@ namespace GPURepair.Repair
 
                 return solver.Solve();
             }
-            catch (SolverError)
+            catch (SatisfiabilityError)
             {
                 throw new RepairError("The program cannot be repaired since the clauses cannot be satisfied!");
             }

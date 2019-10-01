@@ -46,7 +46,7 @@ namespace GPURepair.Solvers
                 relaxed += 1;
             }
 
-            throw new SolverError("The given clauses cannot be satisfied!");
+            throw new SatisfiabilityError();
         }
 
         /// <summary>
