@@ -1,4 +1,5 @@
 ﻿using GPURepair.Repair.Exceptions;
+using GPURepair.Solvers.Exceptions;
 using Microsoft.Boogie;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,6 +98,10 @@ namespace GPURepair.Repair
                         return constraintGenerator.ConstraintProgram(assignments, errors);
                     else
                         errors.AddRange(current_errors);
+                }
+                catch (SatisfiabilityError)
+                {
+                    throw new RepairError("The program could not be repaired because of unsatisfiable clauses!");
                 }
                 catch (AssertionError)
                 {
