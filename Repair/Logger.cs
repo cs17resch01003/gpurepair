@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -38,6 +39,8 @@ namespace GPURepair.Repair
                 foreach (string property in time.Keys.OrderBy(x => x))
                     builder.Append(string.Format("{0},{1},", time[property] / 1000.0, count[property]));
                 builder.Append(string.Join(",", Barriers, Changes, ExceptionMessage));
+
+                File.AppendAllLines(logFile, new List<string> { builder.ToString() });
             }
         }
     }
