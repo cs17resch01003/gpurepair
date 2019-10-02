@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--local_size=1024 --num_groups=1 --no-inline
 
 __kernel void atomic (__local int* A)

@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--local_size=[64] --global_size=[256]
                                                          
 kernel void example(global int *G) {

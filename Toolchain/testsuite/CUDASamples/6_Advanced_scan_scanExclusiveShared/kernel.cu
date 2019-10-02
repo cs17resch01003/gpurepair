@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--gridDim=6624 --blockDim=256
 
 #include "common.h"
