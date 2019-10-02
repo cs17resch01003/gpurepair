@@ -87,13 +87,14 @@ namespace GPURepair.Repair
         public Microsoft.Boogie.Program Repair(out Dictionary<string, bool> assignments)
         {
             List<Error> errors = new List<Error>();
+            Dictionary<string, bool> solution = null;
+
             while (true)
             {
-                Dictionary<string, bool> solution = null;
-                Solver.SolverType type;
-
                 try
                 {
+                    Solver.SolverType type;
+
                     Solver solver = new Solver();
                     assignments = solution == null ? solver.Solve(errors, out type) : solver.Optimize(errors, solution, out type);
 
