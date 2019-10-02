@@ -6,7 +6,7 @@ namespace GPURepair.Repair
     {
         public string RepairLog { get; set; } = null;
 
-        public bool LogClauses { get; set; } = true;
+        public bool LogClauses { get; set; } = false;
 
         public GRCommandLineOptions()
             : base()
@@ -25,7 +25,7 @@ namespace GPURepair.Repair
             {
                 if (ps.ConfirmArgumentCount(1))
                     LogClauses = bool.Parse(ps.args[ps.i]);
-                return false;
+                return true;
             }
 
             return base.ParseOption(name, ps);
