@@ -131,7 +131,7 @@ namespace GPURepair.Repair
             IEnumerable<Error> current_errors;
             using (Watch watch = new Watch(Watch.Measure.VerificationTime))
             {
-                Verifier verifier = new Verifier(program, assignments);
+                Verifier verifier = new Verifier(program, assignments, barriers);
                 current_errors = verifier.GetErrors();
             }
 

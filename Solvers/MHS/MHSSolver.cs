@@ -53,21 +53,9 @@ namespace GPURepair.Solvers
                 positive_clauses = solution.GetActivePositiveClauses();
             }
 
-            // unit literal propogation
-            unit_clauses = solution.GetActiveUnitClauses();
-            while (unit_clauses.Any())
-            {
-                UnitLiteralPropogation(solution, unit_clauses);
-                unit_clauses = solution.GetActiveUnitClauses();
-            }
-
-            // find MHS for all negative clauses
-            List<Clause> negative_clauses = solution.GetActiveNegativeClauses();
-            while (negative_clauses.Any())
-            {
-                ApplyMHS(solution, negative_clauses);
-                negative_clauses = solution.GetActiveNegativeClauses();
-            }
+            foreach (string variable in solution.VariableLookup.Keys)
+                if (!solution.Assignments.ContainsKey(variable))
+                    solution.SetAssignment(variable, false);
         }
 
         /// <summary>

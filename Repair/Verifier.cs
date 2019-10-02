@@ -13,25 +13,7 @@ namespace GPURepair.Repair
         /// <summary>
         /// The barriers in the program.
         /// </summary>
-        private static Dictionary<string, Variable> barriers;
-
-        /// <summary>
-        /// Populates the barriers.
-        /// </summary>
-        /// <param name="program">The given program.</param>
-        private static void PopulateBarriers(Microsoft.Boogie.Program program)
-        {
-            barriers = new Dictionary<string, Variable>();
-            Regex regex = new Regex(@"^b\d+$");
-
-            foreach (Declaration declaration in program.TopLevelDeclarations)
-                if (declaration is GlobalVariable)
-                {
-                    GlobalVariable globalVariable = declaration as GlobalVariable;
-                    if (regex.IsMatch(globalVariable.Name))
-                        barriers.Add(globalVariable.Name, globalVariable);
-                }
-        }
+        private Dictionary<string, Barrier> barriers;
 
         /// <summary>
         /// The program to be instrumented.
@@ -48,13 +30,12 @@ namespace GPURepair.Repair
         /// </summary>
         /// <param name="program">The source Boogie program.</param>
         /// <param name="assignments">The current assignments to the variables.</param>
-        public Verifier(Microsoft.Boogie.Program program, Dictionary<string, bool> assignments)
+        public Verifier(Microsoft.Boogie.Program program, Dictionary<string, bool> assignments,
+            Dictionary<string, Barrier> barriers)
         {
             this.program = program;
             this.assignments = assignments;
-
-            if (barriers == null)
-                PopulateBarriers(this.program);
+            this.barriers = barriers;
 
             KernelAnalyser.EliminateDeadVariables(this.program);
             KernelAnalyser.Inline(this.program);
@@ -102,7 +83,8 @@ namespace GPURepair.Repair
                     if (error.ErrorType.HasValue)
                     {
                         IEnumerable<string> variables = GetVariables(callCounterexample, error.ErrorType.Value);
-                        error.Variables = barriers.Where(x => variables.Contains(x.Key)).Select(x => x.Value);
+                        error.Variables = barriers.Where(x => variables.Contains(x.Key)).Select(x => x.Value)
+                            .Where(x => x.Implementation.Name == error.Implementation.Name).Select(x => x.Variable);
 
                         if (error.Variables.Any())
                             valid_errors.Add(error);
