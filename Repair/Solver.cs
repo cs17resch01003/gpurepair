@@ -1,5 +1,6 @@
 ﻿using GPURepair.Solvers;
 using GPURepair.Solvers.Exceptions;
+using GPURepair.Solvers.Optimizer;
 using Microsoft.Boogie;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,12 @@ namespace GPURepair.Repair
     public class Solver
     {
         /// <summary>
-        /// Determine the optimized barrier assignments based on the error traces.
+        /// Determine the barrier assignments based on the error traces.
         /// </summary>
         /// <param name="errors">The errors.</param>
+        /// <param name="type">The solver type used.</param>
         /// <returns>The barrier assignments.</returns>
-        public Dictionary<string, bool> Solve(List<Error> errors)
+        public Dictionary<string, bool> Solve(List<Error> errors, out SolverType type)
         {
             try
             {
@@ -22,6 +24,7 @@ namespace GPURepair.Repair
                     List<Clause> clauses = GenerateClauses(errors);
                     MHSSolver solver = new MHSSolver(clauses);
 
+                    type = SolverType.MHS;
                     return solver.Solve();
                 }
             }
@@ -36,7 +39,39 @@ namespace GPURepair.Repair
                     List<Clause> soft_clauses = GenerateSoftClauses(variables);
                     MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
 
+                    type = SolverType.MaxSAT;
                     return solver.Solve();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determine the optimized barrier assignments based on the error traces.
+        /// </summary>
+        /// <param name="errors">The errors.</param>
+        /// <param name="solution">The solution obtained so far.</param>
+        /// <param name="type">The solver type used.</param>
+        /// <returns>The barrier assignments.</returns>
+        public Dictionary<string, bool> Optimize(List<Error> errors, Dictionary<string, bool> solution,
+            out SolverType type)
+        {
+            int barrier_count = solution.Count(x => x.Value == true);
+            List<Clause> clauses = GenerateClauses(errors);
+
+            while (true)
+            {
+                using (Watch watch = new Watch(Watch.Measure.OptimizationTime))
+                {
+                    try
+                    {
+                        Optimizer optimizer = new Optimizer(clauses);
+                        solution = optimizer.Solve(--barrier_count);
+                    }
+                    catch (SatisfiabilityError)
+                    {
+                        type = SolverType.Optimizer;
+                        return solution;
+                    }
                 }
             }
         }
@@ -80,6 +115,16 @@ namespace GPURepair.Repair
             }
 
             return clauses;
+        }
+
+        /// <summary>
+        /// The solver type used.
+        /// </summary>
+        public enum SolverType
+        {
+            MHS,
+            MaxSAT,
+            Optimizer
         }
     }
 }

@@ -28,6 +28,7 @@ namespace GPURepair.Repair
             MaxSAT_SolutionTime = 1,
             MHS_SolutionTime = 2,
             VerificationTime = 3,
+            OptimizationTime = 4,
         }
     }
 }

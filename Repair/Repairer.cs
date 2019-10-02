@@ -88,16 +88,27 @@ namespace GPURepair.Repair
             List<Error> errors = new List<Error>();
             while (true)
             {
+                Dictionary<string, bool> solution = null;
+                Solver.SolverType type;
+
                 try
                 {
                     Solver solver = new Solver();
-                    assignments = solver.Solve(errors);
+                    assignments = solution == null ? solver.Solve(errors, out type) : solver.Optimize(errors, solution, out type);
 
                     IEnumerable<Error> current_errors = VerifyProgram(assignments, errors);
                     if (!current_errors.Any())
-                        return constraintGenerator.ConstraintProgram(assignments, errors);
+                    {
+                        if (type == Solver.SolverType.MaxSAT || type == Solver.SolverType.Optimizer)
+                            return constraintGenerator.ConstraintProgram(assignments, errors);
+                        else
+                            solution = assignments;
+                    }
                     else
+                    {
+                        solution = null;
                         errors.AddRange(current_errors);
+                    }
                 }
                 catch (SatisfiabilityError)
                 {
