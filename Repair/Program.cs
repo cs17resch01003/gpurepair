@@ -64,7 +64,7 @@ namespace GPURepair.Repair
                 foreach (Location location in changes)
                 {
                     if (cu_source != location.File && cl_source != location.File)
-                        throw new RepairError("There are changes needed in external files: " + location.ToString());
+                        throw new SummaryGeneratorError("There are changes needed in external files: " + location.ToString());
                 }
             }
             catch (Exception ex)

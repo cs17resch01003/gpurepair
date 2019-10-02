@@ -97,7 +97,7 @@ namespace GPURepair.Repair
                 if (errors.Any(x => x.CounterExample is AssertCounterexample))
                     throw new AssertionError("Assertions do not hold!");
                 if (errors.Any(x => x.CounterExample is CallCounterexample))
-                    throw new RepairError("Encountered a race/divergence counterexample without any barrier assignments!");
+                    throw new RepairError("Encountered a counterexample without any barrier assignments!");
 
                 throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
             }
