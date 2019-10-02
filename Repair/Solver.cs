@@ -1,4 +1,5 @@
-﻿using GPURepair.Solvers;
+﻿using GPURepair.Repair.Diagnostics;
+using GPURepair.Solvers;
 using GPURepair.Solvers.Exceptions;
 using GPURepair.Solvers.Optimizer;
 using Microsoft.Boogie;
@@ -19,7 +20,7 @@ namespace GPURepair.Repair
         {
             try
             {
-                using (Watch watch = new Watch(Watch.Measure.MHS_SolutionTime))
+                using (Watch watch = new Watch(Measure.MHS))
                 {
                     List<Clause> clauses = GenerateClauses(errors);
                     MHSSolver solver = new MHSSolver(clauses);
@@ -30,7 +31,7 @@ namespace GPURepair.Repair
             }
             catch (SatisfiabilityError)
             {
-                using (Watch watch = new Watch(Watch.Measure.MaxSAT_SolutionTime))
+                using (Watch watch = new Watch(Measure.MaxSAT))
                 {
                     // fall back to MaxSAT if MHS fails
                     List<Clause> clauses = GenerateClauses(errors);
@@ -60,7 +61,7 @@ namespace GPURepair.Repair
 
             while (true)
             {
-                using (Watch watch = new Watch(Watch.Measure.OptimizationTime))
+                using (Watch watch = new Watch(Measure.Optimization))
                 {
                     try
                     {

@@ -1,4 +1,5 @@
-﻿using GPURepair.Repair.Exceptions;
+﻿using GPURepair.Repair.Diagnostics;
+using GPURepair.Repair.Exceptions;
 using Microsoft.Boogie;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,5 @@
-﻿using GPURepair.Repair.Exceptions;
+﻿using GPURepair.Repair.Diagnostics;
+using GPURepair.Repair.Exceptions;
 using GPURepair.Solvers.Exceptions;
 using Microsoft.Boogie;
 using System.Collections.Generic;
@@ -140,7 +141,7 @@ namespace GPURepair.Repair
             Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments, errors);
 
             IEnumerable<Error> current_errors;
-            using (Watch watch = new Watch(Watch.Measure.VerificationTime))
+            using (Watch watch = new Watch(Measure.Verification))
             {
                 Verifier verifier = new Verifier(program, assignments, barriers);
                 current_errors = verifier.GetErrors();
