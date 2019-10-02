@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:TIMEOUT
 //--gridDim=[10,40]      --blockDim=[32,6]
 
 template<int bx, int by> __global__ void JacobiIteration(const float *du0, const float *dv0, const float *Ix, const float *Iy, const float *Iz, int w, int h, int s, float alpha, float *du1, float *dv1);

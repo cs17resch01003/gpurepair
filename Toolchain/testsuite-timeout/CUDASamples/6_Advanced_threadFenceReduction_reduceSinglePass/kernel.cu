@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:TIMEOUT
 //--gridDim=64 --blockDim=128
 
 #include "common.h"

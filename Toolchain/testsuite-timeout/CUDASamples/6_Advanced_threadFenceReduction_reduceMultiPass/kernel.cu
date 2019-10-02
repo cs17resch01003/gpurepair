@@ -1,4 +1,4 @@
-//pass
+//xfail:TIMEOUT
 //--gridDim=64 --blockDim=128 --warp-sync=32
 
 #include "common.h"

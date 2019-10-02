@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//xfail:TIMEOUT
 //--local_size=64 --global_size=256
                                                          
 kernel void example(global float4 *G) {

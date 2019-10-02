@@ -1,4 +1,4 @@
-//xfail:NOT_ALL_VERIFIED
+//xfail:TIMEOUT
 //--gridDim=512 --blockDim=256
 
 //REQUIRES: const array as formal (imperial edit)
