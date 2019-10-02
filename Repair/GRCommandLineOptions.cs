@@ -25,7 +25,7 @@ namespace GPURepair.Repair
             {
                 if (ps.ConfirmArgumentCount(1))
                     LogClauses = bool.Parse(ps.args[ps.i]);
-                return true;
+                return false;
             }
 
             return base.ParseOption(name, ps);
