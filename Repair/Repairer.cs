@@ -98,6 +98,10 @@ namespace GPURepair.Repair
                     Solver solver = new Solver();
                     assignments = solution == null ? solver.Solve(errors, out type) : solver.Optimize(errors, solution, out type);
 
+                    // skip the verification if the solution wasn't optimized
+                    if (type == Solver.SolverType.Optimizer && assignments.Count(x => x.Value == true) == solution.Count(x => x.Value == true))
+                        return constraintGenerator.ConstraintProgram(assignments, errors);
+
                     IEnumerable<Error> current_errors = VerifyProgram(assignments, errors);
                     if (!current_errors.Any())
                     {

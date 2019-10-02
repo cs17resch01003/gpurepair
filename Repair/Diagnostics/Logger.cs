@@ -11,6 +11,10 @@ namespace GPURepair.Repair.Diagnostics
 
         private static Dictionary<Measure, int> count = new Dictionary<Measure, int>();
 
+        public static string FileName;
+
+        public static string LogFile;
+
         public static int? Barriers;
 
         public static int? Changes;
@@ -29,11 +33,11 @@ namespace GPURepair.Repair.Diagnostics
             count[measure]++;
         }
 
-        public static void Log(string logFile, string sourceFile)
+        public static void Flush()
         {
-            if (logFile != null)
+            if (LogFile != null)
             {
-                StringBuilder builder = new StringBuilder(sourceFile);
+                StringBuilder builder = new StringBuilder(FileName);
                 builder.Append(",");
 
                 foreach (Measure measure in Enum.GetValues(typeof(Measure)))
@@ -45,7 +49,7 @@ namespace GPURepair.Repair.Diagnostics
                 }
 
                 builder.Append(string.Join(",", Barriers, Changes, ExceptionMessage));
-                File.AppendAllLines(logFile, new List<string> { builder.ToString() });
+                File.AppendAllLines(LogFile, new List<string> { builder.ToString() });
             }
         }
     }

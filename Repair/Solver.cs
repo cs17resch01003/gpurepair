@@ -18,15 +18,16 @@ namespace GPURepair.Repair
         /// <returns>The barrier assignments.</returns>
         public Dictionary<string, bool> Solve(List<Error> errors, out SolverType type)
         {
+            List<Clause> clauses = GenerateClauses(errors);
+            Dictionary<string, bool> solution;
+
+            type = SolverType.MHS;
             try
             {
                 using (Watch watch = new Watch(Measure.MHS))
                 {
-                    List<Clause> clauses = GenerateClauses(errors);
                     MHSSolver solver = new MHSSolver(clauses);
-
-                    type = SolverType.MHS;
-                    return solver.Solve();
+                    solution = solver.Solve();
                 }
             }
             catch (SatisfiabilityError)
@@ -34,16 +35,17 @@ namespace GPURepair.Repair
                 using (Watch watch = new Watch(Measure.MaxSAT))
                 {
                     // fall back to MaxSAT if MHS fails
-                    List<Clause> clauses = GenerateClauses(errors);
-                    List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
-
-                    List<Clause> soft_clauses = GenerateSoftClauses(variables);
-                    MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
-
                     type = SolverType.MaxSAT;
-                    return solver.Solve();
+
+                    List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
+                    List<Clause> soft_clauses = GenerateSoftClauses(variables);
+
+                    MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+                    solution = solver.Solve();
                 }
             }
+
+            return solution;
         }
 
         /// <summary>

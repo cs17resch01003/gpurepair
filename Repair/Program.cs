@@ -38,8 +38,8 @@ namespace GPURepair.Repair
                 else if (CommandLineOptions.Clo.Files.Count > 1)
                     throw new Exception("GPURepair can work on only one file at a time!");
 
-                filename = CommandLineOptions.Clo.Files.First();
-                logFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
+                Logger.FileName = filename = CommandLineOptions.Clo.Files.First();
+                Logger.LogFile = logFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
 
                 Dictionary<string, bool> assignments;
 
@@ -74,7 +74,7 @@ namespace GPURepair.Repair
             }
             finally
             {
-                Logger.Log(logFile, filename);
+                Logger.Flush();
             }
 
             if (statusCode != null)
