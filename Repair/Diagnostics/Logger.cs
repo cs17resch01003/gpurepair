@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using GPURepair.Solvers;
+using static GPURepair.Repair.Solver;
 
 namespace GPURepair.Repair.Diagnostics
 {
@@ -10,6 +12,8 @@ namespace GPURepair.Repair.Diagnostics
         private static Dictionary<Measure, double> time = new Dictionary<Measure, double>();
 
         private static Dictionary<Measure, int> count = new Dictionary<Measure, int>();
+
+        public static bool LogCLauses; 
 
         public static string FileName;
 
@@ -50,6 +54,28 @@ namespace GPURepair.Repair.Diagnostics
 
                 builder.Append(string.Join(",", Barriers, Changes, ExceptionMessage));
                 File.AppendAllLines(LogFile, new List<string> { builder.ToString() });
+            }
+        }
+
+        public static void LogClausesToFile(List<Clause> clauses, SolverType type, Dictionary<string, bool> solution)
+        {
+            if (LogCLauses)
+            {
+                List<string> lines = new List<string>();
+                lines.Add("Type: " + type.ToString());
+
+                StringBuilder builder = new StringBuilder();
+                foreach (KeyValuePair<string, bool> pair in solution)
+                    builder.AppendFormat("{0}{1} ", pair.Value ? string.Empty : "-", pair.Key);
+
+                lines.Add("Solution: " + builder.ToString());
+
+                lines.Add("Clauses:");
+                foreach (Clause clause in clauses)
+                    lines.Add(clause.ToString());
+
+                string clauseLog = string.Format("{0}_{1}.satlog", FileName, DateTime.Now.ToString("hhmmss"));
+                File.WriteAllLines(clauseLog, lines);
             }
         }
     }

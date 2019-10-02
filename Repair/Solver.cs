@@ -45,6 +45,7 @@ namespace GPURepair.Repair
                 }
             }
 
+            Logger.LogClausesToFile(clauses, type, solution);
             return solution;
         }
 

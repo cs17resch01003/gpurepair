@@ -6,7 +6,7 @@ namespace GPURepair.Repair
     {
         public string RepairLog { get; set; } = null;
 
-        public bool EnableEfficientSolving { get; set; } = true;
+        public bool LogClauses { get; set; } = true;
 
         public GRCommandLineOptions()
             : base()
@@ -21,10 +21,10 @@ namespace GPURepair.Repair
                     RepairLog = ps.args[ps.i];
                 return true;
             }
-            else if (name == "efficientSolving")
+            else if (name == "logClauses")
             {
                 if (ps.ConfirmArgumentCount(1))
-                    EnableEfficientSolving = bool.Parse(ps.args[ps.i]);
+                    LogClauses = bool.Parse(ps.args[ps.i]);
                 return true;
             }
 

@@ -40,6 +40,7 @@ namespace GPURepair.Repair
 
                 Logger.FileName = filename = CommandLineOptions.Clo.Files.First();
                 Logger.LogFile = logFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
+                Logger.LogCLauses = ((GRCommandLineOptions)CommandLineOptions.Clo).LogClauses;
 
                 Dictionary<string, bool> assignments;
 
