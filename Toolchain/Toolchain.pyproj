@@ -24,18 +24,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="getversion.py" />
     <Compile Include="GPURepair.py" />
-    <Compile Include="GPUVerify.py" />
     <Compile Include="GPUVerifyScript\argument_parser.py" />
     <Compile Include="GPUVerifyScript\constants.py" />
     <Compile Include="GPUVerifyScript\error_codes.py" />
-    <Compile Include="GPUVerifyScript\json_loader.py" />
     <Compile Include="GPUVerifyScript\util.py" />
     <Compile Include="GPUVerifyScript\__init__.py" />
     <Compile Include="grtester.py" />
     <Compile Include="gvfindtools.py" />
-    <Compile Include="gvtester.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="GPUVerifyScript\" />

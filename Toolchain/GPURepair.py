@@ -24,7 +24,7 @@ else:
 from GPUVerifyScript.argument_parser import ArgumentParserError, parse_arguments
 from GPUVerifyScript.constants import AnalysisMode, SourceLanguage
 from GPUVerifyScript.error_codes import ErrorCodes
-from GPUVerifyScript.json_loader import JSONError, json_load
+
 import getversion
 
 class ConfigurationError(Exception):
