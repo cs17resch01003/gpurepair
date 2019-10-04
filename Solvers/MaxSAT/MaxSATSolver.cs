@@ -1,5 +1,4 @@
-﻿using GPURepair.Solvers.Exceptions;
-using Microsoft.Z3;
+﻿using Microsoft.Z3;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,8 +30,9 @@ namespace GPURepair.Solvers
         /// <summary>
         /// Solves the clauses and returns a solution.
         /// </summary>
+        /// <param name="status">The solver status.</param>
         /// <returns>The solution.</returns>
-        public Dictionary<string, bool> Solve()
+        public Dictionary<string, bool> Solve(out SolverStatus status)
         {
             // Use Z3 and figure out the variable assignments
             using (Context context = new Context())
@@ -47,8 +47,8 @@ namespace GPURepair.Solvers
                 foreach (BoolExpr clause in soft_clauses)
                     optimize.AssertSoft(clause, 1, "group");
 
-                Status status = optimize.Check();
-                if (status == Status.SATISFIABLE)
+                Status solver_status = optimize.Check();
+                if (solver_status == Status.SATISFIABLE)
                 {
                     Dictionary<string, bool> assignments = new Dictionary<string, bool>();
                     foreach (string variable in variables.Keys)
@@ -58,10 +58,12 @@ namespace GPURepair.Solvers
                             assignments.Add(variable, expr.BoolValue == Z3_lbool.Z3_L_TRUE ? true : false);
                     }
 
+                    status = SolverStatus.Satisfiable;
                     return assignments;
                 }
 
-                throw new SatisfiabilityError();
+                status = SolverStatus.Unsatisfiable;
+                return null;
             }
         }
     }

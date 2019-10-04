@@ -1,6 +1,6 @@
 ﻿using GPURepair.Repair.Diagnostics;
+using GPURepair.Repair.Exceptions;
 using GPURepair.Solvers;
-using GPURepair.Solvers.Exceptions;
 using GPURepair.Solvers.Optimizer;
 using Microsoft.Boogie;
 using System.Collections.Generic;
@@ -19,33 +19,36 @@ namespace GPURepair.Repair
         public Dictionary<string, bool> Solve(List<Error> errors, out SolverType type)
         {
             List<Clause> clauses = GenerateClauses(errors);
+
             Dictionary<string, bool> solution;
+            SolverStatus status;
 
             type = SolverType.MHS;
-            try
+            using (Watch watch = new Watch(Measure.MHS))
             {
-                using (Watch watch = new Watch(Measure.MHS))
-                {
-                    MHSSolver solver = new MHSSolver(clauses);
-                    solution = solver.Solve();
-                }
+                MHSSolver solver = new MHSSolver(clauses);
+                solution = solver.Solve(out status);
             }
-            catch (SatisfiabilityError)
+
+            if (status != SolverStatus.Satisfiable)
             {
+                // fall back to MaxSAT if MHS fails
+                type = SolverType.MaxSAT;
+
                 using (Watch watch = new Watch(Measure.MaxSAT))
                 {
-                    // fall back to MaxSAT if MHS fails
-                    type = SolverType.MaxSAT;
-
                     List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
                     List<Clause> soft_clauses = GenerateSoftClauses(variables);
 
                     MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
-                    solution = solver.Solve();
+                    solution = solver.Solve(out status);
                 }
             }
 
             Logger.LogClausesToFile(clauses, type, solution);
+            if (status == SolverStatus.Unsatisfiable)
+                throw new RepairError("The program could not be repaired because of unsatisfiable clauses!");
+
             return solution;
         }
 
@@ -56,26 +59,25 @@ namespace GPURepair.Repair
         /// <param name="solution">The solution obtained so far.</param>
         /// <param name="type">The solver type used.</param>
         /// <returns>The barrier assignments.</returns>
-        public Dictionary<string, bool> Optimize(List<Error> errors, Dictionary<string, bool> solution,
-            out SolverType type)
+        public Dictionary<string, bool> Optimize(List<Error> errors, Dictionary<string, bool> solution, out SolverType type)
         {
             int barrier_count = solution.Count(x => x.Value == true);
             List<Clause> clauses = GenerateClauses(errors);
 
+            type = SolverType.Optimizer;
             while (true)
             {
                 using (Watch watch = new Watch(Measure.Optimization))
                 {
-                    try
-                    {
-                        Optimizer optimizer = new Optimizer(clauses);
-                        solution = optimizer.Solve(--barrier_count);
-                    }
-                    catch (SatisfiabilityError)
-                    {
-                        type = SolverType.Optimizer;
+                    SolverStatus status;
+
+                    Optimizer optimizer = new Optimizer(clauses);
+                    Dictionary<string, bool> assignments = optimizer.Solve(--barrier_count, out status);
+
+                    if (status == SolverStatus.Unsatisfiable)
                         return solution;
-                    }
+                    else
+                        solution = assignments;
                 }
             }
         }

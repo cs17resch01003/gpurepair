@@ -2,9 +2,9 @@
 {
     using System;
 
-    public class SatisfiabilityError : Exception
+    internal class SatisfiabilityError : Exception
     {
-        public SatisfiabilityError()
+        internal SatisfiabilityError()
             : base("The given clauses are unsatisfiable!")
         {
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using GPURepair.Solvers.Exceptions;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GPURepair.Solvers
@@ -22,13 +23,23 @@ namespace GPURepair.Solvers
         /// <summary>
         /// Solves the clauses and returns a solution.
         /// </summary>
+        /// <param name="status">The solver status.</param>
         /// <returns>The solution.</returns>
-        public Dictionary<string, bool> Solve()
+        public Dictionary<string, bool> Solve(out SolverStatus status)
         {
-            MHSSolution solution = new MHSSolution(clauses);
+            try
+            {
+                MHSSolution solution = new MHSSolution(clauses);
+                Solve(solution);
 
-            Solve(solution);
-            return solution.Assignments;
+                status = SolverStatus.Satisfiable;
+                return solution.Assignments;
+            }
+            catch (SatisfiabilityError)
+            {
+                status = SolverStatus.Unsatisfiable;
+                return null;
+            }
         }
 
         /// <summary>
