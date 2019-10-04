@@ -102,6 +102,13 @@ namespace GPURepair.Repair
                         return constraintGenerator.ConstraintProgram(assignments, errors);
 
                     IEnumerable<Error> current_errors = VerifyProgram(assignments, errors);
+                    if (type == Solver.SolverType.Optimizer)
+                    {
+                        Logger.VerifierRunsAfterOptimization++;
+                        if (current_errors.Any())
+                            Logger.VerifierFailuresAfterOptimization++;
+                    }
+
                     if (!current_errors.Any())
                     {
                         if (type == Solver.SolverType.MaxSAT || type == Solver.SolverType.Optimizer)

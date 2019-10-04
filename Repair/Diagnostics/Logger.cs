@@ -23,6 +23,10 @@ namespace GPURepair.Repair.Diagnostics
 
         public static int? Changes;
 
+        public static int VerifierRunsAfterOptimization;
+
+        public static int VerifierFailuresAfterOptimization;
+
         public static string ExceptionMessage;
 
         public static void AddTime(Measure measure, long time)
@@ -52,7 +56,7 @@ namespace GPURepair.Repair.Diagnostics
                     builder.Append(string.Format("{0},{1},", time, count));
                 }
 
-                builder.Append(string.Join(",", Barriers, Changes, ExceptionMessage));
+                builder.Append(string.Join(",", Barriers, Changes, ExceptionMessage, VerifierRunsAfterOptimization, VerifierFailuresAfterOptimization));
                 File.AppendAllLines(LogFile, new List<string> { builder.ToString() });
             }
         }
