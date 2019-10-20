@@ -1,19 +1,15 @@
-﻿using GPURepair.Repair.Diagnostics;
-using GPURepair.Repair.Exceptions;
-using Microsoft.Boogie;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static GPURepair.Repair.SummaryGenerator;
+using GPURepair.Repair.Diagnostics;
+using GPURepair.Repair.Exceptions;
+using GPURepair.Repair.Metadata;
+using Microsoft.Boogie;
 
 namespace GPURepair.Repair
 {
     public class Program
     {
-        private static string logFile;
-
-        private static string filename;
-
         /// <summary>
         /// The entry point of the program.
         /// </summary>
@@ -38,24 +34,25 @@ namespace GPURepair.Repair
                 else if (CommandLineOptions.Clo.Files.Count > 1)
                     throw new Exception("GPURepair can work on only one file at a time!");
 
-                Logger.FileName = filename = CommandLineOptions.Clo.Files.First();
-                Logger.LogFile = logFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
+                Logger.FileName = CommandLineOptions.Clo.Files.First();
+                Logger.LogFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
                 Logger.LogCLauses = ((GRCommandLineOptions)CommandLineOptions.Clo).LogClauses;
 
                 Dictionary<string, bool> assignments;
 
-                Repairer repairer = new Repairer(filename);
+                Repairer repairer = new Repairer(Logger.FileName);
                 Microsoft.Boogie.Program program = repairer.Repair(out assignments);
 
-                SummaryGenerator generator = new SummaryGenerator(program, assignments);
-                IEnumerable<Location> changes = generator.GenerateSummary(filename.Replace(".cbpl", ".summary"));
+                SummaryGenerator generator = new SummaryGenerator();
+                IEnumerable<Location> changes = generator.GenerateSummary(assignments,
+                    Logger.FileName.Replace(".cbpl", ".summary"));
 
                 Logger.Changes = changes.Count();
                 Console.WriteLine("Number of changes required: {0}.", changes.Count());
 
                 if (changes.Any())
                 {
-                    using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".cbpl", ".fixed.cbpl"), true))
+                    using (TokenTextWriter writer = new TokenTextWriter(Logger.FileName.Replace(".cbpl", ".fixed.cbpl"), true))
                         program.Emit(writer);
                 }
             }

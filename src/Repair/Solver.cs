@@ -1,10 +1,10 @@
-﻿using GPURepair.Repair.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Linq;
+using GPURepair.Repair.Diagnostics;
 using GPURepair.Repair.Exceptions;
 using GPURepair.Solvers;
 using GPURepair.Solvers.Optimizer;
 using Microsoft.Boogie;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace GPURepair.Repair
 {

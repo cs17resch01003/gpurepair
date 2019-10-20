@@ -1,7 +1,10 @@
 ﻿using Microsoft.Boogie;
 
-namespace GPURepair.Repair
+namespace GPURepair.Repair.Metadata
 {
+    /// <summary>
+    /// Metadata related to a barrier.
+    /// </summary>
     public class Barrier
     {
         /// <summary>
@@ -27,7 +30,7 @@ namespace GPURepair.Repair
         /// <summary>
         /// The location of the barrier.
         /// </summary>
-        public int Location { get; set; }
+        public int SourceLocation { get; set; }
 
         /// <summary>
         /// Indicates if the barrier was generated.

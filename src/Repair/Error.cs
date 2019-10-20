@@ -1,5 +1,5 @@
-﻿using Microsoft.Boogie;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Microsoft.Boogie;
 
 namespace GPURepair.Repair
 {

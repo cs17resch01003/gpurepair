@@ -1,20 +1,16 @@
-﻿using GPURepair.Repair.Exceptions;
-using GPUVerify;
-using Microsoft.Boogie;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using GPURepair.Repair.Exceptions;
+using GPURepair.Repair.Metadata;
+using GPUVerify;
+using Microsoft.Boogie;
 using VC;
 
 namespace GPURepair.Repair
 {
     public class Verifier
     {
-        /// <summary>
-        /// The barriers in the program.
-        /// </summary>
-        private Dictionary<string, Barrier> barriers;
-
         /// <summary>
         /// The program to be instrumented.
         /// </summary>
@@ -30,12 +26,10 @@ namespace GPURepair.Repair
         /// </summary>
         /// <param name="program">The source Boogie program.</param>
         /// <param name="assignments">The current assignments to the variables.</param>
-        public Verifier(Microsoft.Boogie.Program program, Dictionary<string, bool> assignments,
-            Dictionary<string, Barrier> barriers)
+        public Verifier(Microsoft.Boogie.Program program, Dictionary<string, bool> assignments)
         {
             this.program = program;
             this.assignments = assignments;
-            this.barriers = barriers;
 
             KernelAnalyser.EliminateDeadVariables(this.program);
             KernelAnalyser.Inline(this.program);
@@ -83,7 +77,7 @@ namespace GPURepair.Repair
                     if (error.ErrorType.HasValue)
                     {
                         IEnumerable<string> variables = GetVariables(callCounterexample, error.ErrorType.Value);
-                        error.Variables = barriers.Where(x => variables.Contains(x.Key)).Select(x => x.Value)
+                        error.Variables = ProgramMetadata.Barriers.Where(x => variables.Contains(x.Key)).Select(x => x.Value)
                             .Where(x => x.Implementation.Name == error.Implementation.Name).Select(x => x.Variable);
 
                         if (error.Variables.Any())

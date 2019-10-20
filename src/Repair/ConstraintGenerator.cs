@@ -1,7 +1,8 @@
-﻿using Microsoft.Boogie;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using GPURepair.Repair.Metadata;
+using Microsoft.Boogie;
 
 namespace GPURepair.Repair
 {
@@ -13,38 +14,12 @@ namespace GPURepair.Repair
         private string filePath;
 
         /// <summary>
-        /// The barriers.
-        /// </summary>
-        private Dictionary<string, Barrier> barriers;
-
-        /// <summary>
         /// Initialize the variables.
         /// </summary>
         /// <param name="filePath">The file path.</param>
-        /// <param name="barriers">The barriers.</param>
-        public ConstraintGenerator(string filePath, Dictionary<string, Barrier> barriers)
+        public ConstraintGenerator(string filePath)
         {
             this.filePath = filePath;
-            this.barriers = barriers;
-        }
-
-        /// <summary>
-        /// Reads the file and generates a program.
-        /// </summary>
-        /// <param name="filePath">The file path.</param>
-        /// <returns>The program.</returns>
-        public static Microsoft.Boogie.Program ReadFile(string filePath)
-        {
-            Microsoft.Boogie.Program program;
-            Parser.Parse(filePath, new List<string>() { "FILE_0" }, out program);
-
-            ResolutionContext context = new ResolutionContext(null);
-            program.Resolve(context);
-
-            program.Typecheck();
-            new ModSetCollector().DoModSetAnalysis(program);
-
-            return program;
         }
 
         /// <summary>
@@ -55,14 +30,15 @@ namespace GPURepair.Repair
         public Microsoft.Boogie.Program ConstraintProgram(
             Dictionary<string, bool> assignments, IEnumerable<Error> errors)
         {
-            Microsoft.Boogie.Program program = ReadFile(filePath);
+            Microsoft.Boogie.Program program = BoogieUtilities.ReadFile(filePath);
             if (assignments == null || !assignments.Any())
                 return program;
 
             foreach (Implementation implementation in program.Implementations)
             {
                 Dictionary<string, bool> current_assignments = new Dictionary<string, bool>();
-                IEnumerable<string> barrierNames = barriers.Where(x => x.Value.Implementation.Name == implementation.Name).Select(x => x.Value.Name);
+                IEnumerable<string> barrierNames = ProgramMetadata.Barriers
+                    .Where(x => x.Value.Implementation.Name == implementation.Name).Select(x => x.Value.Name);
 
                 foreach (string barrierName in barrierNames)
                     if (assignments.ContainsKey(barrierName))
@@ -73,7 +49,7 @@ namespace GPURepair.Repair
             }
 
             string tempFile = WriteFile(program);
-            program = ReadFile(tempFile);
+            program = BoogieUtilities.ReadFile(tempFile);
 
             return program;
         }
@@ -110,27 +86,6 @@ namespace GPURepair.Repair
 
                 implementation.Blocks[0].Cmds.Insert(0, command);
             }
-        }
-
-        /// <summary>
-        /// Checks if an implementation has the given attribute.
-        /// </summary>
-        /// <param name="implementation">The implementation.</param>
-        /// <param name="attribute">The attribute.</param>
-        /// <returns>True if the attribute exists, False otherwise.</returns>
-        private bool ContainsAttribute(Implementation implementation, string attribute)
-        {
-            QKeyValue keyValue = implementation.Attributes;
-            bool found = false;
-
-            while (keyValue != null && !found)
-            {
-                if (attribute == keyValue.Key)
-                    found = true;
-                keyValue = keyValue.Next;
-            }
-
-            return found;
         }
     }
 }
