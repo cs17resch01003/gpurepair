@@ -11,7 +11,7 @@ namespace GPURepair.Repair.Metadata
     {
         public static Dictionary<string, Barrier> Barriers { private set; get; }
 
-        public static Dictionary<int, Location> Locations { private set; get; }
+        public static Dictionary<int, List<Location>> Locations { private set; get; }
 
         /// <summary>
         /// Populates the metadata.
@@ -30,7 +30,7 @@ namespace GPURepair.Repair.Metadata
         /// <param name="filePath">The file path.</param>
         private static void PopulateLocations(string filePath)
         {
-            Locations = new Dictionary<int, Location>();
+            Locations = new Dictionary<int, List<Location>>();
 
             using (StreamReader sr = new StreamReader(filePath))
             {
@@ -40,12 +40,13 @@ namespace GPURepair.Repair.Metadata
                     string line = locations[i];
                     string[] chain = line.Split(new char[] { '\x1E' });
 
+                    Locations.Add(i, new List<Location>());
                     foreach (string c in chain)
                     {
                         if (c != string.Empty)
                         {
                             string[] source = c.Split(new char[] { '\x1F' });
-                            Locations.Add(i, new Location
+                            Locations[i].Add(new Location
                             {
                                 SourceLocation = i,
                                 Line = Convert.ToInt32(source[0]),

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using GPURepair.Repair.Metadata;
 
 namespace GPURepair.Repair
@@ -20,7 +21,7 @@ namespace GPURepair.Repair
             foreach (string barrierName in assignments.Keys)
             {
                 Barrier barrier = ProgramMetadata.Barriers[barrierName];
-                Location location = ProgramMetadata.Locations[barrier.SourceLocation];
+                Location location = ProgramMetadata.Locations[barrier.SourceLocation].Last();
 
                 if (!barrier.Generated && !assignments[barrierName])
                 {
