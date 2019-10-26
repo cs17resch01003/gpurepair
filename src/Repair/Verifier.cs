@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using GPURepair.Repair.Errors;
 using GPURepair.Repair.Exceptions;
 using GPURepair.Repair.Metadata;
 using GPUVerify;
@@ -40,7 +41,7 @@ namespace GPURepair.Repair
         /// Gets the errors and associated metadata after verifying the program.
         /// </summary>
         /// <returns>The metadata of the errors.</returns>
-        public IEnumerable<Error> GetErrors()
+        public IEnumerable<RepairableError> GetErrors()
         {
             List<Error> errors = new List<Error>();
 
@@ -55,70 +56,81 @@ namespace GPURepair.Repair
                     ConditionGeneration.Outcome outcome = gen.VerifyImplementation(implementation, out examples);
                     if (outcome == ConditionGeneration.Outcome.Errors)
                         foreach (Counterexample example in examples)
-                            errors.Add(new Error()
-                            {
-                                CounterExample = example,
-                                Implementation = implementation
-                            });
+                            errors.Add(GenerateError(example, implementation));
                 }
-            }
-
-            List<Error> valid_errors = new List<Error>();
-            foreach (Error error in errors)
-            {
-                if (error.CounterExample is CallCounterexample)
-                {
-                    CallCounterexample callCounterexample = error.CounterExample as CallCounterexample;
-                    if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "barrier_divergence"))
-                        error.ErrorType = ErrorType.Divergence;
-                    else if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "race"))
-                        error.ErrorType = ErrorType.Race;
-
-                    if (error.ErrorType.HasValue)
-                    {
-                        IEnumerable<string> variables = GetVariables(callCounterexample, error.ErrorType.Value);
-                        error.Variables = ProgramMetadata.Barriers.Where(x => variables.Contains(x.Key)).Select(x => x.Value)
-                            .Where(x => x.Implementation.Name == error.Implementation.Name).Select(x => x.Variable);
-
-                        if (error.Variables.Any())
-                            valid_errors.Add(error);
-                    }
-                }
-            }
-
-            if (!valid_errors.Any() && errors.Any())
-            {
-                if (errors.Any(x => x.CounterExample is AssertCounterexample))
-                    throw new AssertionError("Assertions do not hold!");
-                if (errors.Any(x => x.CounterExample is CallCounterexample))
-                    throw new RepairError("Encountered a counterexample without any barrier assignments!");
-
-                throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
             }
 
             gen.Close();
-            return valid_errors;
+            if (!errors.Any(x => x is RepairableError && (x as RepairableError).Variables.Any()))
+            {
+                if (errors.Any(x => !(x is RepairableError)))
+                    throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
+                if (errors.Any(x => x.CounterExample is AssertCounterexample))
+                    throw new AssertionError("Assertions do not hold!");
+                if (errors.Any(x => x is RepairableError))
+                    throw new RepairError("Encountered a counterexample without any barrier assignments!");
+            }
+
+            return errors.Where(x => x is RepairableError && (x as RepairableError).Variables.Any())
+                .Select(x => x as RepairableError).ToList();
         }
 
         /// <summary>
-        /// Gets the variables from the counter example.
+        /// Generates the error from the counter example.
         /// </summary>
-        /// <param name="callCounterexample">The counter example.</param>
-        /// <param name="errorType">The error type.</param>
-        /// <returns></returns>
-        private IEnumerable<string> GetVariables(CallCounterexample callCounterexample, ErrorType errorType)
+        /// <param name="example">The counter example.</param>
+        /// <param name="implementation">The implementation.</param>
+        /// <returns>The error.</returns>
+        private Error GenerateError(Counterexample example, Implementation implementation)
+        {
+            if (example is CallCounterexample)
+            {
+                CallCounterexample callCounterexample = example as CallCounterexample;
+                if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "barrier_divergence"))
+                {
+                    DivergenceError divergence = new DivergenceError(example, implementation);
+                    IdentifyVariables(divergence);
+
+                    return divergence;
+                }
+                else if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "race"))
+                {
+                    RaceError race = new RaceError(example, implementation);
+                    IdentifyVariables(race);
+
+                    return race;
+                }
+            }
+
+            return new Error(example, implementation);
+        }
+
+        /// <summary>
+        /// Identifies the variables from the counter example.
+        /// </summary>
+        /// <param name="error">The error.</param>
+        private void IdentifyVariables(RepairableError error)
         {
             Regex regex = new Regex(@"^b\d+$");
-            Model.Boolean element = callCounterexample.Model.Elements.Where(x => x is Model.Boolean)
-                .Where(x => (x as Model.Boolean).Value == (errorType == ErrorType.Race ? false : true))
-                .Select(x => x as Model.Boolean).FirstOrDefault();
+            Dictionary<string, bool> assignments = new Dictionary<string, bool>();
 
-            IEnumerable<string> variables = element.References.Select(x => x.Func)
-                .Where(x => regex.IsMatch(x.Name)).Select(x => x.Name);
-            IEnumerable<string> current_assignments = assignments.Where(x => x.Value == ((errorType == ErrorType.Race ? false : true)))
-                .Select(x => x.Key);
+            IEnumerable<Model.Boolean> elements = error.CounterExample.Model.Elements
+                .Where(x => x is Model.Boolean).Select(x => x as Model.Boolean);
+            foreach (Model.Boolean element in elements)
+                element.References.Select(x => x.Func).Where(x => regex.IsMatch(x.Name))
+                    .Select(x => x.Name).ToList().ForEach(x => assignments.Add(x, element.Value));
 
-            return variables.Union(current_assignments);
+            foreach (string key in this.assignments.Keys)
+                assignments.Add(key, this.assignments[key]);
+
+            bool value = error is RaceError ? false : true;
+            IEnumerable<string> names = assignments.Where(x => x.Value == value).Select(x => x.Key);
+
+            IEnumerable<Barrier> barriers =
+                ProgramMetadata.Barriers.Where(x => names.Contains(x.Key)).Select(x => x.Value);
+
+            error.Variables = ProgramMetadata.Barriers.Where(x => names.Contains(x.Key)).Select(x => x.Value)
+                .Where(x => x.Implementation.Name == error.Implementation.Name).Select(x => x.Variable);
         }
     }
 }

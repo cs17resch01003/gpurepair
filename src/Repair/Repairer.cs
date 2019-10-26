@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using GPURepair.Repair.Diagnostics;
+using GPURepair.Repair.Errors;
 using GPURepair.Repair.Exceptions;
 using GPURepair.Repair.Metadata;
 
@@ -30,7 +31,7 @@ namespace GPURepair.Repair
         /// <returns>The fixed program if one exists.</returns>
         public Microsoft.Boogie.Program Repair(out Dictionary<string, bool> assignments)
         {
-            List<Error> errors = new List<Error>();
+            List<RepairableError> errors = new List<RepairableError>();
             Dictionary<string, bool> solution = null;
 
             while (true)
@@ -46,7 +47,7 @@ namespace GPURepair.Repair
                     if (type == Solver.SolverType.Optimizer && assignments.Count(x => x.Value == true) == solution.Count(x => x.Value == true))
                         return constraintGenerator.ConstraintProgram(assignments, errors);
 
-                    IEnumerable<Error> current_errors = VerifyProgram(assignments, errors);
+                    IEnumerable<RepairableError> current_errors = VerifyProgram(assignments, errors);
                     if (type == Solver.SolverType.Optimizer)
                     {
                         Logger.VerifierRunsAfterOptimization++;
@@ -88,11 +89,12 @@ namespace GPURepair.Repair
         /// <param name="assignments">The assignements</param>
         /// <param name="errors">The errors.</param>
         /// <returns>The errors.</returns>
-        private IEnumerable<Error> VerifyProgram(Dictionary<string, bool> assignments, IEnumerable<Error> errors)
+        private IEnumerable<RepairableError> VerifyProgram(
+            Dictionary<string, bool> assignments, IEnumerable<RepairableError> errors)
         {
             Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments, errors);
 
-            IEnumerable<Error> current_errors;
+            IEnumerable<RepairableError> current_errors;
             using (Watch watch = new Watch(Measure.Verification))
             {
                 Verifier verifier = new Verifier(program, assignments);

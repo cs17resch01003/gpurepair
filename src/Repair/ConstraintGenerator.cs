@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using GPURepair.Repair.Errors;
 using GPURepair.Repair.Metadata;
 using Microsoft.Boogie;
 
@@ -28,7 +29,7 @@ namespace GPURepair.Repair
         /// <param name="assignments">The assignments provided by the solver.</param>
         /// <param name="errors">The errors.</param>
         public Microsoft.Boogie.Program ConstraintProgram(
-            Dictionary<string, bool> assignments, IEnumerable<Error> errors)
+            Dictionary<string, bool> assignments, IEnumerable<RepairableError> errors)
         {
             Microsoft.Boogie.Program program = BoogieUtilities.ReadFile(filePath);
             if (assignments == null || !assignments.Any())

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using GPURepair.Repair.Diagnostics;
+using GPURepair.Repair.Errors;
 using GPURepair.Repair.Exceptions;
 using GPURepair.Solvers;
 using GPURepair.Solvers.Optimizer;
@@ -16,7 +17,7 @@ namespace GPURepair.Repair
         /// <param name="errors">The errors.</param>
         /// <param name="type">The solver type used.</param>
         /// <returns>The barrier assignments.</returns>
-        public Dictionary<string, bool> Solve(List<Error> errors, out SolverType type)
+        public Dictionary<string, bool> Solve(List<RepairableError> errors, out SolverType type)
         {
             List<Clause> clauses = GenerateClauses(errors);
 
@@ -59,7 +60,8 @@ namespace GPURepair.Repair
         /// <param name="solution">The solution obtained so far.</param>
         /// <param name="type">The solver type used.</param>
         /// <returns>The barrier assignments.</returns>
-        public Dictionary<string, bool> Optimize(List<Error> errors, Dictionary<string, bool> solution, out SolverType type)
+        public Dictionary<string, bool> Optimize(
+            List<RepairableError> errors, Dictionary<string, bool> solution, out SolverType type)
         {
             int barrier_count = solution.Count(x => x.Value == true);
             List<Clause> clauses = GenerateClauses(errors);
@@ -87,12 +89,12 @@ namespace GPURepair.Repair
         /// </summary>
         /// <param name="errors">The errors.</param>
         /// <returns>The clauses.</returns>
-        private List<Clause> GenerateClauses(List<Error> errors)
+        private List<Clause> GenerateClauses(List<RepairableError> errors)
         {
             List<Clause> clauses = new List<Clause>();
-            foreach (Error error in errors)
+            foreach (RepairableError error in errors)
             {
-                bool value = error.ErrorType == ErrorType.Race;
+                bool value = error is RaceError;
 
                 Clause clause = new Clause();
                 foreach (Variable variable in error.Variables)

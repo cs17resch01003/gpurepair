@@ -74,13 +74,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoogieUtilities.cs" />
+    <Compile Include="Errors\DivergenceError.cs" />
+    <Compile Include="Errors\RaceError.cs" />
+    <Compile Include="Errors\RepairableError.cs" />
     <Compile Include="Metadata\Barrier.cs" />
     <Compile Include="ConstraintGenerator.cs" />
     <Compile Include="Diagnostics\Logger.cs" />
     <Compile Include="Diagnostics\Measure.cs" />
     <Compile Include="Diagnostics\Watch.cs" />
-    <Compile Include="Error.cs" />
-    <Compile Include="ErrorType.cs" />
+    <Compile Include="Errors\Error.cs" />
     <Compile Include="Exceptions\AssertionError.cs" />
     <Compile Include="Exceptions\NonBarrierError.cs" />
     <Compile Include="Exceptions\RepairError.cs" />
