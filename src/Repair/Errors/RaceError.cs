@@ -1,4 +1,5 @@
-﻿using Microsoft.Boogie;
+﻿using GPURepair.Repair.Metadata;
+using Microsoft.Boogie;
 
 namespace GPURepair.Repair.Errors
 {
@@ -28,5 +29,15 @@ namespace GPURepair.Repair.Errors
         /// The access type 2 for the race type.
         /// </summary>
         public string Access2 { get; set; }
+
+        /// <summary>
+        /// The starting line of code which caused the race.
+        /// </summary>
+        public Location Start { get; set; }
+
+        /// <summary>
+        /// The ending line of code which caused the race.
+        /// </summary>
+        public Location End { get; set; }
     }
 }

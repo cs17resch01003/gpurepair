@@ -25,6 +25,25 @@ namespace GPURepair.Repair.Metadata
         }
 
         /// <summary>
+        /// Gets the location based on the file, line and column.
+        /// </summary>
+        /// <param name="directory">The directory.</param>
+        /// <param name="file">The file.</param>
+        /// <param name="line">The line.</param>
+        /// <param name="column">The column.</param>
+        /// <returns>The location.</returns>
+        public static Location GetLocation(string directory, string file, int line, int column)
+        {
+            foreach (List<Location> locations in Locations.Values)
+                foreach (Location location in locations)
+                    if (location.Directory == directory && location.File == file &&
+                            location.Line == line && location.Column == column)
+                        return location;
+
+            return null;
+        }
+
+        /// <summary>
         /// Populates the locations.
         /// </summary>
         /// <param name="filePath">The file path.</param>
@@ -51,7 +70,7 @@ namespace GPURepair.Repair.Metadata
                                 SourceLocation = i,
                                 Line = Convert.ToInt32(source[0]),
                                 Column = Convert.ToInt32(source[1]),
-                                File = new FileInfo(source[2]).FullName,
+                                File = source[2],
                                 Directory = new DirectoryInfo(source[3]).FullName,
                             });
                         }

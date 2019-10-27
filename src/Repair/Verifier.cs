@@ -89,6 +89,9 @@ namespace GPURepair.Repair
                 if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "barrier_divergence"))
                 {
                     DivergenceError divergence = new DivergenceError(example, implementation);
+                    ErrorReporter reporter = new ErrorReporter(program, implementation.Name);
+
+                    reporter.PopulateDivergenceInformation(callCounterexample, divergence);
                     IdentifyVariables(divergence);
 
                     return divergence;
@@ -96,6 +99,9 @@ namespace GPURepair.Repair
                 else if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "race"))
                 {
                     RaceError race = new RaceError(example, implementation);
+                    ErrorReporter reporter = new ErrorReporter(program, implementation.Name);
+
+                    reporter.PopulateRaceInformation(callCounterexample, race);
                     IdentifyVariables(race);
 
                     return race;
@@ -126,11 +132,37 @@ namespace GPURepair.Repair
             bool value = error is RaceError ? false : true;
             IEnumerable<string> names = assignments.Where(x => x.Value == value).Select(x => x.Key);
 
-            IEnumerable<Barrier> barriers =
-                ProgramMetadata.Barriers.Where(x => names.Contains(x.Key)).Select(x => x.Value);
+            IEnumerable<Barrier> barriers = ProgramMetadata.Barriers
+                .Where(x => names.Contains(x.Key)).Select(x => x.Value)
+                .Where(x => x.Implementation.Name == error.Implementation.Name);
 
-            error.Variables = ProgramMetadata.Barriers.Where(x => names.Contains(x.Key)).Select(x => x.Value)
-                .Where(x => x.Implementation.Name == error.Implementation.Name).Select(x => x.Variable);
+            // Filter the variables based on source locations
+            List<Variable> variables = new List<Variable>();
+            if (error is RaceError)
+            {
+                RaceError race = error as RaceError;
+                foreach (Barrier barrier in barriers)
+                {
+                    Location location = ProgramMetadata.Locations[barrier.SourceLocation].Last();
+                    if (race.Start != null && race.End != null)
+                        if (location.IsBetween(race.Start, race.End))
+                            variables.Add(barrier.Variable);
+                }
+            }
+            else
+            {
+                DivergenceError divergence = error as DivergenceError;
+                foreach (Barrier barrier in barriers)
+                {
+                    Location location = ProgramMetadata.Locations[barrier.SourceLocation].Last();
+                    if (divergence.Location != null && location.Equals(divergence.Location))
+                        variables.Add(barrier.Variable);
+                }
+            }
+
+            if (!variables.Any() && barriers.Any())
+                variables = barriers.Select(x => x.Variable).ToList();
+            error.Variables = variables;
         }
     }
 }

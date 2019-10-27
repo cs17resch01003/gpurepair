@@ -1,4 +1,5 @@
-﻿using Microsoft.Boogie;
+﻿using GPURepair.Repair.Metadata;
+using Microsoft.Boogie;
 
 namespace GPURepair.Repair.Errors
 {
@@ -13,5 +14,10 @@ namespace GPURepair.Repair.Errors
             : base(counterExample, implementation)
         {
         }
+
+        /// <summary>
+        /// The line of code which caused the barrier divergence.
+        /// </summary>
+        public Location Location { get; set; }
     }
 }
