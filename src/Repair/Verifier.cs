@@ -63,10 +63,10 @@ namespace GPURepair.Repair
             gen.Close();
             if (!errors.Any(x => x is RepairableError && (x as RepairableError).Variables.Any()))
             {
-                if (errors.Any(x => !(x is RepairableError)))
-                    throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
                 if (errors.Any(x => x.CounterExample is AssertCounterexample))
                     throw new AssertionError("Assertions do not hold!");
+                if (errors.Any(x => !(x is RepairableError)))
+                    throw new NonBarrierError("The program cannot be repaired since it has errors besides race and divergence errors!");
                 if (errors.Any(x => x is RepairableError))
                     throw new RepairError("Encountered a counterexample without any barrier assignments!");
             }
