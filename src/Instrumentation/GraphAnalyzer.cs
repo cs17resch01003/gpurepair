@@ -56,11 +56,11 @@ namespace GPURepair.Instrumentation
                 // identify merge points
                 if (node.Parents.Count > 1)
                 {
-                    List<(ProgramNode, ProgramNode)> backEdges = graph.GetBackEdges();
-                    if (backEdges.Any(x => x.Item2 == node))
+                    List<BackEdge> backEdges = graph.GetBackEdges();
+                    if (backEdges.Any(x => x.Destination == node))
                     {
                         // loop structures
-                        (ProgramNode, ProgramNode) edge = backEdges.First(x => x.Item2 == node);
+                        BackEdge edge = backEdges.First(x => x.Destination == node);
                         List<ProgramNode> loopNodes = graph.GetLoopNodes(edge);
 
                         if (loopNodes.Any(x => nodesContainingBarriers.Contains(x)))

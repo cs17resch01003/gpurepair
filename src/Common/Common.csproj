@@ -72,6 +72,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackEdge.cs" />
     <Compile Include="ProgramGraph.cs" />
     <Compile Include="ProgramNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

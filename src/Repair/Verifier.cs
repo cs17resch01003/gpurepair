@@ -179,7 +179,7 @@ namespace GPURepair.Repair
 
             // check if any of the barriers are inside a loop
             List<Barrier> result = new List<Barrier>();
-            foreach ((ProgramNode, ProgramNode) edge in ProgramMetadata.LoopBarriers.Keys)
+            foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
             {
                 List<Barrier> loopBarriers = ProgramMetadata.LoopBarriers[edge];
                 if (filteredBarriers.Any(x => loopBarriers.Contains(x)))

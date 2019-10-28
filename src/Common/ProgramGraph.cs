@@ -17,6 +17,7 @@ namespace GPURepair.Common
         {
             GenerateNodes(program);
             TraverseGraph();
+            PopulateLoopNodes();
         }
 
         /// <summary>
@@ -27,7 +28,12 @@ namespace GPURepair.Common
         /// <summary>
         /// The back edges in the source program.
         /// </summary>
-        private List<(ProgramNode, ProgramNode)> backEdges = new List<(ProgramNode, ProgramNode)>();
+        private List<BackEdge> backEdges = new List<BackEdge>();
+
+        /// <summary>
+        /// The back edge and the corresponding nodes in the loop.
+        /// </summary>
+        private Dictionary<BackEdge, List<ProgramNode>> loopNodes = new Dictionary<BackEdge, List<ProgramNode>>();
 
         /// <summary>
         /// Gets the nodes in the program graph.
@@ -42,7 +48,7 @@ namespace GPURepair.Common
         /// Gets the back edges in the program graph.
         /// </summary>
         /// <returns>The back edges.</returns>
-        public List<(ProgramNode, ProgramNode)> GetBackEdges()
+        public List<BackEdge> GetBackEdges()
         {
             return backEdges;
         }
@@ -67,25 +73,9 @@ namespace GPURepair.Common
         /// </summary>
         /// <param name="edge">The back-edge.</param>
         /// <returns>The loop nodes.</returns>
-        public List<ProgramNode> GetLoopNodes((ProgramNode, ProgramNode) edge)
+        public List<ProgramNode> GetLoopNodes(BackEdge edge)
         {
-            List<ProgramNode> loopNodes = new List<ProgramNode>();
-            ProgramNode mergeNode = edge.Item2;
-
-            Queue<ProgramNode> queue = new Queue<ProgramNode>();
-            queue.Enqueue(mergeNode);
-
-            while (queue.Any())
-            {
-                ProgramNode node = queue.Dequeue();
-                if (!loopNodes.Contains(node) && (node == edge.Item1 || node.Descendants.Contains(edge.Item1)))
-                {
-                    loopNodes.Add(node);
-                    node.Children.ForEach(x => queue.Enqueue(x));
-                }
-            }
-
-            return loopNodes;
+            return loopNodes[edge];
         }
 
         /// <summary>
@@ -172,8 +162,96 @@ namespace GPURepair.Common
         /// <param name="destination">The destination of the back edge.</param>
         private void AddBackEdge(ProgramNode source, ProgramNode destination)
         {
-            if (!backEdges.Any(x => x.Item1 == source && x.Item2 == destination))
-                backEdges.Add((source, destination));
+            if (!backEdges.Any(x => x.Source == source && x.Destination == destination))
+                backEdges.Add(new BackEdge(source, destination));
+        }
+
+        /// <summary>
+        /// Popluates the nodes in the path of each back edge.
+        /// </summary>
+        private void PopulateLoopNodes()
+        {
+            Dictionary<BackEdge, List<ProgramNode>> pathNodes = new Dictionary<BackEdge, List<ProgramNode>>();
+            foreach (BackEdge edge in backEdges)
+            {
+                List<ProgramNode> nodes = GeneratePathNodes(edge);
+                pathNodes.Add(edge, nodes);
+            }
+
+            List<(BackEdge, BackEdge)> relatedEdges = new List<(BackEdge, BackEdge)>();
+            foreach (BackEdge edge1 in backEdges)
+                foreach (BackEdge edge2 in backEdges)
+                    if (edge1 != edge2)
+                    {
+                        bool first = pathNodes[edge2].Contains(edge1.Source) || pathNodes[edge2].Contains(edge1.Destination);
+                        bool second = pathNodes[edge1].Contains(edge2.Source) || pathNodes[edge1].Contains(edge2.Destination);
+
+                        if (first || second)
+                            relatedEdges.Add((edge1, edge2));
+                    }
+
+            foreach (BackEdge edge in backEdges)
+            {
+                List<BackEdge> related = GetRelatedEdges(relatedEdges, edge);
+                List<ProgramNode> nodes = pathNodes.Where(x => related.Contains(x.Key)).SelectMany(x => x.Value).Distinct().ToList();
+
+                loopNodes.Add(edge, nodes);
+            }
+        }
+
+        /// <summary>
+        /// Gets the related edges recursively.
+        /// </summary>
+        /// <param name="relatedEdges">The first level related edges.</param>
+        /// <param name="edge">The edge for which the related edges are determined.</param>
+        /// <returns></returns>
+        private List<BackEdge> GetRelatedEdges(List<(BackEdge, BackEdge)> relatedEdges, BackEdge edge)
+        {
+            List<BackEdge> result = new List<BackEdge>();
+
+            Queue<BackEdge> queue = new Queue<BackEdge>();
+            queue.Enqueue(edge);
+
+            while (queue.Any())
+            {
+                BackEdge temp = queue.Dequeue();
+                result.Add(temp);
+
+                IEnumerable<BackEdge> first = relatedEdges.Where(x => x.Item1 == temp).Select(x => x.Item2);
+                IEnumerable<BackEdge> second = relatedEdges.Where(x => x.Item2 == temp).Select(x => x.Item1);
+
+                foreach (BackEdge related in first.Union(second).Distinct())
+                    if (!result.Contains(related))
+                        queue.Enqueue(related);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the nodes in the path between the two edge points.
+        /// </summary>
+        /// <param name="edge">The back-edge.</param>
+        /// <returns>The path nodes.</returns>
+        private List<ProgramNode> GeneratePathNodes(BackEdge edge)
+        {
+            List<ProgramNode> pathNodes = new List<ProgramNode>();
+            ProgramNode mergeNode = edge.Destination;
+
+            Queue<ProgramNode> queue = new Queue<ProgramNode>();
+            queue.Enqueue(mergeNode);
+
+            while (queue.Any())
+            {
+                ProgramNode node = queue.Dequeue();
+                if (!pathNodes.Contains(node) && (node == edge.Source || node.Descendants.Contains(edge.Source)))
+                {
+                    pathNodes.Add(node);
+                    node.Children.ForEach(x => queue.Enqueue(x));
+                }
+            }
+
+            return pathNodes;
         }
     }
 }

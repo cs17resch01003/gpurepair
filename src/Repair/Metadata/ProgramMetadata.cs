@@ -27,12 +27,12 @@ namespace GPURepair.Repair.Metadata
         /// <summary>
         /// The back edges in the program.
         /// </summary>
-        public static List<(ProgramNode, ProgramNode)> BackEdges { private set; get; }
+        public static List<BackEdge> BackEdges { private set; get; }
 
         /// <summary>
         /// Maps the loops with the barriers inside the loops.
         /// </summary>
-        public static Dictionary<(ProgramNode, ProgramNode), List<Barrier>> LoopBarriers { private set; get; }
+        public static Dictionary<BackEdge, List<Barrier>> LoopBarriers { private set; get; }
 
         /// <summary>
         /// Populates the metadata.
@@ -148,7 +148,7 @@ namespace GPURepair.Repair.Metadata
 
             Logger.Barriers = Barriers.Count;
         }
-        
+
         /// <summary>
         /// Populates the loop information.
         /// </summary>
@@ -158,9 +158,9 @@ namespace GPURepair.Repair.Metadata
             ProgramGraph graph = new ProgramGraph(program);
 
             BackEdges = graph.GetBackEdges();
-            LoopBarriers = new Dictionary<(ProgramNode, ProgramNode), List<Barrier>>();
+            LoopBarriers = new Dictionary<BackEdge, List<Barrier>>();
 
-            foreach ((ProgramNode, ProgramNode) edge in graph.GetBackEdges())
+            foreach (BackEdge edge in graph.GetBackEdges())
             {
                 List<ProgramNode> loopNodes = graph.GetLoopNodes(edge);
                 List<Block> loopBlocks = loopNodes.Select(x => x.Block).ToList();
