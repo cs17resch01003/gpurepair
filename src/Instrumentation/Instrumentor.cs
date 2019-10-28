@@ -1,7 +1,8 @@
-﻿using Microsoft.Basetypes;
-using Microsoft.Boogie;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using GPURepair.Common;
+using Microsoft.Basetypes;
+using Microsoft.Boogie;
 
 namespace GPURepair.Instrumentation
 {
@@ -43,12 +44,18 @@ namespace GPURepair.Instrumentation
         private LiteralExpr _1bv1;
 
         /// <summary>
+        /// The graph analyzer.
+        /// </summary>
+        private GraphAnalyzer analyzer;
+
+        /// <summary>
         /// Initialize the variables.
         /// </summary>
         /// <param name="program">The source Boogie program.</param>
         public Instrumentor(Microsoft.Boogie.Program program)
         {
             this.program = program;
+            analyzer = new GraphAnalyzer(program);
 
             foreach (Declaration declaration in program.TopLevelDeclarations)
                 if (declaration is Procedure)
@@ -59,7 +66,6 @@ namespace GPURepair.Instrumentation
                 }
 
             _1bv1 = new LiteralExpr(Token.NoToken, BigNum.ONE, 1);
-            BlockNodeManager.GenerateNodes(program);
         }
 
         /// <summary>
@@ -75,37 +81,7 @@ namespace GPURepair.Instrumentation
             do program_modified = InstrumentBarrier();
             while (program_modified);
 
-            List<BlockNode> nodes = BlockNodeManager.GetMergeNodes();
-            foreach (BlockNode node in nodes)
-            {
-                if (!node.Block.Cmds.Any())
-                    continue;
-
-                // skips asserts to preserve the invariants at the loop head
-                int i = 1;
-                while (node.Block.Cmds.Count > i && node.Block.Cmds[i] is AssertCmd)
-                {
-                    AssertCmd assert = node.Block.Cmds[i] as AssertCmd;
-                    if (!ContainsAttribute(assert, "originated_from_invariant"))
-                        break;
-
-                    i = i + 1;
-                }
-
-                // the block should have source location information for instrumentation to work
-                if (node.Block.Cmds[0] is AssertCmd)
-                {
-                    AssertCmd assert = node.Block.Cmds[0] as AssertCmd;
-                    if (ContainsAttribute(assert, SourceLocationKey))
-                    {
-                        node.Block.Cmds.Insert(i, assert);
-                        node.Block.Cmds.RemoveAt(0);
-
-                        // insert a barrier at the beginning of the merge block
-                        AddBarrier(node.Implementation, node.Block, i);
-                    }
-                }
-            }
+            InstrumentMergeNodes();
         }
 
         /// <summary>
@@ -162,8 +138,6 @@ namespace GPURepair.Instrumentation
                         // if there is a global variable
                         if (instrument)
                         {
-                            BlockNodeManager.SetGlobalVariablePresent(implementation.Name, block.Label);
-
                             // assert commands are used to store the metadata related to the actual command
                             AssertCmd assert = null;
                             if (i - 1 >= 0 && block.Cmds[i - 1] is AssertCmd)
@@ -190,6 +164,8 @@ namespace GPURepair.Instrumentation
                             if (!ContainsAttribute(assert, InstrumentationKey))
                             {
                                 AddBarrier(implementation, block, i);
+
+                                analyzer.LinkBarrier(implementation.Name, block.Label);
                                 return true;
                             }
                         }
@@ -220,6 +196,8 @@ namespace GPURepair.Instrumentation
                             if (call.callee == "$bugle_barrier" && !ContainsAttribute(call, BarrierKey))
                             {
                                 UpdateBarrier(implementation, block, i);
+
+                                analyzer.LinkBarrier(implementation.Name, block.Label);
                                 return true;
                             }
                         }
@@ -228,6 +206,44 @@ namespace GPURepair.Instrumentation
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Instrument the merge nodes in the program.
+        /// </summary>
+        private void InstrumentMergeNodes()
+        {
+            List<ProgramNode> nodes = analyzer.GetMergeNodes();
+            foreach (ProgramNode node in nodes)
+            {
+                if (!node.Block.Cmds.Any())
+                    continue;
+
+                // skips asserts to preserve the invariants at the loop head
+                int i = 1;
+                while (node.Block.Cmds.Count > i && node.Block.Cmds[i] is AssertCmd)
+                {
+                    AssertCmd assert = node.Block.Cmds[i] as AssertCmd;
+                    if (!ContainsAttribute(assert, "originated_from_invariant"))
+                        break;
+
+                    i = i + 1;
+                }
+
+                // the block should have source location information for instrumentation to work
+                if (node.Block.Cmds[0] is AssertCmd)
+                {
+                    AssertCmd assert = node.Block.Cmds[0] as AssertCmd;
+                    if (ContainsAttribute(assert, SourceLocationKey))
+                    {
+                        node.Block.Cmds.Insert(i, assert);
+                        node.Block.Cmds.RemoveAt(0);
+
+                        // insert a barrier at the beginning of the merge block
+                        analyzer.LinkBarrier(node.Implementation.Name, node.Block.Label);
+                    }
+                }
+            }
         }
 
         /// <summary>
