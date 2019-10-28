@@ -22,7 +22,7 @@ namespace GPURepair.Instrumentation
         /// <summary>
         /// Initilaizes an instance of <see cref="GraphAnalyzer"/>.
         /// </summary>
-        /// <param name="program"></param>
+        /// <param name="program">The boogie program.</param>
         public GraphAnalyzer(Microsoft.Boogie.Program program)
         {
             graph = new ProgramGraph(program);

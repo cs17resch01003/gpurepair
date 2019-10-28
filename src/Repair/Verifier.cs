@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using GPURepair.Common;
 using GPURepair.Repair.Errors;
 using GPURepair.Repair.Exceptions;
 using GPURepair.Repair.Metadata;
@@ -140,14 +141,8 @@ namespace GPURepair.Repair
             List<Variable> variables = new List<Variable>();
             if (error is RaceError)
             {
-                RaceError race = error as RaceError;
-                foreach (Barrier barrier in barriers)
-                {
-                    Location location = ProgramMetadata.Locations[barrier.SourceLocation].Last();
-                    if (race.Start != null && race.End != null)
-                        if (location.IsBetween(race.Start, race.End))
-                            variables.Add(barrier.Variable);
-                }
+                List<Barrier> filteredBarriers = FilterBarriers(barriers, error as RaceError);
+                variables = filteredBarriers.Select(x => x.Variable).ToList();
             }
             else
             {
@@ -163,6 +158,51 @@ namespace GPURepair.Repair
             if (!variables.Any() && barriers.Any())
                 variables = barriers.Select(x => x.Variable).ToList();
             error.Variables = variables;
+        }
+
+        /// <summary>
+        /// Filter the barriers based on the source information.
+        /// </summary>
+        /// <param name="barriers">The barriers involved in the trace.</param>
+        /// <param name="race">The race error.</param>
+        /// <returns>The barriers to be considered.</returns>
+        private List<Barrier> FilterBarriers(IEnumerable<Barrier> barriers, RaceError race)
+        {
+            List<Barrier> filteredBarriers = new List<Barrier>();
+            foreach (Barrier barrier in barriers)
+            {
+                Location location = ProgramMetadata.Locations[barrier.SourceLocation].Last();
+                if (race.Start != null && race.End != null)
+                    if (location.IsBetween(race.Start, race.End))
+                        filteredBarriers.Add(barrier);
+            }
+
+            // check if any of the barriers are inside a loop
+            List<Barrier> result = new List<Barrier>();
+            foreach ((ProgramNode, ProgramNode) edge in ProgramMetadata.LoopBarriers.Keys)
+            {
+                List<Barrier> loopBarriers = ProgramMetadata.LoopBarriers[edge];
+                if (filteredBarriers.Any(x => loopBarriers.Contains(x)))
+                    foreach (Barrier barrier in loopBarriers)
+                        if (barriers.Contains(barrier))
+                            AddBarrier(result, barrier);
+            }
+
+            foreach (Barrier barrier in filteredBarriers)
+                AddBarrier(result, barrier);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Adds a barrier to the list if it doesn't exist already..
+        /// </summary>
+        /// <param name="list">The list.</param>
+        /// <param name="barrier">The barrier.</param>
+        private void AddBarrier(List<Barrier> list, Barrier barrier)
+        {
+            if (!list.Contains(barrier))
+                list.Add(barrier);
         }
     }
 }

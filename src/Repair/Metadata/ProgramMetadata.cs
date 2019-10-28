@@ -1,17 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using GPURepair.Common;
 using GPURepair.Repair.Diagnostics;
 using Microsoft.Boogie;
 
 namespace GPURepair.Repair.Metadata
 {
+    /// <summary>
+    /// Populates the program metadata.
+    /// </summary>
     public static class ProgramMetadata
     {
+        /// <summary>
+        /// The barriers in the program.
+        /// </summary>
         public static Dictionary<string, Barrier> Barriers { private set; get; }
 
+        /// <summary>
+        /// The source locations in the program.
+        /// </summary>
         public static Dictionary<int, List<Location>> Locations { private set; get; }
+
+        /// <summary>
+        /// The back edges in the program.
+        /// </summary>
+        public static List<(ProgramNode, ProgramNode)> BackEdges { private set; get; }
+
+        /// <summary>
+        /// Maps the loops with the barriers inside the loops.
+        /// </summary>
+        public static Dictionary<(ProgramNode, ProgramNode), List<Barrier>> LoopBarriers { private set; get; }
 
         /// <summary>
         /// Populates the metadata.
@@ -20,8 +41,10 @@ namespace GPURepair.Repair.Metadata
         public static void PopulateMetadata(string filePath)
         {
             Microsoft.Boogie.Program program = BoogieUtilities.ReadFile(filePath);
+
             PopulateLocations(filePath.Replace(".cbpl", ".loc"));
             PopulateBarriers(program);
+            PopulateLoopInformation(program);
         }
 
         /// <summary>
@@ -124,6 +147,49 @@ namespace GPURepair.Repair.Metadata
                         }
 
             Logger.Barriers = Barriers.Count;
+        }
+        
+        /// <summary>
+        /// Populates the loop information.
+        /// </summary>
+        /// <param name="program">The given program.</param>
+        private static void PopulateLoopInformation(Microsoft.Boogie.Program program)
+        {
+            ProgramGraph graph = new ProgramGraph(program);
+
+            BackEdges = graph.GetBackEdges();
+            LoopBarriers = new Dictionary<(ProgramNode, ProgramNode), List<Barrier>>();
+
+            foreach ((ProgramNode, ProgramNode) edge in graph.GetBackEdges())
+            {
+                List<ProgramNode> loopNodes = GetLoopNodes(edge);
+                List<Block> loopBlocks = loopNodes.Select(x => x.Block).ToList();
+
+                List<Barrier> barriers = ProgramMetadata.Barriers.Values
+                    .Where(x => loopBlocks.Contains(x.Block)).ToList();
+                LoopBarriers.Add(edge, barriers);
+            }
+        }
+
+        /// <summary>
+        /// Gets the loop nodes between the two edge points.
+        /// </summary>
+        /// <param name="edge">The back-edge.</param>
+        /// <returns>The loop nodes.</returns>
+        private static List<ProgramNode> GetLoopNodes((ProgramNode, ProgramNode) edge)
+        {
+            List<ProgramNode> loopNodes = new List<ProgramNode>();
+
+            ProgramNode mergeNode = edge.Item2;
+            foreach (ProgramNode child in mergeNode.Children)
+                if (child.Descendants.Contains(edge.Item1))
+                {
+                    loopNodes.Add(child);
+                    loopNodes.AddRange(child.Descendants);
+                }
+
+            loopNodes.Add(mergeNode);
+            return loopNodes;
         }
 
         /// <summary>
