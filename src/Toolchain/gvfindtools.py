@@ -17,51 +17,51 @@ import sys
 # rootDir = r"c:\projects\gpuverify"
 # bugleSrcDir = rootDir + r"\bugle\src"
 
-rootDir = "/datadrive"
+rootDir = r"C:\SRC\GPURepair"
 
 # The path to the Bugle Source directory.
 # The include-blang/ folder should be there
-bugleSrcDir = rootDir + "/bugle/src"
+bugleSrcDir = rootDir + r"\bugle\src"
 
 # The Path to the directory where the "bugle" executable can be found.
-bugleBinDir = rootDir + "/bugle/build"
+bugleBinDir = rootDir + r"\bugle\build\Release"
 
 # The path to the libclc Source directory.
-libclcSrcDir = rootDir + "/libclc/src"
+libclcSrcDir = rootDir + r"\libclc\src"
 
 # The path to the libclc install directory.
 # The include/ and lib/clc/ folders should be there
-libclcInstallDir = rootDir + "/libclc/install"
+libclcInstallDir = rootDir + r"\libclc\install"
 
 # The path to the llvm Source directory.
-llvmSrcDir = rootDir + "/llvm_and_clang/src"
+llvmSrcDir = rootDir + r"\llvm_and_clang\src"
 
 # The path to the directory containing the llvm binaries.
 # llvm-nm, clang and opt should be there
-llvmBinDir = rootDir + "/llvm_and_clang/build/bin"
+llvmBinDir = rootDir + r"\llvm_and_clang\build\Release\bin"
 
 # The path containing the llvm libraries
-llvmLibDir = rootDir + "/llvm_and_clang/build/lib"
+llvmLibDir = rootDir + r"\llvm_and_clang\build\Release\lib"
 
 # The path to the directory containing the GPUVerify binaries.
 # GPUVerifyVCGen.exe, GPUVerifyCruncher.exe and GPUVerifyBoogieDriver.exe should be there
-gpuVerifyBinDir = rootDir + "/gpuverify/Binaries"
+gpuVerifyBinDir = rootDir + r"\gpuverify\Binaries"
 
 # The path to the directory containing the GPURepair binaries.
 # GPURepair.Instrumentation.exe and GPURepair.Repair.exe should be there
-gpuRepairBinDir = rootDir + "/gpurepair/Binaries"
+gpuRepairBinDir = rootDir + r"\GPURepair\Binaries"
 
 # The path to the z3 Source directory.
-z3SrcDir = rootDir + "/z3"
+z3SrcDir = rootDir + r"\z3"
 
 # The path to the directory containing z3.exe
-z3BinDir = rootDir + "/z3/build"
+z3BinDir = rootDir + r"\z3\build"
 
 # The path to the cvc4 Source directory.
-cvc4SrcDir = rootDir + "/CVC4/src"
+cvc4SrcDir = rootDir + r"\CVC4\src"
 
 # The path to the directory containing cvc4.exe
-cvc4BinDir = rootDir + "/CVC4/install/bin"
+cvc4BinDir = rootDir + r"\CVC4\install\bin"
 
 # Default solver should be one of ['z3','cvc4']
 defaultSolver = 'z3'
