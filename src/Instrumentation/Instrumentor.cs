@@ -240,6 +240,7 @@ namespace GPURepair.Instrumentation
                         node.Block.Cmds.RemoveAt(0);
 
                         // insert a barrier at the beginning of the merge block
+                        AddBarrier(node.Implementation, node.Block, i);
                         analyzer.LinkBarrier(node.Implementation.Name, node.Block.Label);
                     }
                 }
