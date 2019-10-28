@@ -162,34 +162,13 @@ namespace GPURepair.Repair.Metadata
 
             foreach ((ProgramNode, ProgramNode) edge in graph.GetBackEdges())
             {
-                List<ProgramNode> loopNodes = GetLoopNodes(edge);
+                List<ProgramNode> loopNodes = graph.GetLoopNodes(edge);
                 List<Block> loopBlocks = loopNodes.Select(x => x.Block).ToList();
 
                 List<Barrier> barriers = ProgramMetadata.Barriers.Values
                     .Where(x => loopBlocks.Contains(x.Block)).ToList();
                 LoopBarriers.Add(edge, barriers);
             }
-        }
-
-        /// <summary>
-        /// Gets the loop nodes between the two edge points.
-        /// </summary>
-        /// <param name="edge">The back-edge.</param>
-        /// <returns>The loop nodes.</returns>
-        private static List<ProgramNode> GetLoopNodes((ProgramNode, ProgramNode) edge)
-        {
-            List<ProgramNode> loopNodes = new List<ProgramNode>();
-
-            ProgramNode mergeNode = edge.Item2;
-            foreach (ProgramNode child in mergeNode.Children)
-                if (child.Descendants.Contains(edge.Item1))
-                {
-                    loopNodes.Add(child);
-                    loopNodes.AddRange(child.Descendants);
-                }
-
-            loopNodes.Add(mergeNode);
-            return loopNodes;
         }
 
         /// <summary>

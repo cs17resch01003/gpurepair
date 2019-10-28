@@ -61,7 +61,7 @@ namespace GPURepair.Instrumentation
                     {
                         // loop structures
                         (ProgramNode, ProgramNode) edge = backEdges.First(x => x.Item2 == node);
-                        List<ProgramNode> loopNodes = GetLoopNodes(edge);
+                        List<ProgramNode> loopNodes = graph.GetLoopNodes(edge);
 
                         if (loopNodes.Any(x => nodesContainingBarriers.Contains(x)))
                             list.Add(node);
@@ -81,27 +81,6 @@ namespace GPURepair.Instrumentation
             }
 
             return list;
-        }
-
-        /// <summary>
-        /// Gets the loop nodes between the two edge points.
-        /// </summary>
-        /// <param name="edge">The back-edge.</param>
-        /// <returns>The loop nodes.</returns>
-        private static List<ProgramNode> GetLoopNodes((ProgramNode, ProgramNode) edge)
-        {
-            List<ProgramNode> loopNodes = new List<ProgramNode>();
-
-            ProgramNode mergeNode = edge.Item2;
-            foreach (ProgramNode child in mergeNode.Children)
-                if (child.Descendants.Contains(edge.Item1))
-                {
-                    loopNodes.Add(child);
-                    loopNodes.AddRange(child.Descendants);
-                }
-
-            loopNodes.Add(mergeNode);
-            return loopNodes;
         }
 
         /// <summary>

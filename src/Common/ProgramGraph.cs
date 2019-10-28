@@ -63,6 +63,32 @@ namespace GPURepair.Common
         }
 
         /// <summary>
+        /// Gets the loop nodes between the two edge points.
+        /// </summary>
+        /// <param name="edge">The back-edge.</param>
+        /// <returns>The loop nodes.</returns>
+        public List<ProgramNode> GetLoopNodes((ProgramNode, ProgramNode) edge)
+        {
+            List<ProgramNode> loopNodes = new List<ProgramNode>();
+            ProgramNode mergeNode = edge.Item2;
+
+            Queue<ProgramNode> queue = new Queue<ProgramNode>();
+            queue.Enqueue(mergeNode);
+
+            while (queue.Any())
+            {
+                ProgramNode node = queue.Dequeue();
+                if (!loopNodes.Contains(node) && (node == edge.Item1 || node.Descendants.Contains(edge.Item1)))
+                {
+                    loopNodes.Add(node);
+                    node.Children.ForEach(x => queue.Enqueue(x));
+                }
+            }
+
+            return loopNodes;
+        }
+
+        /// <summary>
         /// Generates the nodes.
         /// </summary>
         private void GenerateNodes(Program program)
