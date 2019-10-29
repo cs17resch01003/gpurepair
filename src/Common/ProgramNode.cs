@@ -22,26 +22,26 @@ namespace GPURepair.Common
         /// <summary>
         /// The implementation.
         /// </summary>
-        public Implementation Implementation { get; set; }
+        public Implementation Implementation { get; private set; }
 
         /// <summary>
         /// The block.
         /// </summary>
-        public Block Block { get; set; }
+        public Block Block { get; private set; }
 
         /// <summary>
-        /// The parents of the node.
+        /// The successors of the node.
         /// </summary>
-        public List<ProgramNode> Parents { get; } = new List<ProgramNode>();
+        public List<ProgramNode> Successors { get; internal set; }
 
         /// <summary>
-        /// The children of the node.
+        /// The predecessors of the node.
         /// </summary>
-        public List<ProgramNode> Children { get; } = new List<ProgramNode>();
+        public List<ProgramNode> Predecessors { get; internal set; }
 
         /// <summary>
         /// The descendants of the node.
         /// </summary>
-        public List<ProgramNode> Descendants { get; } = new List<ProgramNode>();
+        public List<ProgramNode> Descendants { get; internal set; }
     }
 }

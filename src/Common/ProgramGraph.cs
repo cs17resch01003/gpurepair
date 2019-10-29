@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Boogie;
+using Microsoft.Boogie.GraphUtil;
 
 namespace GPURepair.Common
 {
@@ -15,150 +16,109 @@ namespace GPURepair.Common
         /// <param name="program">The program.</param>
         public ProgramGraph(Program program)
         {
-            GenerateNodes(program);
-            IdentifyBackEdges();
+            GenerateMetadata(program);
             PopulateDescendants();
-            PopulateLoopNodes();
         }
+
+        /// <summary>
+        /// Graphs generated from the source program.
+        /// </summary>
+        private Dictionary<Implementation, Graph<Block>> graphs;
 
         /// <summary>
         /// Nodes generated from the source program.
         /// </summary>
-        private Dictionary<string, ProgramNode> nodes = new Dictionary<string, ProgramNode>();
+        private Dictionary<string, ProgramNode> nodes;
+
+        /// <summary>
+        /// Nodes generated from the source program.
+        /// </summary>
+        public IEnumerable<ProgramNode> Nodes => nodes.Values;
 
         /// <summary>
         /// The back edges in the source program.
         /// </summary>
-        private List<BackEdge> backEdges = new List<BackEdge>();
+        public List<BackEdge> BackEdges { get; private set; }
 
         /// <summary>
-        /// The back edge and the corresponding nodes in the loop.
+        /// Gets the node based on the implementation and the block.
         /// </summary>
-        private Dictionary<BackEdge, List<ProgramNode>> loopNodes = new Dictionary<BackEdge, List<ProgramNode>>();
-
-        /// <summary>
-        /// Gets the nodes in the program graph.
-        /// </summary>
-        /// <returns>The program nodes.</returns>
-        public List<ProgramNode> GetNodes()
+        /// <param name="implementation">The implementation.</param>
+        /// <param name="block">The block.</param>
+        public ProgramNode GetNode(Implementation implementation, Block block)
         {
-            return nodes.Values.ToList();
-        }
-
-        /// <summary>
-        /// Gets the back edges in the program graph.
-        /// </summary>
-        /// <returns>The back edges.</returns>
-        public List<BackEdge> GetBackEdges()
-        {
-            return backEdges;
-        }
-
-        /// <summary>
-        /// Gets the node based on the implementation name and block label.
-        /// </summary>
-        /// <param name="implementationName">The implementation name.</param>
-        /// <param name="blockLabel">The block label.</param>
-        /// <returns>The program node.</returns>
-        public ProgramNode GetNode(string implementationName, string blockLabel)
-        {
-            string key = string.Format("{0}_{1}", implementationName, blockLabel);
+            string key = string.Format("{0}_{1}", implementation.Name, block.Label);
             if (nodes.ContainsKey(key))
                 return nodes[key];
-
             return null;
         }
 
         /// <summary>
         /// Gets the loop nodes between the two edge points.
         /// </summary>
-        /// <param name="edge">The back-edge.</param>
+        /// <param name="edge">The back edge.</param>
         /// <returns>The loop nodes.</returns>
         public List<ProgramNode> GetLoopNodes(BackEdge edge)
         {
-            return loopNodes[edge];
+            Graph<Block> graph = graphs[edge.Source.Implementation];
+            IEnumerable<Block> nodes = graph.NaturalLoops(edge.Destination.Block, edge.Source.Block);
+
+            return nodes.Select(x => GetNode(edge.Source.Implementation, x)).ToList();
         }
 
         /// <summary>
-        /// Generates the nodes.
+        /// Generates the metadata from the program.
         /// </summary>
-        private void GenerateNodes(Program program)
+        private void GenerateMetadata(Program program)
         {
-            foreach (Implementation implementation in program.Implementations)
-                foreach (Block block in implementation.Blocks)
-                    CreateNode(implementation, block);
+            graphs = new Dictionary<Implementation, Graph<Block>>();
+            nodes = new Dictionary<string, ProgramNode>();
+
+            BackEdges = new List<BackEdge>();
 
             foreach (Implementation implementation in program.Implementations)
             {
+                Graph<Block> graph = Program.GraphFromImpl(implementation);
+                graph.ComputeLoops();
+
+                graphs.Add(implementation, graph);
+                foreach (Block block in implementation.Blocks)
+                    CreateNode(implementation, block);
+
                 foreach (Block block in implementation.Blocks)
                 {
-                    ProgramNode parent = GetNode(implementation.Name, block.Label);
-                    GotoCmd command = block.TransferCmd as GotoCmd;
+                    ProgramNode node = GetNode(implementation, block);
 
-                    if (command != null)
-                    {
-                        foreach (string label in command.labelNames)
-                        {
-                            ProgramNode child = GetNode(implementation.Name, label);
-                            parent.Children.Add(child);
-                            child.Parents.Add(parent);
-                        }
-                    }
+                    IEnumerable<Block> successors = graph.Successors(node.Block);
+                    node.Successors = successors.Select(x => GetNode(node.Implementation, x)).ToList();
+
+                    IEnumerable<Block> predecessors = graph.Predecessors(node.Block);
+                    node.Predecessors = predecessors.Select(x => GetNode(node.Implementation, x)).ToList();
                 }
+
+                foreach (Block header in graph.Headers)
+                    foreach (Block backEdgeNode in graph.BackEdgeNodes(header))
+                    {
+                        ProgramNode source = GetNode(implementation, backEdgeNode);
+                        ProgramNode destination = GetNode(implementation, header);
+
+                        BackEdges.Add(new BackEdge(source, destination));
+                    }
             }
         }
 
         /// <summary>
-        /// Creates the node based on the implementation name and the block label.
+        /// Creates the node based on the implementation and the block.
         /// </summary>
         /// <param name="implementation">The implementation.</param>
         /// <param name="block">The block.</param>
         private void CreateNode(Implementation implementation, Block block)
         {
-            string key = string.Format("{0}_{1}", implementation.Name, block.Label);
-            if (!nodes.ContainsKey(key))
-                nodes.Add(key, new ProgramNode(implementation, block));
-        }
-
-        /// <summary>
-        /// Identifies the back edges.
-        /// </summary>
-        private void IdentifyBackEdges()
-        {
-            foreach (ProgramNode node in nodes.Values)
+            if (GetNode(implementation, block) == null)
             {
-                Queue<ProgramNode> queue = new Queue<ProgramNode>();
-                queue.Enqueue(node);
-
-                List<ProgramNode> visited = new List<ProgramNode>();
-                visited.Add(node);
-
-                while (queue.Any())
-                {
-                    ProgramNode temp = queue.Dequeue();
-                    foreach (ProgramNode child in temp.Children)
-                    {
-                        if (child == node)
-                            AddBackEdge(child, node);
-                        else if (!visited.Contains(child))
-                        {
-                            visited.Add(child);
-                            queue.Enqueue(child);
-                        }
-                    }
-                }
+                string key = string.Format("{0}_{1}", implementation.Name, block.Label);
+                nodes.Add(key, new ProgramNode(implementation, block));
             }
-        }
-
-        /// <summary>
-        /// Adds a back edge with the given nodes.
-        /// </summary>
-        /// <param name="source">The source of the back edge.</param>
-        /// <param name="destination">The destination of the back edge.</param>
-        private void AddBackEdge(ProgramNode source, ProgramNode destination)
-        {
-            if (!backEdges.Any(x => x.Source == source && x.Destination == destination))
-                backEdges.Add(new BackEdge(source, destination));
         }
 
         /// <summary>
@@ -166,113 +126,27 @@ namespace GPURepair.Common
         /// </summary>
         private void PopulateDescendants()
         {
-            foreach (ProgramNode node in nodes.Values)
+            foreach (ProgramNode node in Nodes)
             {
+                node.Descendants = new List<ProgramNode>();
+
                 Queue<ProgramNode> queue = new Queue<ProgramNode>();
                 queue.Enqueue(node);
 
                 while (queue.Any())
                 {
                     ProgramNode temp = queue.Dequeue();
-                    foreach (ProgramNode child in temp.Children)
-                    {
-                        if (!node.Descendants.Contains(child))
-                            node.Descendants.Add(child);
+                    if (node.Descendants.Contains(temp))
+                        continue;
 
-                        // do not process loops
-                        if (!backEdges.Any(x => x.Source == child))
-                            queue.Enqueue(child);
-                    }
+                    node.Descendants.Add(temp);
+                    foreach (ProgramNode child in temp.Successors)
+                        queue.Enqueue(child);
                 }
+
+                // remove the node from its descendants list
+                node.Descendants.Remove(node);
             }
-        }
-
-        /// <summary>
-        /// Popluates the nodes in the path of each back edge.
-        /// </summary>
-        private void PopulateLoopNodes()
-        {
-            Dictionary<BackEdge, List<ProgramNode>> pathNodes = new Dictionary<BackEdge, List<ProgramNode>>();
-            foreach (BackEdge edge in backEdges)
-            {
-                List<ProgramNode> nodes = GeneratePathNodes(edge);
-                pathNodes.Add(edge, nodes);
-            }
-
-            List<(BackEdge, BackEdge)> relatedEdges = new List<(BackEdge, BackEdge)>();
-            foreach (BackEdge edge1 in backEdges)
-                foreach (BackEdge edge2 in backEdges)
-                    if (edge1 != edge2)
-                    {
-                        bool first = pathNodes[edge2].Contains(edge1.Source) || pathNodes[edge2].Contains(edge1.Destination);
-                        bool second = pathNodes[edge1].Contains(edge2.Source) || pathNodes[edge1].Contains(edge2.Destination);
-
-                        if (first || second)
-                            relatedEdges.Add((edge1, edge2));
-                    }
-
-            foreach (BackEdge edge in backEdges)
-            {
-                List<BackEdge> related = GetRelatedEdges(relatedEdges, edge);
-                List<ProgramNode> nodes = pathNodes.Where(x => related.Contains(x.Key)).SelectMany(x => x.Value).Distinct().ToList();
-
-                loopNodes.Add(edge, nodes);
-            }
-        }
-
-        /// <summary>
-        /// Gets the related edges recursively.
-        /// </summary>
-        /// <param name="relatedEdges">The first level related edges.</param>
-        /// <param name="edge">The edge for which the related edges are determined.</param>
-        /// <returns></returns>
-        private List<BackEdge> GetRelatedEdges(List<(BackEdge, BackEdge)> relatedEdges, BackEdge edge)
-        {
-            List<BackEdge> result = new List<BackEdge>();
-
-            Queue<BackEdge> queue = new Queue<BackEdge>();
-            queue.Enqueue(edge);
-
-            while (queue.Any())
-            {
-                BackEdge temp = queue.Dequeue();
-                result.Add(temp);
-
-                IEnumerable<BackEdge> first = relatedEdges.Where(x => x.Item1 == temp).Select(x => x.Item2);
-                IEnumerable<BackEdge> second = relatedEdges.Where(x => x.Item2 == temp).Select(x => x.Item1);
-
-                foreach (BackEdge related in first.Union(second).Distinct())
-                    if (!result.Contains(related))
-                        queue.Enqueue(related);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets the nodes in the path between the two edge points.
-        /// </summary>
-        /// <param name="edge">The back-edge.</param>
-        /// <returns>The path nodes.</returns>
-        private List<ProgramNode> GeneratePathNodes(BackEdge edge)
-        {
-            List<ProgramNode> pathNodes = new List<ProgramNode>();
-            ProgramNode mergeNode = edge.Destination;
-
-            Queue<ProgramNode> queue = new Queue<ProgramNode>();
-            queue.Enqueue(mergeNode);
-
-            while (queue.Any())
-            {
-                ProgramNode node = queue.Dequeue();
-                if (!pathNodes.Contains(node) && (node == edge.Source || node.Descendants.Contains(edge.Source)))
-                {
-                    pathNodes.Add(node);
-                    node.Children.ForEach(x => queue.Enqueue(x));
-                }
-            }
-
-            return pathNodes;
         }
     }
 }

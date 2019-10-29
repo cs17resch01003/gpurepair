@@ -49,9 +49,9 @@ namespace GPURepair.Instrumentation
                 using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".gbpl", ".repair.gbpl"), true))
                     program.Emit(writer);
             }
-            catch (Exception ex)
+            finally
             {
-                Console.Error.WriteLine(ex.Message);
+                //Console.Error.WriteLine(ex.Message);
                 Environment.Exit(200);
             }
         }

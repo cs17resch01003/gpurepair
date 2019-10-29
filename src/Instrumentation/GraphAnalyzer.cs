@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using GPURepair.Common;
+using Microsoft.Boogie;
 
 namespace GPURepair.Instrumentation
 {
@@ -29,13 +30,13 @@ namespace GPURepair.Instrumentation
         }
 
         /// <summary>
-        /// Sets the flag that a global variable is present in the block.
+        /// Tracks that a global variable is present in the block.
         /// </summary>
-        /// <param name="implementation">The implementation name.</param>
-        /// <param name="block">The block label.</param>
-        public void LinkBarrier(string implementationName, string blockLabel)
+        /// <param name="implementation">The implementation.</param>
+        /// <param name="block">The block.</param>
+        public void LinkBarrier(Implementation implementation, Block block)
         {
-            ProgramNode node = graph.GetNode(implementationName, blockLabel);
+            ProgramNode node = graph.GetNode(implementation, block);
             if (node != null && !nodesContainingBarriers.Contains(node))
                 nodesContainingBarriers.Add(node);
         }
@@ -51,12 +52,12 @@ namespace GPURepair.Instrumentation
             // look for diamond structures and loops in the code
             // this is useful for fixing errors where the usage of the global variable is inside the if/else block
             // but the solution needs a barrier outside the block
-            foreach (ProgramNode node in graph.GetNodes())
+            foreach (ProgramNode node in graph.Nodes)
             {
                 // identify merge points
-                if (node.Parents.Count > 1)
+                if (node.Predecessors.Count > 1)
                 {
-                    List<BackEdge> backEdges = graph.GetBackEdges();
+                    List<BackEdge> backEdges = graph.BackEdges;
                     if (backEdges.Any(x => x.Destination == node))
                     {
                         // loop structures
@@ -69,7 +70,7 @@ namespace GPURepair.Instrumentation
                     else
                     {
                         // if-else diamond structures
-                        ProgramNode lca = GetLCA(node.Parents);
+                        ProgramNode lca = GetLCA(node.Predecessors);
                         if (lca != null)
                         {
                             List<ProgramNode> intermediateNodes = GetIntermediateNodes(lca, node);
@@ -101,7 +102,7 @@ namespace GPURepair.Instrumentation
                 if (ContainsNodes(temp.Descendants, nodes))
                     return temp;
 
-                temp.Parents.ForEach(x => queue.Enqueue(x));
+                temp.Predecessors.ForEach(x => queue.Enqueue(x));
             }
 
             return null;
@@ -140,9 +141,9 @@ namespace GPURepair.Instrumentation
             while (queue.Any())
             {
                 ProgramNode node = queue.Dequeue();
-                if (!node.Children.Contains(end))
+                if (!node.Successors.Contains(end))
                 {
-                    foreach (ProgramNode child in node.Children)
+                    foreach (ProgramNode child in node.Successors)
                     {
                         // skip paths which do not have the end node in them
                         if (!nodes.Contains(child) && child.Descendants.Contains(end))

@@ -165,7 +165,7 @@ namespace GPURepair.Instrumentation
                             {
                                 AddBarrier(implementation, block, i);
 
-                                analyzer.LinkBarrier(implementation.Name, block.Label);
+                                analyzer.LinkBarrier(implementation, block);
                                 return true;
                             }
                         }
@@ -197,7 +197,7 @@ namespace GPURepair.Instrumentation
                             {
                                 UpdateBarrier(implementation, block, i);
 
-                                analyzer.LinkBarrier(implementation.Name, block.Label);
+                                analyzer.LinkBarrier(implementation, block);
                                 return true;
                             }
                         }
@@ -241,7 +241,7 @@ namespace GPURepair.Instrumentation
 
                         // insert a barrier at the beginning of the merge block
                         AddBarrier(node.Implementation, node.Block, i);
-                        analyzer.LinkBarrier(node.Implementation.Name, node.Block.Label);
+                        analyzer.LinkBarrier(node.Implementation, node.Block);
                     }
                 }
             }
