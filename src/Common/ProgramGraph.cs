@@ -16,7 +16,8 @@ namespace GPURepair.Common
         public ProgramGraph(Program program)
         {
             GenerateNodes(program);
-            TraverseGraph();
+            IdentifyBackEdges();
+            PopulateDescendants();
             PopulateLoopNodes();
         }
 
@@ -120,37 +121,31 @@ namespace GPURepair.Common
         }
 
         /// <summary>
-        /// Runs a graph traversal algorithm and populates the descendants.
-        /// Also identifies the back-edges in the graph.
+        /// Identifies the back edges.
         /// </summary>
-        private void TraverseGraph()
+        private void IdentifyBackEdges()
         {
-            IEnumerable<ProgramNode> entryNodes = nodes.Values.Where(x => !x.Parents.Any());
-            foreach (ProgramNode entryNode in entryNodes)
-                TraverseGraph(entryNode, new List<ProgramNode>());
-        }
-
-        /// <summary>
-        /// The recursive traversal logic.
-        /// </summary>
-        /// <param name="node">The node to be evaluated.</param>
-        /// <param name="path">The grpah path so far.</param>
-        private void TraverseGraph(ProgramNode node, List<ProgramNode> path)
-        {
-            foreach (ProgramNode child in node.Children)
+            foreach (ProgramNode node in nodes.Values)
             {
-                if (path.Contains(child))
-                    AddBackEdge(node, child);
-                else
+                Queue<ProgramNode> queue = new Queue<ProgramNode>();
+                queue.Enqueue(node);
+
+                List<ProgramNode> visited = new List<ProgramNode>();
+                visited.Add(node);
+
+                while (queue.Any())
                 {
-                    List<ProgramNode> new_path = new List<ProgramNode>(path);
-                    new_path.Add(node);
-
-                    foreach (ProgramNode pathNode in new_path)
-                        if (!pathNode.Descendants.Contains(child))
-                            pathNode.Descendants.Add(child);
-
-                    TraverseGraph(child, new_path);
+                    ProgramNode temp = queue.Dequeue();
+                    foreach (ProgramNode child in temp.Children)
+                    {
+                        if (child == node)
+                            AddBackEdge(child, node);
+                        else if (!visited.Contains(child))
+                        {
+                            visited.Add(child);
+                            queue.Enqueue(child);
+                        }
+                    }
                 }
             }
         }
@@ -164,6 +159,34 @@ namespace GPURepair.Common
         {
             if (!backEdges.Any(x => x.Source == source && x.Destination == destination))
                 backEdges.Add(new BackEdge(source, destination));
+        }
+
+        /// <summary>
+        /// Populates the descendants for the nodes.
+        /// </summary>
+        private void PopulateDescendants()
+        {
+            foreach (ProgramNode node in nodes.Values)
+            {
+                Queue<ProgramNode> queue = new Queue<ProgramNode>();
+                queue.Enqueue(node);
+
+                while (queue.Any())
+                {
+                    ProgramNode temp = queue.Dequeue();
+                    foreach (ProgramNode child in temp.Children)
+                    {
+                        // do not process loops
+                        if (backEdges.Any(x => x.Source == child))
+                            continue;
+                        else if (!node.Descendants.Contains(child))
+                        {
+                            node.Descendants.Add(child);
+                            queue.Enqueue(child);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
