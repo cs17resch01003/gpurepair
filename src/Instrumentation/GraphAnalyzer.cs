@@ -70,92 +70,13 @@ namespace GPURepair.Instrumentation
                     else
                     {
                         // if-else diamond structures
-                        ProgramNode lca = GetLCA(node.Predecessors);
-                        if (lca != null)
-                        {
-                            List<ProgramNode> intermediateNodes = GetIntermediateNodes(lca, node);
-                            if (intermediateNodes.Any(x => nodesContainingBarriers.Contains(x)))
-                                list.Add(node);
-                        }
+                        // can be simplified by identifying the least common ancestor and inspecting if the intermediate nodes have barriers
+                        list.Add(node);
                     }
                 }
             }
 
             return list;
-        }
-
-        /// <summary>
-        /// Identifies the least common ancestor for the given nodes.
-        /// </summary>
-        /// <param name="nodes">The nodes.</param>
-        /// <returns>The LCA.</returns>
-        private static ProgramNode GetLCA(List<ProgramNode> nodes)
-        {
-            // traverse up one of the parents until the LCA is found
-            // it's enough to traverse only one path upwards since we will always find the LCA on this path
-            Queue<ProgramNode> queue = new Queue<ProgramNode>();
-            queue.Enqueue(nodes.First());
-
-            while (queue.Any())
-            {
-                ProgramNode temp = queue.Dequeue();
-                if (ContainsNodes(temp.Descendants, nodes))
-                    return temp;
-
-                temp.Predecessors.ForEach(x => queue.Enqueue(x));
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Checks if one node list is a part of the other list.
-        /// </summary>
-        /// <param name="list">The list to search in.</param>
-        /// <param name="searchNodes">The list to search.</param>
-        /// <returns>True if the nodes exists, False otherwise.</returns>
-        private static bool ContainsNodes(List<ProgramNode> list, List<ProgramNode> searchNodes)
-        {
-            foreach (ProgramNode searchNode in searchNodes)
-            {
-                bool result = list.Contains(searchNode);
-                if (result == false)
-                    return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Gets the nodes between the given two nodes.
-        /// </summary>
-        /// <param name="start">The start node.</param>
-        /// <param name="end">The end node.</param>
-        /// <returns>The nodes between the given two nodes.</returns>
-        private static List<ProgramNode> GetIntermediateNodes(ProgramNode start, ProgramNode end)
-        {
-            Queue<ProgramNode> queue = new Queue<ProgramNode>();
-            queue.Enqueue(start);
-
-            List<ProgramNode> nodes = new List<ProgramNode>();
-            while (queue.Any())
-            {
-                ProgramNode node = queue.Dequeue();
-                if (!node.Successors.Contains(end))
-                {
-                    foreach (ProgramNode child in node.Successors)
-                    {
-                        // skip paths which do not have the end node in them
-                        if (!nodes.Contains(child) && child.Descendants.Contains(end))
-                        {
-                            nodes.Add(child);
-                            queue.Enqueue(child);
-                        }
-                    }
-                }
-            }
-
-            return nodes;
         }
     }
 }
