@@ -176,14 +176,12 @@ namespace GPURepair.Common
                     ProgramNode temp = queue.Dequeue();
                     foreach (ProgramNode child in temp.Children)
                     {
-                        // do not process loops
-                        if (backEdges.Any(x => x.Source == child))
-                            continue;
-                        else if (!node.Descendants.Contains(child))
-                        {
+                        if (!node.Descendants.Contains(child))
                             node.Descendants.Add(child);
+
+                        // do not process loops
+                        if (!backEdges.Any(x => x.Source == child))
                             queue.Enqueue(child);
-                        }
                     }
                 }
             }
