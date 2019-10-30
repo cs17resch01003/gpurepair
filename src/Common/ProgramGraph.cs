@@ -95,7 +95,7 @@ namespace GPURepair.Common
                     try { successors = graph.Successors(node.Block); }
                     catch (Exception) { successors = new List<Block>(); }
 
-                    try { predecessors = graph.Successors(node.Block); }
+                    try { predecessors = graph.Predecessors(node.Block); }
                     catch (Exception) { predecessors = new List<Block>(); }
 
                     node.Successors = successors.Select(x => GetNode(node.Implementation, x)).ToList();
