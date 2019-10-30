@@ -128,7 +128,7 @@ namespace GPURepair.Common
         }
 
         /// <summary>
-        /// Populates the descendants for the nodes.
+        /// Populates the descendants ignoring back edges for the nodes.
         /// </summary>
         private void PopulateDescendants()
         {
@@ -147,7 +147,8 @@ namespace GPURepair.Common
 
                     node.Descendants.Add(temp);
                     foreach (ProgramNode child in temp.Successors)
-                        queue.Enqueue(child);
+                        if (!BackEdges.Any(x => x.Source == temp && x.Destination == child))
+                            queue.Enqueue(child);
                 }
 
                 // remove the node from its descendants list

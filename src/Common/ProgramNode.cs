@@ -40,7 +40,7 @@ namespace GPURepair.Common
         public List<ProgramNode> Predecessors { get; internal set; }
 
         /// <summary>
-        /// The descendants of the node.
+        /// The descendants of the node ignoring back edges.
         /// </summary>
         public List<ProgramNode> Descendants { get; internal set; }
     }
