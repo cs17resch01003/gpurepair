@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Boogie;
 using Microsoft.Boogie.GraphUtil;
@@ -88,11 +89,16 @@ namespace GPURepair.Common
                 foreach (Block block in implementation.Blocks)
                 {
                     ProgramNode node = GetNode(implementation, block);
+                    IEnumerable<Block> successors, predecessors;
 
-                    IEnumerable<Block> successors = graph.Successors(node.Block);
+                    // Boogie throws KeyNotFoundException for unreachable code
+                    try { successors = graph.Successors(node.Block); }
+                    catch (Exception) { successors = new List<Block>(); }
+
+                    try { predecessors = graph.Successors(node.Block); }
+                    catch (Exception) { predecessors = new List<Block>(); }
+
                     node.Successors = successors.Select(x => GetNode(node.Implementation, x)).ToList();
-
-                    IEnumerable<Block> predecessors = graph.Predecessors(node.Block);
                     node.Predecessors = predecessors.Select(x => GetNode(node.Implementation, x)).ToList();
                 }
 
