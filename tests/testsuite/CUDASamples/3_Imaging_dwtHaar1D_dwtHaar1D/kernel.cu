@@ -1,4 +1,4 @@
-//xfail:TIMEOUT
+//pass
 //--gridDim=1 --blockDim=512
 
 #define             INV_SQRT_2      0.70710678118654752440f;

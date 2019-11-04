@@ -1,27 +1,29 @@
-//xfail:TIMEOUT
+//pass
 //--gridDim=64 --blockDim=256 --warp-sync=32
 
-template <class T, unsigned int blockSize> __global__ void reduce5(T *g_idata, T *g_odata, unsigned int n);
-template __global__ void reduce5<int,256>(int *g_idata, int *g_odata, unsigned int n);
+template <class T, unsigned int blockSize> __global__ void reduce4(T *g_idata, T *g_odata, unsigned int n);
+template __global__ void reduce4<int,256>(int *g_idata, int *g_odata, unsigned int n);
 
 #include "common.h"
 
 template <class T, unsigned int blockSize>
 __global__ void
-reduce5(T *g_idata, T *g_odata, unsigned int n)
+reduce4(T *g_idata, T *g_odata, unsigned int n)
 {
     T *sdata = SharedMemory<T>();
 
     // perform first level of reduction,
     // reading from global memory, writing to shared memory
     unsigned int tid = threadIdx.x;
-    unsigned int i = blockIdx.x*(blockSize*2) + threadIdx.x;
+    unsigned int i = blockIdx.x*(blockDim.x*2) + threadIdx.x;
 
-    // T mySum = (i < n) ? g_idata[i] : 0;
-    T mySum=0;
+   // T mySum = (i < n) ? g_idata[i] : 0;
+   T mySum=0;
     if (i<n){
         T mySum = g_idata[i];
     }
+
+
 
     if (i + blockSize < n){
         mySum += g_idata[i+blockSize];
@@ -31,31 +33,11 @@ reduce5(T *g_idata, T *g_odata, unsigned int n)
     // __syncthreads();
 
     // do reduction in shared mem
-    if (blockSize >= 512)
+    for (unsigned int s=blockDim.x/2; s>32; s>>=1)
     {
-        if (tid < 256)
+        if (tid < s)
         {
-            sdata[tid] = mySum = mySum + sdata[tid + 256];
-        }
-
-        // __syncthreads();
-    }
-
-    if (blockSize >= 256)
-    {
-        if (tid < 128)
-        {
-            sdata[tid] = mySum = mySum + sdata[tid + 128];
-        }
-
-        // __syncthreads();
-    }
-
-    if (blockSize >= 128)
-    {
-        if (tid <  64)
-        {
-            sdata[tid] = mySum = mySum + sdata[tid +  64];
+            sdata[tid] = mySum = mySum + sdata[tid + s];
         }
 
         // __syncthreads();

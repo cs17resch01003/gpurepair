@@ -1,4 +1,4 @@
-//xfail:TIMEOUT
+//xfail:REPAIR_ERROR
 //--blockDim=256 --gridDim=64
 
 #include "common.h"
