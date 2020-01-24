@@ -105,10 +105,10 @@ namespace GPURepair.Solvers
             {
                 if (!solution.Assignments.ContainsKey(variable))
                 {
-                    int unsat_clauses = clauses.Count(x => x.Literals.Select(y => y.Variable).Contains(variable));
-                    if (unsat_clauses > max_unsat_clauses)
+                    int unknown_clauses = clauses.Count(x => x.Literals.Select(y => y.Variable).Contains(variable));
+                    if (unknown_clauses > max_unsat_clauses)
                     {
-                        max_unsat_clauses = unsat_clauses;
+                        max_unsat_clauses = unknown_clauses;
                         chosen = variable;
                     }
                 }
