@@ -40,7 +40,7 @@ namespace GPURepair.Repair.Metadata
         {
             FileInfo file = new FileInfo(File);
 
-            return string.Format("{0}{1}{2} {3}", Directory, Path.PathSeparator, file.Name, Line);
+            return string.Format("{0}{1}{2} {3}", Directory, Path.DirectorySeparatorChar, file.Name, Line);
         }
 
         /// <summary>
