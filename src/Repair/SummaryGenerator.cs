@@ -14,10 +14,10 @@ namespace GPURepair.Repair
         /// <param name="assignments">The assignments.</param>
         /// <param name="filename">The file path.</param>
         /// <return>The changes.</return>
-        public IEnumerable<Location> GenerateSummary(Dictionary<string, bool> assignments, string filename)
+        public IEnumerable<string> GenerateSummary(Dictionary<string, bool> assignments, string filename)
         {
             List<string> lines = new List<string>();
-            List<Location> changes = new List<Location>();
+            List<string> changes = new List<string>();
 
             int barriersBetweenCalls = 0;
             foreach (string barrierName in assignments.Keys)
@@ -25,10 +25,10 @@ namespace GPURepair.Repair
                 Barrier barrier = ProgramMetadata.Barriers[barrierName];
                 List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
 
-                Location location = locations.Last();
+                string location = ToString(locations);
                 if (!barrier.Generated && !assignments[barrierName])
                 {
-                    lines.Add(string.Format("Remove the barrier at location {0}.", location.ToString()));
+                    lines.Add(string.Format("Remove the barrier at location {0}.", location));
                     changes.Add(location);
 
                     if (locations.Count > 1)
@@ -36,7 +36,7 @@ namespace GPURepair.Repair
                 }
                 else if (barrier.Generated && assignments[barrierName])
                 {
-                    lines.Add(string.Format("Add a barrier at location {0}.", location.ToString()));
+                    lines.Add(string.Format("Add a barrier at location {0}.", location));
                     changes.Add(location);
 
                     if (locations.Count > 1)
@@ -49,6 +49,16 @@ namespace GPURepair.Repair
                 File.AppendAllLines(filename, lines);
 
             return changes;
+        }
+
+        /// <summary>
+        /// Represents the location in a string format.
+        /// </summary>
+        /// <param name="locations"> The location stack.</param>
+        /// <returns>A string representation of the location.</returns>
+        private static string ToString(List<Location> locations)
+        {
+            return string.Join("=> ", locations.Select(x => x.ToString()));
         }
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using GPURepair.Repair.Diagnostics;
 using GPURepair.Repair.Exceptions;
-using GPURepair.Repair.Metadata;
 using Microsoft.Boogie;
 
 namespace GPURepair.Repair
@@ -44,7 +43,7 @@ namespace GPURepair.Repair
                 Microsoft.Boogie.Program program = repairer.Repair(out assignments);
 
                 SummaryGenerator generator = new SummaryGenerator();
-                IEnumerable<Location> changes = generator.GenerateSummary(assignments,
+                IEnumerable<string> changes = generator.GenerateSummary(assignments,
                     Logger.FileName.Replace(".cbpl", ".summary"));
 
                 Logger.Changes = changes.Count();
