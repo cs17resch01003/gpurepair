@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using GPURepair.Common;
+using GPURepair.Instrumentation.Diagnostics;
 using Microsoft.Basetypes;
 using Microsoft.Boogie;
 
@@ -164,6 +165,8 @@ namespace GPURepair.Instrumentation
                             if (!ContainsAttribute(assert, InstrumentationKey))
                             {
                                 AddBarrier(implementation, block, i);
+                                if (command is CallCmd)
+                                    Logger.CallCommands++;
 
                                 analyzer.LinkBarrier(implementation, block);
                                 return true;

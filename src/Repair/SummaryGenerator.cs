@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using GPURepair.Repair.Diagnostics;
 using GPURepair.Repair.Metadata;
 
 namespace GPURepair.Repair
@@ -43,6 +44,7 @@ namespace GPURepair.Repair
                 }
             }
 
+            Logger.BarriersBetweenCalls = barriersBetweenCalls;
             if (lines.Count != 0)
                 File.AppendAllLines(filename, lines);
 
