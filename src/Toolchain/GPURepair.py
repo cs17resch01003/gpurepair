@@ -352,6 +352,9 @@ class GPURepairInstance(object):
   def getInstrumentationOptions(self, args):
     options = []
 
+    if args.time_as_csv is not None:
+      options.append("/instrumentationLog:" + os.path.dirname(os.path.abspath(__file__)) + os.sep + "instrumentation.log")
+
     if args.solver == "z3":
       options.append("/z3exe:" + gvfindtools.z3BinDir + os.sep + "z3.exe")
     elif args.solver == "cvc4":

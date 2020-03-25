@@ -18,20 +18,28 @@ namespace GPURepair.Repair
             List<string> lines = new List<string>();
             List<Location> changes = new List<Location>();
 
+            int barriersBetweenCalls = 0;
             foreach (string barrierName in assignments.Keys)
             {
                 Barrier barrier = ProgramMetadata.Barriers[barrierName];
-                Location location = ProgramMetadata.Locations[barrier.SourceLocation].Last();
+                List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
 
+                Location location = locations.Last();
                 if (!barrier.Generated && !assignments[barrierName])
                 {
                     lines.Add(string.Format("Remove the barrier at location {0}.", location.ToString()));
                     changes.Add(location);
+
+                    if (locations.Count > 1)
+                        barriersBetweenCalls++;
                 }
                 else if (barrier.Generated && assignments[barrierName])
                 {
                     lines.Add(string.Format("Add a barrier at location {0}.", location.ToString()));
                     changes.Add(location);
+
+                    if (locations.Count > 1)
+                        barriersBetweenCalls++;
                 }
             }
 

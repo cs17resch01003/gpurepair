@@ -13,7 +13,7 @@ namespace GPURepair.Repair.Diagnostics
 
         private static Dictionary<Measure, int> count = new Dictionary<Measure, int>();
 
-        public static bool LogCLauses; 
+        public static bool LogCLauses;
 
         public static string FileName;
 
@@ -26,6 +26,8 @@ namespace GPURepair.Repair.Diagnostics
         public static int VerifierRunsAfterOptimization;
 
         public static int VerifierFailuresAfterOptimization;
+
+        public static int? BarriersBetweenCalls;
 
         public static string ExceptionMessage;
 
@@ -56,7 +58,9 @@ namespace GPURepair.Repair.Diagnostics
                     builder.Append(string.Format("{0},{1},", time, count));
                 }
 
-                builder.Append(string.Join(",", Barriers, Changes, ExceptionMessage, VerifierRunsAfterOptimization, VerifierFailuresAfterOptimization));
+                builder.Append(string.Join(",",
+                    Barriers, Changes, ExceptionMessage, VerifierRunsAfterOptimization,
+                    VerifierFailuresAfterOptimization, BarriersBetweenCalls));
                 File.AppendAllLines(LogFile, new List<string> { builder.ToString() });
             }
         }

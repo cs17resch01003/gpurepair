@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GPURepair.Instrumentation.Diagnostics;
 using Microsoft.Boogie;
 
 namespace GPURepair.Instrumentation
@@ -16,7 +17,7 @@ namespace GPURepair.Instrumentation
             try
             {
                 // standard command line options for Boogie
-                CommandLineOptions.Install(new CommandLineOptions());
+                CommandLineOptions.Install(new GRCommandLineOptions());
                 if (!CommandLineOptions.Clo.Parse(args))
                     return;
 
@@ -26,10 +27,11 @@ namespace GPURepair.Instrumentation
                 else if (CommandLineOptions.Clo.Files.Count > 1)
                     throw new Exception("GPURepair can work on only one file at a time!");
 
-                string filename = CommandLineOptions.Clo.Files.First();
+                Logger.FileName = CommandLineOptions.Clo.Files.First();
+                Logger.LogFile = ((GRCommandLineOptions)CommandLineOptions.Clo).InstrumentationLog;
 
                 Microsoft.Boogie.Program program;
-                Parser.Parse(filename, new List<string>() { "FILE_0" }, out program);
+                Parser.Parse(Logger.FileName, new List<string>() { "FILE_0" }, out program);
 
                 CommandLineOptions.Clo.DoModSetAnalysis = true;
                 CommandLineOptions.Clo.PruneInfeasibleEdges = true;
@@ -45,14 +47,17 @@ namespace GPURepair.Instrumentation
                 instrumentor.Instrument();
 
                 // create the instrumented Boogie IR for the next steps
-                // hardcoded file name for testing purposes, has to be changed to use the command line argumnent
-                using (TokenTextWriter writer = new TokenTextWriter(filename.Replace(".gbpl", ".repair.gbpl"), true))
+                using (TokenTextWriter writer = new TokenTextWriter(Logger.FileName.Replace(".gbpl", ".repair.gbpl"), true))
                     program.Emit(writer);
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(200);
+            }
+            finally
+            {
+                Logger.Flush();
             }
         }
     }
