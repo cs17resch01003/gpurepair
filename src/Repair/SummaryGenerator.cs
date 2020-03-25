@@ -58,7 +58,7 @@ namespace GPURepair.Repair
         /// <returns>A string representation of the location.</returns>
         private static string ToString(List<Location> locations)
         {
-            return string.Join("=> ", locations.Select(x => x.ToString()));
+            return string.Join(" => ", locations.Select(x => x.ToString()));
         }
     }
 }
