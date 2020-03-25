@@ -1,4 +1,6 @@
-﻿namespace GPURepair.Repair.Metadata
+﻿using System.IO;
+
+namespace GPURepair.Repair.Metadata
 {
     /// <summary>
     /// Metadata related to a location.
@@ -36,7 +38,9 @@
         /// <returns>The string representation.</returns>
         public override string ToString()
         {
-            return string.Format("{0}\\{1} {2}", Directory, File, Line);
+            FileInfo file = new FileInfo(File);
+
+            return string.Format("{0}{1}{2} {3}", Directory, Path.PathSeparator, file.Name, Line);
         }
 
         /// <summary>
