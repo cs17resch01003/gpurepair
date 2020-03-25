@@ -59,8 +59,8 @@ namespace GPURepair.Repair.Diagnostics
                 }
 
                 builder.Append(string.Join(",",
-                    Barriers, Changes, ExceptionMessage, VerifierRunsAfterOptimization,
-                    VerifierFailuresAfterOptimization, BarriersBetweenCalls));
+                    Barriers, Changes, VerifierRunsAfterOptimization,
+                    VerifierFailuresAfterOptimization, BarriersBetweenCalls, ExceptionMessage));
                 File.AppendAllLines(LogFile, new List<string> { builder.ToString() });
             }
         }
