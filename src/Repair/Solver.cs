@@ -24,12 +24,12 @@ namespace GPURepair.Repair
             List<Clause> clauses = GenerateClauses(errors);
 
             Dictionary<string, bool> solution;
-            SolverStatus status;
+            SolverStatus status = SolverStatus.Unsatisfiable;
 
             if (defaultType == SolverType.SAT)
             {
                 type = SolverType.SAT;
-                using (Watch watch = new Watch(Measure.MHS))
+                using (Watch watch = new Watch(Measure.SAT))
                 {
                     SATSolver solver = new SATSolver(clauses);
                     solution = solver.Solve(out status);
@@ -43,20 +43,20 @@ namespace GPURepair.Repair
                     MHSSolver solver = new MHSSolver(clauses);
                     solution = solver.Solve(out status);
                 }
+            }
 
-                if (status != SolverStatus.Satisfiable)
+            if (status != SolverStatus.Satisfiable)
+            {
+                // fall back to MaxSAT if MHS fails
+                type = SolverType.MaxSAT;
+
+                using (Watch watch = new Watch(Measure.MaxSAT))
                 {
-                    // fall back to MaxSAT if MHS fails
-                    type = SolverType.MaxSAT;
+                    List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
+                    List<Clause> soft_clauses = GenerateSoftClauses(variables);
 
-                    using (Watch watch = new Watch(Measure.MaxSAT))
-                    {
-                        List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
-                        List<Clause> soft_clauses = GenerateSoftClauses(variables);
-
-                        MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
-                        solution = solver.Solve(out status);
-                    }
+                    MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+                    solution = solver.Solve(out status);
                 }
             }
             else
