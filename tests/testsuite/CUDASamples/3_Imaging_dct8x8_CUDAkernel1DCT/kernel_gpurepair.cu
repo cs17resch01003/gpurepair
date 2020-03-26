@@ -47,9 +47,10 @@ __global__ void CUDAkernel1DCT(float *Dst, int ImgWidth, int OffsetXBlocks, int 
     curelem = 0;
     int CurBlockLocal2Index = (ty << BLOCK_SIZE_LOG2) + 0;
     DCTv8matrixIndex = 0 * BLOCK_SIZE + tx;
+	
+	__syncthreads();
 #pragma unroll
 
-	__syncthreads();
     for (int i=0; i<BLOCK_SIZE; i++)
     {
         curelem += CurBlockLocal2[CurBlockLocal2Index] * DCTv8matrix[DCTv8matrixIndex];

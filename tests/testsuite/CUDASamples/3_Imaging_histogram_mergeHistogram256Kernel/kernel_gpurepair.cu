@@ -21,9 +21,9 @@ __global__ void mergeHistogram256Kernel(
     __shared__ uint data[MERGE_THREADBLOCK_SIZE];
     data[threadIdx.x] = sum;
 
-	__syncthreads();
     for (uint stride = MERGE_THREADBLOCK_SIZE / 2; stride > 0; stride >>= 1)
     {
+		__syncthreads();
         // __syncthreads();
 
         if (threadIdx.x < stride)

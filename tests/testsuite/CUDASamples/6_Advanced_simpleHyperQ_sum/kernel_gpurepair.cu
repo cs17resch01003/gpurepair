@@ -25,7 +25,9 @@ __global__ void sum(clock_t *d_clocks, int N)
             int tmp = s_clocks[threadIdx.x + i];
             s_clocks[threadIdx.x]+=tmp;
         }
+		
         // syncthreads();
+		__syncthreads();
     }
     d_clocks[0] = s_clocks[0];
 }

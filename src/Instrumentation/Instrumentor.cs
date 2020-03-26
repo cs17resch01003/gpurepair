@@ -67,6 +67,9 @@ namespace GPURepair.Instrumentation
                 }
 
             _1bv1 = new LiteralExpr(Token.NoToken, BigNum.ONE, 1);
+
+            Logger.Blocks = program.Blocks().Count();
+            Logger.Commands = program.Blocks().Sum(x => x.Cmds.Count);
         }
 
         /// <summary>

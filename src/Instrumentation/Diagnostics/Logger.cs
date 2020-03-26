@@ -10,6 +10,10 @@ namespace GPURepair.Instrumentation.Diagnostics
 
         public static string LogFile;
 
+        public static int Blocks;
+
+        public static int Commands;
+
         public static int CallCommands;
 
         public static void Flush()
@@ -19,7 +23,7 @@ namespace GPURepair.Instrumentation.Diagnostics
                 StringBuilder builder = new StringBuilder(FileName);
                 builder.Append(",");
 
-                builder.Append(string.Join(",", CallCommands));
+                builder.Append(string.Join(",", Blocks, Commands, CallCommands));
                 File.AppendAllLines(LogFile, new List<string> { builder.ToString() });
             }
         }

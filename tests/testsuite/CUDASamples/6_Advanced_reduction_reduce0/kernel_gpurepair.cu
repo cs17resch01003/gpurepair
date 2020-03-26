@@ -21,9 +21,9 @@ reduce0(T *g_idata, T *g_odata, unsigned int n)
     // __syncthreads();
 
     // do reduction in shared mem
-	__syncthreads();
     for (unsigned int s=1; s < blockDim.x; s *= 2)
     {
+		__syncthreads();
         // modulo arithmetic is slow!
         if ((tid % (2*s)) == 0)
         {

@@ -27,9 +27,9 @@ reduce3(T *g_idata, T *g_odata, unsigned int n)
     // __syncthreads();
 
     // do reduction in shared mem
-	__syncthreads();
     for (unsigned int s=blockDim.x/2; s>0; s>>=1)
     {
+		__syncthreads();
         if (tid < s)
         {
             sdata[tid] = mySum = mySum + sdata[tid + s];
