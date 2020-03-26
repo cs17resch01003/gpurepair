@@ -44,6 +44,10 @@ namespace GPURepair.Repair
                     solution = solver.Solve(out status);
                 }
             }
+            else
+            {
+                throw new RepairError("Invalid solver type!");
+            }
 
             if (status != SolverStatus.Satisfiable)
             {
@@ -58,10 +62,6 @@ namespace GPURepair.Repair
                     MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
                     solution = solver.Solve(out status);
                 }
-            }
-            else
-            {
-                throw new RepairError("Invalid solver type!");
             }
 
             Logger.LogClausesToFile(clauses, type, solution);
