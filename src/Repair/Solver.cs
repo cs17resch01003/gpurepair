@@ -19,31 +19,48 @@ namespace GPURepair.Repair
         /// <returns>The barrier assignments.</returns>
         public Dictionary<string, bool> Solve(List<RepairableError> errors, out SolverType type)
         {
+            SolverType defaultType = SolverType.SAT;
             List<Clause> clauses = GenerateClauses(errors);
 
             Dictionary<string, bool> solution;
             SolverStatus status;
 
-            type = SolverType.MHS;
-            using (Watch watch = new Watch(Measure.MHS))
+            if (defaultType == SolverType.SAT)
             {
-                MHSSolver solver = new MHSSolver(clauses);
-                solution = solver.Solve(out status);
-            }
-
-            if (status != SolverStatus.Satisfiable)
-            {
-                // fall back to MaxSAT if MHS fails
-                type = SolverType.MaxSAT;
-
-                using (Watch watch = new Watch(Measure.MaxSAT))
+                type = SolverType.SAT;
+                using (Watch watch = new Watch(Measure.MHS))
                 {
-                    List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
-                    List<Clause> soft_clauses = GenerateSoftClauses(variables);
-
-                    MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+                    MHSSolver solver = new MHSSolver(clauses);
                     solution = solver.Solve(out status);
                 }
+            }
+            else if (defaultType == SolverType.MHS)
+            {
+                type = SolverType.MHS;
+                using (Watch watch = new Watch(Measure.MHS))
+                {
+                    MHSSolver solver = new MHSSolver(clauses);
+                    solution = solver.Solve(out status);
+                }
+
+                if (status != SolverStatus.Satisfiable)
+                {
+                    // fall back to MaxSAT if MHS fails
+                    type = SolverType.MaxSAT;
+
+                    using (Watch watch = new Watch(Measure.MaxSAT))
+                    {
+                        List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
+                        List<Clause> soft_clauses = GenerateSoftClauses(variables);
+
+                        MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+                        solution = solver.Solve(out status);
+                    }
+                }
+            }
+            else
+            {
+                throw new RepairError("Invalid solver type!");
             }
 
             Logger.LogClausesToFile(clauses, type, solution);
@@ -130,6 +147,7 @@ namespace GPURepair.Repair
         /// </summary>
         public enum SolverType
         {
+            SAT,
             MHS,
             MaxSAT,
             Optimizer
