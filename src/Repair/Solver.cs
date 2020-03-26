@@ -5,6 +5,7 @@ using GPURepair.Repair.Errors;
 using GPURepair.Repair.Exceptions;
 using GPURepair.Solvers;
 using GPURepair.Solvers.Optimizer;
+using GPURepair.Solvers.SAT;
 using Microsoft.Boogie;
 
 namespace GPURepair.Repair
@@ -30,7 +31,7 @@ namespace GPURepair.Repair
                 type = SolverType.SAT;
                 using (Watch watch = new Watch(Measure.MHS))
                 {
-                    MHSSolver solver = new MHSSolver(clauses);
+                    SATSolver solver = new SATSolver(clauses);
                     solution = solver.Solve(out status);
                 }
             }
