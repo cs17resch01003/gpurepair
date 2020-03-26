@@ -20,7 +20,7 @@ namespace GPURepair.Repair
         /// <returns>The barrier assignments.</returns>
         public Dictionary<string, bool> Solve(List<RepairableError> errors, out SolverType type)
         {
-            SolverType defaultType = SolverType.SAT;
+            SolverType defaultType = SolverType.MaxSAT;
             List<Clause> clauses = GenerateClauses(errors);
 
             Dictionary<string, bool> solution;
@@ -41,6 +41,19 @@ namespace GPURepair.Repair
                 using (Watch watch = new Watch(Measure.MHS))
                 {
                     MHSSolver solver = new MHSSolver(clauses);
+                    solution = solver.Solve(out status);
+                }
+            }
+            else if (defaultType == SolverType.MaxSAT)
+            {
+                type = SolverType.MaxSAT;
+
+                using (Watch watch = new Watch(Measure.MaxSAT))
+                {
+                    List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
+                    List<Clause> soft_clauses = GenerateSoftClauses(variables);
+
+                    MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
                     solution = solver.Solve(out status);
                 }
             }
