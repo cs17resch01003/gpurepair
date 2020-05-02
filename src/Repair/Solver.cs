@@ -20,7 +20,7 @@ namespace GPURepair.Repair
         /// <returns>The barrier assignments.</returns>
         public Dictionary<string, bool> Solve(List<RepairableError> errors, out SolverType type)
         {
-            SolverType defaultType = SolverType.MaxSAT;
+            SolverType defaultType = SolverType.MHS;
             List<Clause> clauses = GenerateClauses(errors);
 
             Dictionary<string, bool> solution;
