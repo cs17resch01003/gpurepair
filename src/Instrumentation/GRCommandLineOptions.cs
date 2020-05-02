@@ -4,7 +4,7 @@ namespace GPURepair.Instrumentation
 {
     public class GRCommandLineOptions : CommandLineOptions
     {
-        public string InstrumentationLog { get; set; } = null;
+        public bool AdditionalLogging { get; set; } = false;
 
         public GRCommandLineOptions()
             : base()
@@ -13,10 +13,10 @@ namespace GPURepair.Instrumentation
 
         protected override bool ParseOption(string name, CommandLineParseState ps)
         {
-            if (name == "instrumentationLog")
+            if (name == "additionalLogging")
             {
                 if (ps.ConfirmArgumentCount(1))
-                    InstrumentationLog = ps.args[ps.i];
+                    AdditionalLogging = bool.Parse(ps.args[ps.i]);
                 return true;
             }
 

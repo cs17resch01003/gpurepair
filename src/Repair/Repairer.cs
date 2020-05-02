@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GPURepair.Common.Diagnostics;
 using GPURepair.Repair.Diagnostics;
 using GPURepair.Repair.Errors;
 using GPURepair.Repair.Exceptions;
@@ -50,9 +51,9 @@ namespace GPURepair.Repair
                     IEnumerable<RepairableError> current_errors = VerifyProgram(assignments, errors);
                     if (type == Solver.SolverType.Optimizer)
                     {
-                        Logger.VerifierRunsAfterOptimization++;
+                        Logger.Log($"VerifierRunsAfterOptimization");
                         if (current_errors.Any())
-                            Logger.VerifierFailuresAfterOptimization++;
+                            Logger.Log($"VerifierFailuresAfterOptimization");
                     }
 
                     if (!current_errors.Any())

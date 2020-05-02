@@ -353,7 +353,7 @@ class GPURepairInstance(object):
     options = []
 
     if args.time_as_csv is not None:
-      options.append("/instrumentationLog:" + os.path.dirname(os.path.abspath(__file__)) + os.sep + "instrumentation.log")
+      options.append("/additionalLogging:true")
 
     if args.solver == "z3":
       options.append("/z3exe:" + gvfindtools.z3BinDir + os.sep + "z3.exe")
@@ -470,7 +470,7 @@ class GPURepairInstance(object):
     options = self.getSharedCruncherAndBoogieOptions(args)
 
     if args.time_as_csv is not None:
-      options.append("/repairLog:" + os.path.dirname(os.path.abspath(__file__)) + os.sep + "repair.log")
+      options.append("/additionalLogging:true")
 
     if args.mode == AnalysisMode.FINDBUGS:
       options.append("/loopUnroll:" + str(args.loop_unwind))

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GPURepair.Repair.Diagnostics;
+using GPURepair.Common.Diagnostics;
 using GPURepair.Repair.Exceptions;
 using Microsoft.Boogie;
 
@@ -34,8 +34,7 @@ namespace GPURepair.Repair
                     throw new Exception("GPURepair can work on only one file at a time!");
 
                 Logger.FileName = CommandLineOptions.Clo.Files.First();
-                Logger.LogFile = ((GRCommandLineOptions)CommandLineOptions.Clo).RepairLog;
-                Logger.LogCLauses = ((GRCommandLineOptions)CommandLineOptions.Clo).LogClauses;
+                Logger.AdditionalLogging = ((GRCommandLineOptions)CommandLineOptions.Clo).AdditionalLogging;
 
                 Dictionary<string, bool> assignments;
 
@@ -46,7 +45,7 @@ namespace GPURepair.Repair
                 IEnumerable<string> changes = generator.GenerateSummary(assignments,
                     Logger.FileName.Replace(".cbpl", ".summary"));
 
-                Logger.Changes = changes.Count();
+                Logger.Log($"Changes;{changes.Count()}");
                 Console.WriteLine("Number of changes required: {0}.", changes.Count());
 
                 if (changes.Any())
@@ -57,7 +56,7 @@ namespace GPURepair.Repair
             }
             catch (Exception ex)
             {
-                Logger.ExceptionMessage = ex.Message;
+                Logger.Log($"ExceptionMessage;{ex.Message}");
                 Console.Error.WriteLine(ex.Message);
 
                 if (ex is AssertionError)
@@ -68,10 +67,6 @@ namespace GPURepair.Repair
                     statusCode = 203;
                 else if (ex is SummaryGeneratorError)
                     statusCode = 204;
-            }
-            finally
-            {
-                Logger.Flush();
             }
 
             if (statusCode != null)

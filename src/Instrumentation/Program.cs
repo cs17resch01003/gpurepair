@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GPURepair.Instrumentation.Diagnostics;
+using GPURepair.Common.Diagnostics;
 using Microsoft.Boogie;
 
 namespace GPURepair.Instrumentation
@@ -28,7 +28,7 @@ namespace GPURepair.Instrumentation
                     throw new Exception("GPURepair can work on only one file at a time!");
 
                 Logger.FileName = CommandLineOptions.Clo.Files.First();
-                Logger.LogFile = ((GRCommandLineOptions)CommandLineOptions.Clo).InstrumentationLog;
+                Logger.AdditionalLogging = ((GRCommandLineOptions)CommandLineOptions.Clo).AdditionalLogging;
 
                 Microsoft.Boogie.Program program;
                 Parser.Parse(Logger.FileName, new List<string>() { "FILE_0" }, out program);
@@ -54,10 +54,6 @@ namespace GPURepair.Instrumentation
             {
                 Console.Error.WriteLine(ex.Message);
                 Environment.Exit(200);
-            }
-            finally
-            {
-                Logger.Flush();
             }
         }
     }

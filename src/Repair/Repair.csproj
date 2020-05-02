@@ -80,7 +80,6 @@
     <Compile Include="Errors\RepairableError.cs" />
     <Compile Include="Metadata\Barrier.cs" />
     <Compile Include="ConstraintGenerator.cs" />
-    <Compile Include="Diagnostics\Logger.cs" />
     <Compile Include="Diagnostics\Measure.cs" />
     <Compile Include="Diagnostics\Watch.cs" />
     <Compile Include="Errors\Error.cs" />

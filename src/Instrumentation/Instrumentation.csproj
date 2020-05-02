@@ -71,7 +71,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessCollector.cs" />
-    <Compile Include="Diagnostics\Logger.cs" />
     <Compile Include="GraphAnalyzer.cs" />
     <Compile Include="GRCommandLineOptions.cs" />
     <Compile Include="Instrumentor.cs" />

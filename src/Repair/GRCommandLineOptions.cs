@@ -4,7 +4,7 @@ namespace GPURepair.Repair
 {
     public class GRCommandLineOptions : GVCommandLineOptions
     {
-        public string RepairLog { get; set; } = null;
+        public bool AdditionalLogging { get; set; } = false;
 
         public bool LogClauses { get; set; } = false;
 
@@ -15,10 +15,10 @@ namespace GPURepair.Repair
 
         protected override bool ParseOption(string name, CommandLineParseState ps)
         {
-            if (name == "repairLog")
+            if (name == "additionalLogging")
             {
                 if (ps.ConfirmArgumentCount(1))
-                    RepairLog = ps.args[ps.i];
+                    AdditionalLogging = bool.Parse(ps.args[ps.i]);
                 return true;
             }
             else if (name == "logClauses")

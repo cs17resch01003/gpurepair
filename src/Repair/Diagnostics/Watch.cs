@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using GPURepair.Common.Diagnostics;
 
 namespace GPURepair.Repair.Diagnostics
 {
@@ -19,7 +20,7 @@ namespace GPURepair.Repair.Diagnostics
 
         public void Dispose()
         {
-            Logger.AddTime(measure, watch.ElapsedMilliseconds);
+            Logger.Log($"Watch;{measure};{watch.ElapsedMilliseconds}");
             watch.Stop();
         }
     }

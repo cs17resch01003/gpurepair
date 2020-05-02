@@ -77,7 +77,6 @@ namespace GPURepair.Repair
                 }
             }
 
-            Logger.LogClausesToFile(clauses, type, solution);
             if (status == SolverStatus.Unsatisfiable)
                 throw new RepairError("The program could not be repaired because of unsatisfiable clauses!");
 

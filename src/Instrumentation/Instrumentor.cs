@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using GPURepair.Common;
-using GPURepair.Instrumentation.Diagnostics;
+using GPURepair.Common.Diagnostics;
 using Microsoft.Basetypes;
 using Microsoft.Boogie;
 
@@ -40,6 +40,11 @@ namespace GPURepair.Instrumentation
         private int barrier_count = 0;
 
         /// <summary>
+        /// The total number of call commands encountered so far.
+        /// </summary>
+        private int call_commands = 0;
+
+        /// <summary>
         /// Represents a bitvector of size 1.
         /// </summary>
         private LiteralExpr _1bv1;
@@ -68,8 +73,9 @@ namespace GPURepair.Instrumentation
 
             _1bv1 = new LiteralExpr(Token.NoToken, BigNum.ONE, 1);
 
-            Logger.Blocks = program.Blocks().Count();
-            Logger.Commands = program.Blocks().Sum(x => x.Cmds.Count);
+            Logger.Log($"Blocks;{program.Blocks().Count()}");
+            Logger.Log($"Commands;{program.Blocks().Sum(x => x.Cmds.Count)}");
+            Logger.Log($"CallCommands;{call_commands}");
         }
 
         /// <summary>
@@ -169,7 +175,7 @@ namespace GPURepair.Instrumentation
                             {
                                 AddBarrier(implementation, block, i);
                                 if (command is CallCmd)
-                                    Logger.CallCommands++;
+                                    call_commands++;
 
                                 analyzer.LinkBarrier(implementation, block);
                                 return true;

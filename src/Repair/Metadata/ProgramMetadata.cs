@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using GPURepair.Common;
-using GPURepair.Repair.Diagnostics;
+using GPURepair.Common.Diagnostics;
 using Microsoft.Boogie;
 
 namespace GPURepair.Repair.Metadata
@@ -146,7 +146,7 @@ namespace GPURepair.Repair.Metadata
                             }
                         }
 
-            Logger.Barriers = Barriers.Count;
+            Logger.Log($"Barriers;{Barriers.Count}");
         }
 
         /// <summary>
