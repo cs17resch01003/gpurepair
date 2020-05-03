@@ -1,4 +1,5 @@
-﻿using GPUVerify;
+﻿using System;
+using GPUVerify;
 
 namespace GPURepair.Repair
 {
@@ -7,6 +8,8 @@ namespace GPURepair.Repair
         public bool AdditionalLogging { get; set; } = false;
 
         public bool LogClauses { get; set; } = false;
+
+        public Solver.SolverType SolverType = Solver.SolverType.MHS;
 
         public GRCommandLineOptions()
             : base()
@@ -25,6 +28,12 @@ namespace GPURepair.Repair
             {
                 if (ps.ConfirmArgumentCount(1))
                     LogClauses = bool.Parse(ps.args[ps.i]);
+                return true;
+            }
+            else if (name == "solverType")
+            {
+                if (ps.ConfirmArgumentCount(1))
+                    SolverType = (Solver.SolverType)Enum.Parse(typeof(Solver.SolverType), ps.args[ps.i]);
                 return true;
             }
 

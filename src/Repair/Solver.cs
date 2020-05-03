@@ -18,64 +18,29 @@ namespace GPURepair.Repair
         /// <param name="errors">The errors.</param>
         /// <param name="type">The solver type used.</param>
         /// <returns>The barrier assignments.</returns>
-        public Dictionary<string, bool> Solve(List<RepairableError> errors, out SolverType type)
+        public Dictionary<string, bool> Solve(List<RepairableError> errors, ref SolverType type)
         {
-            SolverType defaultType = SolverType.MHS;
             List<Clause> clauses = GenerateClauses(errors);
 
             Dictionary<string, bool> solution;
-            SolverStatus status = SolverStatus.Unsatisfiable;
+            SolverStatus status;
 
-            if (defaultType == SolverType.SAT)
+            if (type == SolverType.SAT)
+                solution = SolveSAT(clauses, out status);
+            else if (type == SolverType.MHS)
             {
-                type = SolverType.SAT;
-                using (Watch watch = new Watch(Measure.SAT))
+                solution = SolveMHS(clauses, out status);
+                if (status != SolverStatus.Satisfiable)
                 {
-                    SATSolver solver = new SATSolver(clauses);
-                    solution = solver.Solve(out status);
+                    // fall back to MaxSAT if MHS fails
+                    type = SolverType.MaxSAT;
+                    solution = SolveMaxSAT(clauses, out status);
                 }
             }
-            else if (defaultType == SolverType.MHS)
-            {
-                type = SolverType.MHS;
-                using (Watch watch = new Watch(Measure.MHS))
-                {
-                    MHSSolver solver = new MHSSolver(clauses);
-                    solution = solver.Solve(out status);
-                }
-            }
-            else if (defaultType == SolverType.MaxSAT)
-            {
-                type = SolverType.MaxSAT;
-
-                using (Watch watch = new Watch(Measure.MaxSAT))
-                {
-                    List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
-                    List<Clause> soft_clauses = GenerateSoftClauses(variables);
-
-                    MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
-                    solution = solver.Solve(out status);
-                }
-            }
+            else if (type == SolverType.MaxSAT)
+                solution = SolveMaxSAT(clauses, out status);
             else
-            {
                 throw new RepairError("Invalid solver type!");
-            }
-
-            if (status != SolverStatus.Satisfiable)
-            {
-                // fall back to MaxSAT if MHS fails
-                type = SolverType.MaxSAT;
-
-                using (Watch watch = new Watch(Measure.MaxSAT))
-                {
-                    List<string> variables = clauses.SelectMany(x => x.Literals).Select(x => x.Variable).Distinct().ToList();
-                    List<Clause> soft_clauses = GenerateSoftClauses(variables);
-
-                    MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
-                    solution = solver.Solve(out status);
-                }
-            }
 
             if (status == SolverStatus.Unsatisfiable)
                 throw new RepairError("The program could not be repaired because of unsatisfiable clauses!");
@@ -153,6 +118,55 @@ namespace GPURepair.Repair
             }
 
             return clauses;
+        }
+
+        /// <summary>
+        /// Solves the clauses using a SAT solver.
+        /// </summary>
+        /// <param name="clauses">The clauses.</param>
+        /// <param name="status">The solver status.</param>
+        /// <returns>The solution.</returns>
+        private Dictionary<string, bool> SolveSAT(List<Clause> clauses, out SolverStatus status)
+        {
+            using (Watch watch = new Watch(Measure.SAT))
+            {
+                SATSolver solver = new SATSolver(clauses);
+                return solver.Solve(out status);
+            }
+        }
+
+        /// <summary>
+        /// Solves the clauses using a MHS solver.
+        /// </summary>
+        /// <param name="clauses">The clauses.</param>
+        /// <param name="status">The solver status.</param>
+        /// <returns>The solution.</returns>
+        private Dictionary<string, bool> SolveMHS(List<Clause> clauses, out SolverStatus status)
+        {
+            using (Watch watch = new Watch(Measure.MHS))
+            {
+                MHSSolver solver = new MHSSolver(clauses);
+                return solver.Solve(out status);
+            }
+        }
+
+        /// <summary>
+        /// Solves the clauses using a MaxSAT solver.
+        /// </summary>
+        /// <param name="clauses">The clauses.</param>
+        /// <param name="status">The solver status.</param>
+        /// <returns>The solution.</returns>
+        private Dictionary<string, bool> SolveMaxSAT(List<Clause> clauses, out SolverStatus status)
+        {
+            using (Watch watch = new Watch(Measure.MaxSAT))
+            {
+                List<string> variables = clauses.SelectMany(x => x.Literals)
+                    .Select(x => x.Variable).Distinct().ToList();
+                List<Clause> soft_clauses = GenerateSoftClauses(variables);
+
+                MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
+                return solver.Solve(out status);
+            }
         }
 
         /// <summary>

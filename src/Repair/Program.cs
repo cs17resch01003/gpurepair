@@ -39,7 +39,9 @@ namespace GPURepair.Repair
                 Dictionary<string, bool> assignments;
 
                 Repairer repairer = new Repairer(Logger.FileName);
-                Microsoft.Boogie.Program program = repairer.Repair(out assignments);
+                Microsoft.Boogie.Program program = repairer.Repair(
+                    ((GRCommandLineOptions)CommandLineOptions.Clo).SolverType,
+                    out assignments);
 
                 SummaryGenerator generator = new SummaryGenerator();
                 IEnumerable<string> changes = generator.GenerateSummary(assignments,

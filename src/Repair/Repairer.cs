@@ -28,9 +28,10 @@ namespace GPURepair.Repair
         /// <summary>
         /// Reapirs the program at the given filePath.
         /// </summary>
+        /// <param name="defaultType">The default solver to use.</param>
         /// <param name="assignments">The assignments to the variables.</param>
         /// <returns>The fixed program if one exists.</returns>
-        public Microsoft.Boogie.Program Repair(out Dictionary<string, bool> assignments)
+        public Microsoft.Boogie.Program Repair(Solver.SolverType defaultType, out Dictionary<string, bool> assignments)
         {
             List<RepairableError> errors = new List<RepairableError>();
             Dictionary<string, bool> solution = null;
@@ -39,10 +40,10 @@ namespace GPURepair.Repair
             {
                 try
                 {
-                    Solver.SolverType type;
+                    Solver.SolverType type = defaultType;
 
                     Solver solver = new Solver();
-                    assignments = solution == null ? solver.Solve(errors, out type) : solver.Optimize(errors, solution, out type);
+                    assignments = solution == null ? solver.Solve(errors, ref type) : solver.Optimize(errors, solution, out type);
 
                     // skip the verification if the solution wasn't optimized
                     if (type == Solver.SolverType.Optimizer && assignments.Count(x => x.Value == true) == solution.Count(x => x.Value == true))
