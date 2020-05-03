@@ -1,4 +1,4 @@
-//xfail:TIMEOUT
+//xfail:REPAIR_ERROR
 //--local_size=[8,8] --num_groups=[8,8] --no-inline
 
 __kernel void k(__write_only image2d_t dest, image2d_t src) {

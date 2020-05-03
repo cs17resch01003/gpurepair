@@ -1,4 +1,4 @@
-//xfail:TIMEOUT
+//xfail:REPAIR_ERROR
 //--local_size=64 --num_groups=64
 
 __kernel void foo(__global uint *h1, __global uint *h2, int i)
