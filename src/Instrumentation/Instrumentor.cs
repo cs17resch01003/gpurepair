@@ -75,7 +75,6 @@ namespace GPURepair.Instrumentation
 
             Logger.Log($"Blocks;{program.Blocks().Count()}");
             Logger.Log($"Commands;{program.Blocks().Sum(x => x.Cmds.Count)}");
-            Logger.Log($"CallCommands;{call_commands}");
         }
 
         /// <summary>
@@ -92,6 +91,8 @@ namespace GPURepair.Instrumentation
             while (program_modified);
 
             InstrumentMergeNodes();
+
+            Logger.Log($"CallCommands;{call_commands}");
         }
 
         /// <summary>
