@@ -149,9 +149,12 @@ namespace GPURepair.Repair
                 DivergenceError divergence = error as DivergenceError;
                 foreach (Barrier barrier in barriers)
                 {
-                    Location location = ProgramMetadata.Locations[barrier.SourceLocation].Last();
-                    if (divergence.Location != null && location.Equals(divergence.Location))
-                        variables.Add(barrier.Variable);
+                    List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
+                    foreach (Location location in locations)
+                    {
+                        if (divergence.Location != null && location.Equals(divergence.Location))
+                            variables.Add(barrier.Variable);
+                    }
                 }
             }
 
@@ -171,10 +174,13 @@ namespace GPURepair.Repair
             List<Barrier> filteredBarriers = new List<Barrier>();
             foreach (Barrier barrier in barriers)
             {
-                Location location = ProgramMetadata.Locations[barrier.SourceLocation].Last();
-                if (race.Start != null && race.End != null)
-                    if (location.IsBetween(race.Start, race.End))
-                        filteredBarriers.Add(barrier);
+                List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
+                foreach (Location location in locations)
+                {
+                    if (race.Start != null && race.End != null)
+                        if (location.IsBetween(race.Start, race.End))
+                            filteredBarriers.Add(barrier);
+                }
             }
 
             // check if any of the barriers are inside a loop
