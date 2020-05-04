@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GPURepair.Common.Diagnostics;
+using GPURepair.Repair.Diagnostics;
 using GPURepair.Repair.Exceptions;
 using Microsoft.Boogie;
 
@@ -35,6 +36,9 @@ namespace GPURepair.Repair
 
                 Logger.FileName = CommandLineOptions.Clo.Files.First();
                 Logger.AdditionalLogging = ((GRCommandLineOptions)CommandLineOptions.Clo).AdditionalLogging;
+
+                ClauseLogger.FileName = CommandLineOptions.Clo.Files.First();
+                ClauseLogger.LogCLauses = ((GRCommandLineOptions)CommandLineOptions.Clo).LogClauses;
 
                 Dictionary<string, bool> assignments;
 

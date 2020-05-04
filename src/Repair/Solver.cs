@@ -42,6 +42,7 @@ namespace GPURepair.Repair
             else
                 throw new RepairError("Invalid solver type!");
 
+            ClauseLogger.Log(clauses, type, solution);
             if (status == SolverStatus.Unsatisfiable)
                 throw new RepairError("The program could not be repaired because of unsatisfiable clauses!");
 
