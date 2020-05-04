@@ -20,8 +20,9 @@ namespace GPURepair.Repair.Diagnostics
                 lines.Add("Type: " + type.ToString());
 
                 StringBuilder builder = new StringBuilder();
-                foreach (KeyValuePair<string, bool> pair in solution)
-                    builder.AppendFormat("{0}{1} ", pair.Value ? string.Empty : "-", pair.Key);
+                if (solution != null)
+                    foreach (KeyValuePair<string, bool> pair in solution)
+                        builder.AppendFormat("{0}{1} ", pair.Value ? string.Empty : "-", pair.Key);
 
                 lines.Add("Solution: " + builder.ToString());
 
