@@ -145,8 +145,6 @@ namespace GPURepair.Repair.Metadata
                                 barrier.Generated = generated;
                             }
                         }
-
-            Logger.Log($"Barriers;{Barriers.Count}");
         }
 
         /// <summary>

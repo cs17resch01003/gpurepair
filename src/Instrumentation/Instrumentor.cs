@@ -93,6 +93,7 @@ namespace GPURepair.Instrumentation
             InstrumentMergeNodes();
 
             Logger.Log($"CallCommands;{call_commands}");
+            Logger.Log($"Barriers;{barrier_count}");
         }
 
         /// <summary>
