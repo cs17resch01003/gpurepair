@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using GPURepair.Common;
-using GPURepair.Common.Diagnostics;
-using Microsoft.Basetypes;
-using Microsoft.Boogie;
-
-namespace GPURepair.Instrumentation
+﻿namespace GPURepair.Instrumentation
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using GPURepair.Common;
+    using GPURepair.Common.Diagnostics;
+    using Microsoft.Basetypes;
+    using Microsoft.Boogie;
+
     public class Instrumentor
     {
         /// <summary>
@@ -30,9 +30,24 @@ namespace GPURepair.Instrumentation
         private Microsoft.Boogie.Program program;
 
         /// <summary>
+        /// The source language of the input program.
+        /// </summary>
+        private SourceLanguage sourceLanguage;
+
+        /// <summary>
+        /// Enables the grid-level barriers.
+        /// </summary>
+        private bool enableGridBarriers;
+
+        /// <summary>
         /// The definition of the barrier.
         /// </summary>
         private Procedure barrier_definition;
+
+        /// <summary>
+        /// The definition of the grid-level barrier.
+        /// </summary>
+        private Procedure grid_barrier_definition;
 
         /// <summary>
         /// The total number of barriers created so far.
@@ -58,17 +73,24 @@ namespace GPURepair.Instrumentation
         /// Initialize the variables.
         /// </summary>
         /// <param name="program">The source Boogie program.</param>
-        public Instrumentor(Microsoft.Boogie.Program program)
+        /// <param name="sourceLanguage">The source language of the input program.</param>
+        /// <param name="enableGridBarriers">Enables the grid-level barriers.</param>
+        public Instrumentor(Microsoft.Boogie.Program program,
+            SourceLanguage sourceLanguage, bool enableGridBarriers)
         {
             this.program = program;
-            analyzer = new GraphAnalyzer(program);
+            this.sourceLanguage = sourceLanguage;
+            this.enableGridBarriers = enableGridBarriers;
 
+            analyzer = new GraphAnalyzer(program);
             foreach (Declaration declaration in program.TopLevelDeclarations)
                 if (declaration is Procedure)
                 {
                     Procedure procedure = declaration as Procedure;
                     if (procedure.Name == "$bugle_barrier")
                         barrier_definition = procedure;
+                    else if (procedure.Name == "$bugle_grid_barrier")
+                        grid_barrier_definition = procedure;
                 }
 
             _1bv1 = new LiteralExpr(Token.NoToken, BigNum.ONE, 1);
@@ -207,12 +229,15 @@ namespace GPURepair.Instrumentation
                         {
                             // get the call comamnd
                             CallCmd call = command as CallCmd;
-                            if (call.callee == "$bugle_barrier" && !ContainsAttribute(call, BarrierKey))
+                            if (call.callee == "$bugle_barrier" || call.callee == "$bugle_grid_barrier")
                             {
-                                UpdateBarrier(implementation, block, i);
+                                if (!ContainsAttribute(call, BarrierKey))
+                                {
+                                    UpdateBarrier(implementation, block, i);
+                                    analyzer.LinkBarrier(implementation, block);
 
-                                analyzer.LinkBarrier(implementation, block);
-                                return true;
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -304,10 +329,10 @@ namespace GPURepair.Instrumentation
         }
 
         /// <summary>
-        /// Adds the required barrier.
+        /// Adds the required barriers.
         /// </summary>
         /// <param name="implementation">The procedure where the blocks are being added.</param>
-        /// <param name="block">The block contains the shared write.</param>
+        /// <param name="block">The block containing the shared read/write command.</param>
         /// <param name="index">The index of the assign command.</param>
         private void AddBarrier(Implementation implementation, Block block, int index)
         {
@@ -317,60 +342,108 @@ namespace GPURepair.Instrumentation
             if (assert == null)
                 return;
 
-            CreateBugleBarrier();
-            string barrierName = "b" + (++barrier_count);
-
             // add the instrumentation key to the assert command
             QKeyValue assertAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
-
             if (assert.Attributes != null)
                 assert.Attributes.AddLast(assertAttribute);
             else
                 assert.Attributes = assertAttribute;
 
-            // create the call barrier command if it doesn't exist
-            QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
-            CallCmd call;
+            // get source location infromation
+            int location = QKeyValue.FindIntAttribute(assert.Attributes, SourceLocationKey, -1);
+            QKeyValue locationAttribute = null;
 
-            if (index - 2 >= 0 && block.Cmds[index - 2] is CallCmd && (block.Cmds[index - 2] as CallCmd).callee == "$bugle_barrier")
+            if (location != -1)
+            {
+                LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
+                locationAttribute = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object> { locationValue }, null);
+            }
+
+            // create a conditional barrier
+            if (sourceLanguage == SourceLanguage.CUDA && enableGridBarriers)
+            {
+                Barrier barrier = CreateCallCommand(block, locationAttribute, index, "$bugle_barrier");
+                Barrier grid_barrier = CreateCallCommand(block, locationAttribute, index, "$bugle_grid_barrier");
+
+                InsertBarriers(implementation, block, index, barrier, grid_barrier);
+            }
+            else
+            {
+                Barrier barrier = CreateCallCommand(block, locationAttribute, index, "$bugle_barrier");
+                InsertBarrier(implementation, block, index, barrier);
+            }
+        }
+
+        /// <summary>
+        /// Creates a call command for the given procedure name.
+        /// </summary>
+        /// <param name="block">The block containing the shared read/write command.</param>
+        /// <param name="locationAttribute">The location attribute.</param>
+        /// <param name="index">The index of the assign command.</param>
+        /// <param name="procedureName">The procedure name.</param>
+        /// <returns>The barrier name and the call command.</returns>
+        private Barrier CreateCallCommand(Block block, QKeyValue locationAttribute, int index, string procedureName)
+        {
+            if (procedureName == "$bugle_barrier")
+                CreateBugleBarrier();
+            else if (procedureName == "$bugle_grid_barrier")
+                CreateGridLevelBugleBarrier();
+
+            // create the barrier attributes
+            string barrierName = "b" + (++barrier_count);
+            QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
+
+            // create the call barrier command if it doesn't exist
+            CallCmd call;
+            if (index - 2 >= 0 && block.Cmds[index - 2] is CallCmd && (block.Cmds[index - 2] as CallCmd).callee == procedureName)
             {
                 call = block.Cmds[index - 2] as CallCmd;
                 call.Attributes.AddLast(barrierAttribute);
             }
             else
             {
-                call = new CallCmd(Token.NoToken, "$bugle_barrier", new List<Expr>() { _1bv1, _1bv1 }, new List<IdentifierExpr>(), barrierAttribute);
-                block.Cmds.Insert(index - 1, call);
+                QKeyValue instrumentedAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
+                List<Expr> arguments = procedureName == "$bugle_barrier" ? new List<Expr>() { _1bv1, _1bv1 } : new List<Expr>();
 
-                int location = QKeyValue.FindIntAttribute(assert.Attributes, SourceLocationKey, -1);
-                if (location != -1)
-                {
-                    LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
-
-                    QKeyValue locationAttribute = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object> { locationValue }, null);
+                call = new CallCmd(Token.NoToken, procedureName, arguments, new List<IdentifierExpr>(), barrierAttribute);
+                call.Attributes.AddLast(instrumentedAttribute);
+                if (locationAttribute != null)
                     call.Attributes.AddLast(locationAttribute);
-
-                    QKeyValue instrumentedAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
-                    call.Attributes.AddLast(instrumentedAttribute);
-                }
-
-                index = index + 1;
             }
 
-            GlobalVariable variable = CreateGlobalVariable(barrierName);
+            return new Barrier
+            {
+                Name = barrierName,
+                Call = call,
+            };
+        }
+
+        /// <summary>
+        /// Inserts the barrier at the specified index.
+        /// </summary>
+        /// <param name="implementation">The procedure where the blocks are being added.</param>
+        /// <param name="block">The block containing the shared read/write command.</param>
+        /// <param name="index">The index of the assign command.</param>
+        /// <param name="barrier">The barrier to insert.</param>
+        private Block InsertBarrier(Implementation implementation, Block block, int index, Barrier barrier)
+        {
+            block.Cmds.Insert(index - 1, barrier.Call);
+            index = index + 1;
+
+            GlobalVariable variable = CreateGlobalVariable(barrier.Name);
             QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
 
             // move the commands to a new block to create a conditional barrier
-            Block end = new Block(Token.NoToken, barrierName + "_end", new List<Cmd>(), block.TransferCmd);
+            Block end = new Block(Token.NoToken, barrier.Name + "_end", new List<Cmd>(), block.TransferCmd);
             end.Cmds.AddRange(block.Cmds.GetRange(index - 1, block.Cmds.Count - index + 1));
 
             // create the true block
-            Block true_block = new Block(Token.NoToken, barrierName + "_true", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
+            Block true_block = new Block(Token.NoToken, barrier.Name + "_true", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
             true_block.Cmds.Add(new AssumeCmd(Token.NoToken, new IdentifierExpr(Token.NoToken, variable), partition));
-            true_block.Cmds.Add(call);
+            true_block.Cmds.Add(barrier.Call);
 
             // create the false block
-            Block false_block = new Block(Token.NoToken, barrierName + "_false", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
+            Block false_block = new Block(Token.NoToken, barrier.Name + "_false", new List<Cmd>(), new GotoCmd(Token.NoToken, new List<Block>() { end }));
             false_block.Cmds.Add(new AssumeCmd(Token.NoToken, Expr.Not(new IdentifierExpr(Token.NoToken, variable)), partition));
 
             // add the conditional barrier
@@ -380,6 +453,22 @@ namespace GPURepair.Instrumentation
             implementation.Blocks.Add(true_block);
             implementation.Blocks.Add(false_block);
             implementation.Blocks.Add(end);
+
+            return end;
+        }
+
+        /// <summary>
+        /// Inserts the barriers at the specified index.
+        /// </summary>
+        /// <param name="implementation">The procedure where the blocks are being added.</param>
+        /// <param name="block">The block containing the shared read/write command.</param>
+        /// <param name="index">The index of the assign command.</param>
+        /// <param name="barrier">The barrier to insert.</param>
+        /// <param name="grid_barrier">The grid-level barrier to insert.</param>
+        private void InsertBarriers(Implementation implementation, Block block, int index, Barrier barrier, Barrier grid_barrier)
+        {
+            Block end = InsertBarrier(implementation, block, index, barrier);
+            InsertBarrier(implementation, end, 1, grid_barrier); // the command containing the shared read/write will be at position 1
         }
 
         /// <summary>
@@ -423,7 +512,7 @@ namespace GPURepair.Instrumentation
         }
 
         /// <summary>
-        /// Creates the definition for a barrier if it doesn't exist.
+        /// Creates the definition for the barrier if it doesn't exist.
         /// </summary>
         private void CreateBugleBarrier()
         {
@@ -445,6 +534,28 @@ namespace GPURepair.Instrumentation
             program.AddTopLevelDeclaration(procedure);
 
             barrier_definition = procedure;
+        }
+
+        /// <summary>
+        /// Creates the definition for the grid-level barrier if it doesn't exist.
+        /// </summary>
+        private void CreateGridLevelBugleBarrier()
+        {
+            if (grid_barrier_definition != null)
+                return;
+
+            List<Variable> variables = new List<Variable>();
+            Procedure procedure = new Procedure(Token.NoToken, "$bugle_grid_barrier",
+                new List<TypeVariable>(), variables, new List<Variable>(), new List<Requires>(),
+                new List<IdentifierExpr>(), new List<Ensures>());
+
+            Dictionary<string, object> attributes = new Dictionary<string, object>();
+            attributes.Add("grid_barrier", null);
+
+            procedure.Attributes = ConvertAttributes(attributes);
+            program.AddTopLevelDeclaration(procedure);
+
+            grid_barrier_definition = procedure;
         }
 
         /// <summary>
@@ -490,6 +601,22 @@ namespace GPURepair.Instrumentation
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Represents a barrier.
+        /// </summary>
+        private class Barrier
+        {
+            /// <summary>
+            /// The name of the barrier.
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// The call command associated with the barrier.
+            /// </summary>
+            public CallCmd Call { get; set; }
         }
     }
 }

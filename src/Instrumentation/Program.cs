@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using GPURepair.Common.Diagnostics;
-using Microsoft.Boogie;
-
-namespace GPURepair.Instrumentation
+﻿namespace GPURepair.Instrumentation
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using GPURepair.Common;
+    using GPURepair.Common.Diagnostics;
+    using Microsoft.Boogie;
+
     public class Program
     {
         /// <summary>
@@ -43,7 +44,10 @@ namespace GPURepair.Instrumentation
                 new ModSetCollector().DoModSetAnalysis(program);
 
                 // start instrumenting the program
-                Instrumentor instrumentor = new Instrumentor(program);
+                SourceLanguage sourceLanguage = ((GRCommandLineOptions)CommandLineOptions.Clo).SourceLanguage;
+                bool enableGridBarriers = ((GRCommandLineOptions)CommandLineOptions.Clo).EnableGridBarriers;
+
+                Instrumentor instrumentor = new Instrumentor(program, sourceLanguage, enableGridBarriers);
                 instrumentor.Instrument();
 
                 // create the instrumented Boogie IR for the next steps

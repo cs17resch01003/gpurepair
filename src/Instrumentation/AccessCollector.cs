@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Microsoft.Boogie;
-
-namespace GPURepair.Instrumentation
+﻿namespace GPURepair.Instrumentation
 {
+    using System.Collections.Generic;
+    using Microsoft.Boogie;
+
     public class AccessCollector : StandardVisitor
     {
         /// <summary>

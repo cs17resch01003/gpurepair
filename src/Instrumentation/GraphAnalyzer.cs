@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using GPURepair.Common;
-using Microsoft.Boogie;
-
-namespace GPURepair.Instrumentation
+﻿namespace GPURepair.Instrumentation
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using GPURepair.Common;
+    using Microsoft.Boogie;
+
     /// <summary>
     /// Analyzes the graph.
     /// </summary>
