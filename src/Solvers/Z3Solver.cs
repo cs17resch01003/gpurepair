@@ -1,9 +1,9 @@
-﻿using Microsoft.Z3;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace GPURepair.Solvers
+﻿namespace GPURepair.Solvers
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Microsoft.Z3;
+
     public abstract class Z3Solver
     {
         /// <summary>
@@ -34,18 +34,45 @@ namespace GPURepair.Solvers
         {
             List<BoolExpr> clauses = new List<BoolExpr>();
             foreach (Clause clause in input)
-            {
-                List<BoolExpr> literals = new List<BoolExpr>();
-                foreach (Literal literal in clause.Literals)
-                {
-                    Z3Variable variable = variables[literal.Variable];
-                    literals.Add(literal.Value ? variable.Positive : variable.Negative);
-                }
-
-                clauses.Add(context.MkOr(literals));
-            }
+                clauses.Add(GenerateClause(context, clause, variables));
 
             return clauses;
+        }
+
+        /// <summary>
+        /// Generates clauses for the Z3 solver.
+        /// </summary>
+        /// <param name="context">The Z3 context.</param>
+        /// <param name="input">The clauses.</param>
+        /// <param name="variables">The variables.</param>
+        /// <returns>The Z3 clauses.</returns>
+        protected Dictionary<BoolExpr, uint> GenerateClauses(Context context, Dictionary<Clause, uint> input,
+            Dictionary<string, Z3Variable> variables)
+        {
+            Dictionary<BoolExpr, uint> clauses = new Dictionary<BoolExpr, uint>();
+            foreach (Clause clause in input.Keys)
+                clauses.Add(GenerateClause(context, clause, variables), input[clause]);
+
+            return clauses;
+        }
+
+        /// <summary>
+        /// Generates a clause for the Z3 solver.
+        /// </summary>
+        /// <param name="context">The Z3 context.</param>
+        /// <param name="clause">The input clause.</param>
+        /// <param name="variables">The variables.</param>
+        /// <returns>The Z3 clause.</returns>
+        private BoolExpr GenerateClause(Context context, Clause clause, Dictionary<string, Z3Variable> variables)
+        {
+            List<BoolExpr> literals = new List<BoolExpr>();
+            foreach (Literal literal in clause.Literals)
+            {
+                Z3Variable variable = variables[literal.Variable];
+                literals.Add(literal.Value ? variable.Positive : variable.Negative);
+            }
+
+            return context.MkOr(literals);
         }
 
         /// <summary>

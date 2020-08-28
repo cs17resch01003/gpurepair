@@ -1,9 +1,9 @@
-﻿using GPURepair.Solvers.Exceptions;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace GPURepair.Solvers
+﻿namespace GPURepair.Solvers
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using GPURepair.Solvers.Exceptions;
+
     public class MHSSolver
     {
         /// <summary>
@@ -12,12 +12,19 @@ namespace GPURepair.Solvers
         private List<Clause> clauses { get; set; }
 
         /// <summary>
+        /// The weights associated with the literals.
+        /// </summary>
+        private Dictionary<string, uint> weights { get; set; }
+
+        /// <summary>
         /// The constructor.
         /// </summary>
         /// <param name="clauses">The clauses.</param>
-        public MHSSolver(List<Clause> clauses)
+        /// <param name="weights">The weights associated with the literals.</param>
+        public MHSSolver(List<Clause> clauses, Dictionary<string, uint> weights)
         {
             this.clauses = clauses;
+            this.weights = weights;
         }
 
         /// <summary>
@@ -99,16 +106,18 @@ namespace GPURepair.Solvers
                 .Select(x => x.Variable).Distinct();
 
             string chosen = string.Empty;
-            int max_unsat_clauses = 0;
+            long max_total_weight = 0;
 
             foreach (string variable in variables)
             {
                 if (!solution.Assignments.ContainsKey(variable))
                 {
                     int unknown_clauses = clauses.Count(x => x.Literals.Select(y => y.Variable).Contains(variable));
-                    if (unknown_clauses > max_unsat_clauses)
+                    long total_weight = unknown_clauses * weights[variable];
+
+                    if (total_weight > max_total_weight)
                     {
-                        max_unsat_clauses = unknown_clauses;
+                        max_total_weight = total_weight;
                         chosen = variable;
                     }
                 }

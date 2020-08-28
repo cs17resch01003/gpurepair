@@ -1,9 +1,9 @@
-﻿using Microsoft.Z3;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace GPURepair.Solvers.Optimizer
+﻿namespace GPURepair.Solvers.Optimizer
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Microsoft.Z3;
+
     public class Optimizer : Z3Solver
     {
         /// <summary>
@@ -12,12 +12,19 @@ namespace GPURepair.Solvers.Optimizer
         private List<Clause> clauses { get; set; }
 
         /// <summary>
+        /// The coefficients to use in the pseudo-boolean constraint.
+        /// </summary>
+        private Dictionary<string, int> coeffs { get; set; }
+
+        /// <summary>
         /// The constructor.
         /// </summary>
         /// <param name="clauses">The clauses.</param>
-        public Optimizer(List<Clause> clauses)
+        /// <param name="coeffs">The coefficients to use in the pseudo-boolean constraint.</param>
+        public Optimizer(List<Clause> clauses, Dictionary<string, int> coeffs)
         {
             this.clauses = clauses;
+            this.coeffs = coeffs;
         }
 
         /// <summary>
@@ -37,7 +44,7 @@ namespace GPURepair.Solvers.Optimizer
                 solver.Assert(clauses.ToArray());
 
                 BoolExpr condition = context.MkPBLe(
-                    variables.Values.Select(x => 1).ToArray(),
+                    variables.Values.Select(x => coeffs[x.VariableName]).ToArray(),
                     variables.Values.Select(x => x.Positive).ToArray(),
                     limit);
                 solver.Assert(condition);

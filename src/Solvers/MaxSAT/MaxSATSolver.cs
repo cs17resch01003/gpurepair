@@ -1,9 +1,9 @@
-﻿using Microsoft.Z3;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace GPURepair.Solvers
+﻿namespace GPURepair.Solvers
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Microsoft.Z3;
+
     public class MaxSATSolver : Z3Solver
     {
         /// <summary>
@@ -14,14 +14,14 @@ namespace GPURepair.Solvers
         /// <summary>
         /// The soft clauses.
         /// </summary>
-        private List<Clause> soft_clauses { get; set; }
+        private Dictionary<Clause, uint> soft_clauses { get; set; }
 
         /// <summary>
         /// The constructor.
         /// </summary>
         /// <param name="hard_clauses">The hard clauses.</param>
         /// <param name="soft_clauses">The soft clauses.</param>
-        public MaxSATSolver(List<Clause> hard_clauses, List<Clause> soft_clauses)
+        public MaxSATSolver(List<Clause> hard_clauses, Dictionary<Clause, uint> soft_clauses)
         {
             this.hard_clauses = hard_clauses;
             this.soft_clauses = soft_clauses;
@@ -37,15 +37,15 @@ namespace GPURepair.Solvers
             // Use Z3 and figure out the variable assignments
             using (Context context = new Context())
             {
-                Dictionary<string, Z3Variable> variables = GetVariables(context, this.hard_clauses.Union(this.soft_clauses));
+                Dictionary<string, Z3Variable> variables = GetVariables(context, this.hard_clauses.Union(this.soft_clauses.Keys));
 
                 List<BoolExpr> hard_clauses = GenerateClauses(context, this.hard_clauses, variables);
-                List<BoolExpr> soft_clauses = GenerateClauses(context, this.soft_clauses, variables);
+                Dictionary<BoolExpr, uint> soft_clauses = GenerateClauses(context, this.soft_clauses, variables);
 
                 Optimize optimize = context.MkOptimize();
                 optimize.Assert(hard_clauses);
-                foreach (BoolExpr clause in soft_clauses)
-                    optimize.AssertSoft(clause, 1, "group");
+                foreach (BoolExpr clause in soft_clauses.Keys)
+                    optimize.AssertSoft(clause, soft_clauses[clause], "group");
 
                 Status solver_status = optimize.Check();
                 if (solver_status == Status.SATISFIABLE)

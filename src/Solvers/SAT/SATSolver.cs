@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Microsoft.Z3;
-
-namespace GPURepair.Solvers.SAT
+﻿namespace GPURepair.Solvers.SAT
 {
+    using System.Collections.Generic;
+    using Microsoft.Z3;
+
     public class SATSolver : Z3Solver
     {
         /// <summary>

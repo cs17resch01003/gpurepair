@@ -354,6 +354,9 @@ class GPURepairInstance(object):
 
     if args.time_as_csv is not None:
       options.append("/additionalLogging:true")
+      
+    if args.source_language:
+      options.append("/sourceLanguage:" + self.getSourceLanguageString(args))
 
     if args.solver == "z3":
       options.append("/z3exe:" + gvfindtools.z3BinDir + os.sep + "z3.exe")

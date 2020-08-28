@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Text;
-
-namespace GPURepair.Solvers
+﻿namespace GPURepair.Solvers
 {
+    using System.Collections.Generic;
+    using System.Text;
+
     public class Clause
     {
         /// <summary>

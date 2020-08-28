@@ -1,10 +1,10 @@
-﻿using GPURepair.Solvers.Exceptions;
-using Microsoft.Z3;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace GPURepair.Solvers
+﻿namespace GPURepair.Solvers
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using GPURepair.Solvers.Exceptions;
+    using Microsoft.Z3;
+
     internal class MHSSolution
     {
         /// <summary>
