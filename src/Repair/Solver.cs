@@ -128,7 +128,7 @@
                 Clause clause = new Clause();
                 clause.Add(new Literal(variable, false));
 
-                uint weight = (uint)(ProgramMetadata.Barriers[variable].GridLevel ? 1 : gridBarrierWeight);
+                uint weight = (uint)(ProgramMetadata.Barriers[variable].GridLevel ? gridBarrierWeight : 1);
                 clauses.Add(clause, weight);
             }
 

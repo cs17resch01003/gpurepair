@@ -28,7 +28,12 @@
                 string location = ToString(locations);
                 if (!barrier.Generated && !assignments[barrierName])
                 {
-                    lines.Add(string.Format("Remove the barrier at location {0}.", location));
+                    string message = string.Format(
+                        "Remove the {0}barrier at location {1}.",
+                        barrier.GridLevel ? "grid-level " : string.Empty,
+                        location);
+
+                    lines.Add(message);
                     changes.Add(location);
 
                     if (locations.Count > 1)
@@ -36,7 +41,12 @@
                 }
                 else if (barrier.Generated && assignments[barrierName])
                 {
-                    lines.Add(string.Format("Add a barrier at location {0}.", location));
+                    string message = string.Format(
+                        "Add a {0}barrier at location {1}.",
+                        barrier.GridLevel ? "grid-level " : string.Empty,
+                        location);
+
+                    lines.Add(message);
                     changes.Add(location);
 
                     if (locations.Count > 1)
