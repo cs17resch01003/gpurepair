@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Boogie;
-using Microsoft.Boogie.GraphUtil;
-
-namespace GPURepair.Common
+﻿namespace GPURepair.Common
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Microsoft.Boogie;
+    using Microsoft.Boogie.GraphUtil;
+
     /// <summary>
     /// Builds a graph from the given Boogie program.
     /// </summary>

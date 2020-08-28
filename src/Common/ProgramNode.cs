@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Microsoft.Boogie;
-
-namespace GPURepair.Common
+﻿namespace GPURepair.Common
 {
+    using System.Collections.Generic;
+    using Microsoft.Boogie;
+
     /// <summary>
     /// Represents a node in the program graph.
     /// </summary>
