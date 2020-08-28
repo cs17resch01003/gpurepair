@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using GPURepair.Common;
-using GPURepair.Repair.Errors;
-using GPURepair.Repair.Exceptions;
-using GPURepair.Repair.Metadata;
-using GPUVerify;
-using Microsoft.Boogie;
-using VC;
-
-namespace GPURepair.Repair
+﻿namespace GPURepair.Repair
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using GPURepair.Common;
+    using GPURepair.Repair.Errors;
+    using GPURepair.Repair.Exceptions;
+    using GPURepair.Repair.Metadata;
+    using GPUVerify;
+    using Microsoft.Boogie;
+    using VC;
+
     public class Verifier
     {
         /// <summary>

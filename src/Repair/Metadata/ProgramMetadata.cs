@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using GPURepair.Common;
-using GPURepair.Common.Diagnostics;
-using Microsoft.Boogie;
-
-namespace GPURepair.Repair.Metadata
+﻿namespace GPURepair.Repair.Metadata
 {
-    /// <summary>
-    /// Populates the program metadata.
-    /// </summary>
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using GPURepair.Common;
+    using Microsoft.Boogie;
+
     public static class ProgramMetadata
     {
         /// <summary>
@@ -33,6 +29,17 @@ namespace GPURepair.Repair.Metadata
         /// Maps the loops with the barriers inside the loops.
         /// </summary>
         public static Dictionary<BackEdge, List<Barrier>> LoopBarriers { get; private set; }
+
+        /// <summary>
+        /// Returns true if grid-level barriers exists in the program.
+        /// </summary>
+        public static bool GridLevelBarriersExists
+        {
+            get
+            {
+                return Barriers.Values.Any(x => x.GridLevel);
+            }
+        }
 
         /// <summary>
         /// Populates the metadata.
@@ -131,7 +138,7 @@ namespace GPURepair.Repair.Metadata
                         if (command is CallCmd)
                         {
                             CallCmd call = command as CallCmd;
-                            if (call.callee.Contains("$bugle_barrier"))
+                            if (call.callee.Contains("$bugle_barrier") || call.callee.Contains("$bugle_grid_barrier"))
                             {
                                 int location = QKeyValue.FindIntAttribute(call.Attributes, "sourceloc_num", -1);
                                 string barrierName = QKeyValue.FindStringAttribute(call.Attributes, "repair_barrier");
@@ -143,6 +150,7 @@ namespace GPURepair.Repair.Metadata
                                 barrier.Block = block;
                                 barrier.SourceLocation = location;
                                 barrier.Generated = generated;
+                                barrier.GridLevel = call.callee.Contains("$bugle_grid_barrier");
                             }
                         }
         }

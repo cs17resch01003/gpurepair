@@ -1,17 +1,29 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using GPURepair.Solvers;
-using static GPURepair.Repair.Solver;
-
-namespace GPURepair.Repair.Diagnostics
+﻿namespace GPURepair.Repair.Diagnostics
 {
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+    using GPURepair.Solvers;
+    using static GPURepair.Repair.Solver;
+
     public static class ClauseLogger
     {
+        /// <summary>
+        /// Enables logging the clauses to the file.
+        /// </summary>
         public static bool LogCLauses;
 
+        /// <summary>
+        /// The file used for logging.
+        /// </summary>
         public static string FileName;
 
+        /// <summary>
+        /// Logs the clauses and the solution to the log file.
+        /// </summary>
+        /// <param name="clauses">The clauses.</param>
+        /// <param name="type">The solver type.</param>
+        /// <param name="solution">The solution.</param>
         public static void Log(List<Clause> clauses, SolverType type, Dictionary<string, bool> solution)
         {
             if (LogCLauses)

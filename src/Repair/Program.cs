@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using GPURepair.Common.Diagnostics;
-using GPURepair.Repair.Diagnostics;
-using GPURepair.Repair.Exceptions;
-using Microsoft.Boogie;
-
-namespace GPURepair.Repair
+﻿namespace GPURepair.Repair
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using GPURepair.Common.Diagnostics;
+    using GPURepair.Repair.Diagnostics;
+    using GPURepair.Repair.Exceptions;
+    using Microsoft.Boogie;
+
     public class Program
     {
         /// <summary>

@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using GPURepair.Common.Diagnostics;
-using GPURepair.Repair.Diagnostics;
-using GPURepair.Repair.Errors;
-using GPURepair.Repair.Exceptions;
-using GPURepair.Repair.Metadata;
-
-namespace GPURepair.Repair
+﻿namespace GPURepair.Repair
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using GPURepair.Common.Diagnostics;
+    using GPURepair.Repair.Diagnostics;
+    using GPURepair.Repair.Errors;
+    using GPURepair.Repair.Exceptions;
+    using GPURepair.Repair.Metadata;
+
     public class Repairer
     {
         /// <summary>

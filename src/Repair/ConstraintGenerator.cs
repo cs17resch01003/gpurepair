@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using GPURepair.Repair.Errors;
-using GPURepair.Repair.Metadata;
-using Microsoft.Boogie;
-
-namespace GPURepair.Repair
+﻿namespace GPURepair.Repair
 {
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using GPURepair.Repair.Errors;
+    using GPURepair.Repair.Metadata;
+    using Microsoft.Boogie;
+
     public class ConstraintGenerator
     {
         /// <summary>

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Microsoft.Boogie;
-
-namespace GPURepair.Repair
+﻿namespace GPURepair.Repair
 {
+    using System.Collections.Generic;
+    using Microsoft.Boogie;
+
     public static class BoogieUtilities
     {
         /// <summary>

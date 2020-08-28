@@ -1,10 +1,7 @@
-﻿using Microsoft.Boogie;
-
-namespace GPURepair.Repair.Metadata
+﻿namespace GPURepair.Repair.Metadata
 {
-    /// <summary>
-    /// Metadata related to a barrier.
-    /// </summary>
+    using Microsoft.Boogie;
+
     public class Barrier
     {
         /// <summary>
@@ -36,5 +33,10 @@ namespace GPURepair.Repair.Metadata
         /// Indicates if the barrier was generated.
         /// </summary>
         public bool Generated { get; set; }
+
+        /// <summary>
+        /// Indicates if the barrier is a grid-level barrier.
+        /// </summary>
+        public bool GridLevel { get; set; }
     }
 }

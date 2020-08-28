@@ -1,17 +1,23 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using GPURepair.Repair.Diagnostics;
-using GPURepair.Repair.Errors;
-using GPURepair.Repair.Exceptions;
-using GPURepair.Solvers;
-using GPURepair.Solvers.Optimizer;
-using GPURepair.Solvers.SAT;
-using Microsoft.Boogie;
-
-namespace GPURepair.Repair
+﻿namespace GPURepair.Repair
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using GPURepair.Repair.Diagnostics;
+    using GPURepair.Repair.Errors;
+    using GPURepair.Repair.Exceptions;
+    using GPURepair.Repair.Metadata;
+    using GPURepair.Solvers;
+    using GPURepair.Solvers.Optimizer;
+    using GPURepair.Solvers.SAT;
+    using Microsoft.Boogie;
+
     public class Solver
     {
+        /// <summary>
+        /// The weight of a grid-level barrier.
+        /// </summary>
+        private int gridBarrierWeight = 10;
+
         /// <summary>
         /// Determine the barrier assignments based on the error traces.
         /// </summary>
@@ -59,18 +65,25 @@ namespace GPURepair.Repair
         public Dictionary<string, bool> Optimize(
             List<RepairableError> errors, Dictionary<string, bool> solution, out SolverType type)
         {
-            int barrier_count = solution.Count(x => x.Value == true);
             List<Clause> clauses = GenerateClauses(errors);
+
+            Dictionary<string, int> coeffs = new Dictionary<string, int>();
+            foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
+                coeffs.Add(barrier.Name, barrier.GridLevel ? gridBarrierWeight : 1);
 
             type = SolverType.Optimizer;
             while (true)
             {
+                int total_weight = 0;
+                foreach (string key in solution.Where(x => x.Value == true).Select(x => x.Key))
+                    total_weight += coeffs[key];
+
                 using (Watch watch = new Watch(Measure.Optimization))
                 {
                     SolverStatus status;
 
-                    Optimizer optimizer = new Optimizer(clauses);
-                    Dictionary<string, bool> assignments = optimizer.Solve(--barrier_count, out status);
+                    Optimizer optimizer = new Optimizer(clauses, coeffs);
+                    Dictionary<string, bool> assignments = optimizer.Solve(--total_weight, out status);
 
                     if (status == SolverStatus.Unsatisfiable)
                         return solution;
@@ -107,15 +120,16 @@ namespace GPURepair.Repair
         /// </summary>
         /// <param name="variables">The variables.</param>
         /// <returns>The soft clauses.</returns>
-        private List<Clause> GenerateSoftClauses(List<string> variables)
+        private Dictionary<Clause, uint> GenerateSoftClauses(List<string> variables)
         {
-            List<Clause> clauses = new List<Clause>();
+            Dictionary<Clause, uint> clauses = new Dictionary<Clause, uint>();
             foreach (string variable in variables)
             {
                 Clause clause = new Clause();
                 clause.Add(new Literal(variable, false));
 
-                clauses.Add(clause);
+                uint weight = (uint)(ProgramMetadata.Barriers[variable].GridLevel ? 1 : gridBarrierWeight);
+                clauses.Add(clause, weight);
             }
 
             return clauses;
@@ -146,7 +160,11 @@ namespace GPURepair.Repair
         {
             using (Watch watch = new Watch(Measure.MHS))
             {
-                MHSSolver solver = new MHSSolver(clauses);
+                Dictionary<string, uint> weights = new Dictionary<string, uint>();
+                foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
+                    weights.Add(barrier.Name, (uint)(barrier.GridLevel ? 1 : gridBarrierWeight));
+
+                MHSSolver solver = new MHSSolver(clauses, weights);
                 return solver.Solve(out status);
             }
         }
@@ -163,7 +181,7 @@ namespace GPURepair.Repair
             {
                 List<string> variables = clauses.SelectMany(x => x.Literals)
                     .Select(x => x.Variable).Distinct().ToList();
-                List<Clause> soft_clauses = GenerateSoftClauses(variables);
+                Dictionary<Clause, uint> soft_clauses = GenerateSoftClauses(variables);
 
                 MaxSATSolver solver = new MaxSATSolver(clauses, soft_clauses);
                 return solver.Solve(out status);

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Microsoft.Boogie;
-
-namespace GPURepair.Repair.Errors
+﻿namespace GPURepair.Repair.Errors
 {
+    using System.Collections.Generic;
+    using Microsoft.Boogie;
+
     public abstract class RepairableError : Error
     {
         /// <summary>

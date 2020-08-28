@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using GPURepair.Repair.Errors;
-using GPURepair.Repair.Metadata;
-using GPUVerify;
-using Microsoft.Boogie;
-
-namespace GPURepair.Repair
+﻿namespace GPURepair.Repair
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using GPURepair.Repair.Errors;
+    using GPURepair.Repair.Metadata;
+    using GPUVerify;
+    using Microsoft.Boogie;
+
     public class ErrorReporter : GPUVerifyErrorReporter
     {
         /// <summary>

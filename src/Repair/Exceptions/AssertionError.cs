@@ -4,11 +4,10 @@
 
     public class AssertionError : Exception
     {
-        public AssertionError()
-            : base()
-        {
-        }
-
+        /// <summary>
+        /// The constructor.
+        /// </summary>
+        /// <param name="message">The error message.</param>
         public AssertionError(string message)
             : base(message)
         {

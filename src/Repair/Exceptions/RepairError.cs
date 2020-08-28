@@ -4,11 +4,10 @@
 
     public class RepairError : Exception
     {
-        public RepairError()
-            : base()
-        {
-        }
-
+        /// <summary>
+        /// The constructor.
+        /// </summary>
+        /// <param name="message">The error message.</param>
         public RepairError(string message)
             : base(message)
         {

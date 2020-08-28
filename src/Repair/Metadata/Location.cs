@@ -1,10 +1,7 @@
-﻿using System.IO;
-
-namespace GPURepair.Repair.Metadata
+﻿namespace GPURepair.Repair.Metadata
 {
-    /// <summary>
-    /// Metadata related to a location.
-    /// </summary>
+    using System.IO;
+
     public class Location
     {
         /// <summary>

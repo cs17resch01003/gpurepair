@@ -1,8 +1,8 @@
-﻿using GPURepair.Repair.Metadata;
-using Microsoft.Boogie;
-
-namespace GPURepair.Repair.Errors
+﻿namespace GPURepair.Repair.Errors
 {
+    using GPURepair.Repair.Metadata;
+    using Microsoft.Boogie;
+
     public class RaceError : RepairableError
     {
         /// <summary>

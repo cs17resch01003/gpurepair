@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using GPURepair.Common.Diagnostics;
-using GPURepair.Repair.Metadata;
-
-namespace GPURepair.Repair
+﻿namespace GPURepair.Repair
 {
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using GPURepair.Common.Diagnostics;
+    using GPURepair.Repair.Metadata;
+
     public class SummaryGenerator
     {
         /// <summary>

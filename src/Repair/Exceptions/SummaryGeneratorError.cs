@@ -4,11 +4,10 @@
 
     public class SummaryGeneratorError : Exception
     {
-        public SummaryGeneratorError()
-            : base()
-        {
-        }
-
+        /// <summary>
+        /// The constructor.
+        /// </summary>
+        /// <param name="message">The error message.</param>
         public SummaryGeneratorError(string message)
             : base(message)
         {
