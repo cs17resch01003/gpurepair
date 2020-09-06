@@ -171,10 +171,13 @@
                 List<ProgramNode> loopNodes = graph.GetLoopNodes(edge);
                 List<Block> loopBlocks = loopNodes.Select(x => x.Block).ToList();
 
-                List<Barrier> barriers = ProgramMetadata.Barriers.Values
+                List<Barrier> barriers = Barriers.Values
                     .Where(x => loopBlocks.Contains(x.Block)).ToList();
                 LoopBarriers.Add(edge, barriers);
             }
+
+            foreach (Barrier barrier in Barriers.Values)
+                barrier.LoopDepth = LoopBarriers.Where(x => x.Value.Contains(barrier)).Count();
         }
 
         /// <summary>

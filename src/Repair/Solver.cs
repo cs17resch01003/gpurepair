@@ -14,11 +14,6 @@
     public class Solver
     {
         /// <summary>
-        /// The weight of a grid-level barrier.
-        /// </summary>
-        private int gridBarrierWeight = 10;
-
-        /// <summary>
         /// Determine the barrier assignments based on the error traces.
         /// </summary>
         /// <param name="errors">The errors.</param>
@@ -69,7 +64,7 @@
 
             Dictionary<string, int> coeffs = new Dictionary<string, int>();
             foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
-                coeffs.Add(barrier.Name, barrier.GridLevel ? gridBarrierWeight : 1);
+                coeffs.Add(barrier.Name, barrier.Weight);
 
             type = SolverType.Optimizer;
             while (true)
@@ -128,7 +123,7 @@
                 Clause clause = new Clause();
                 clause.Add(new Literal(variable, false));
 
-                uint weight = (uint)(ProgramMetadata.Barriers[variable].GridLevel ? gridBarrierWeight : 1);
+                uint weight = (uint)ProgramMetadata.Barriers[variable].Weight;
                 clauses.Add(clause, weight);
             }
 
@@ -160,9 +155,9 @@
         {
             using (Watch watch = new Watch(Measure.MHS))
             {
-                Dictionary<string, uint> weights = new Dictionary<string, uint>();
+                Dictionary<string, double> weights = new Dictionary<string, double>();
                 foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
-                    weights.Add(barrier.Name, (uint)(barrier.GridLevel ? 1 : gridBarrierWeight));
+                    weights.Add(barrier.Name, 1.0 / barrier.Weight);
 
                 MHSSolver solver = new MHSSolver(clauses, weights);
                 return solver.Solve(out status);

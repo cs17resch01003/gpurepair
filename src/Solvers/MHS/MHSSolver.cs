@@ -14,14 +14,14 @@
         /// <summary>
         /// The weights associated with the literals.
         /// </summary>
-        private Dictionary<string, uint> weights { get; set; }
+        private Dictionary<string, double> weights { get; set; }
 
         /// <summary>
         /// The constructor.
         /// </summary>
         /// <param name="clauses">The clauses.</param>
         /// <param name="weights">The weights associated with the literals.</param>
-        public MHSSolver(List<Clause> clauses, Dictionary<string, uint> weights)
+        public MHSSolver(List<Clause> clauses, Dictionary<string, double> weights)
         {
             this.clauses = clauses;
             this.weights = weights;
@@ -106,14 +106,14 @@
                 .Select(x => x.Variable).Distinct();
 
             string chosen = string.Empty;
-            long max_total_weight = 0;
+            double max_total_weight = 0;
 
             foreach (string variable in variables)
             {
                 if (!solution.Assignments.ContainsKey(variable))
                 {
                     int unknown_clauses = clauses.Count(x => x.Literals.Select(y => y.Variable).Contains(variable));
-                    long total_weight = unknown_clauses * weights[variable];
+                    double total_weight = unknown_clauses * weights[variable];
 
                     if (total_weight > max_total_weight)
                     {

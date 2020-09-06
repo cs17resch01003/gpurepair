@@ -1,5 +1,6 @@
 ﻿namespace GPURepair.Repair.Metadata
 {
+    using System;
     using Microsoft.Boogie;
 
     public class Barrier
@@ -38,5 +39,24 @@
         /// Indicates if the barrier is a grid-level barrier.
         /// </summary>
         public bool GridLevel { get; set; }
+
+        /// <summary>
+        /// Represents the loop depth of the barrier.
+        /// </summary>
+        public int LoopDepth { get; set; } = 0;
+
+        /// <summary>
+        /// The weight of the barrier.
+        /// </summary>
+        public int Weight
+        {
+            get
+            {
+                int loopWeight = (int)(LoopDepth == 0 ? 0 : Math.Pow(2, LoopDepth));
+                int barrierWeight = GridLevel ? 16 : 1;
+
+                return loopWeight + barrierWeight;
+            }
+        }
     }
 }
