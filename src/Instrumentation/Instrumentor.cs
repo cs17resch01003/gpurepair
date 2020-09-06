@@ -467,6 +467,10 @@
         /// <param name="grid_barrier">The grid-level barrier to insert.</param>
         private void InsertBarriers(Implementation implementation, Block block, int index, Barrier barrier, Barrier grid_barrier)
         {
+            // we always instrument the thread-level barrier before the grid-level barrier
+            barrier.Existing = barrier.Existing || grid_barrier.Existing;
+            grid_barrier.Existing = false;
+
             Block end = InsertBarrier(implementation, block, index, barrier);
             InsertBarrier(implementation, end, 1, grid_barrier); // the command containing the shared read/write will be at position 1
         }
