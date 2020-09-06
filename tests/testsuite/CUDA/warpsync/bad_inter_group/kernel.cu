@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--blockDim=128 --gridDim=128 --warp-sync=32 --no-inline
 
 __global__ void foo(int* A) {

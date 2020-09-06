@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--blockDim=64 --gridDim=64 --no-inline
 //
 
