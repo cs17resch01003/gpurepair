@@ -76,7 +76,6 @@
     <Compile Include="BoogieUtilities.cs" />
     <Compile Include="Diagnostics\ClauseLogger.cs" />
     <Compile Include="ErrorReporter.cs" />
-    <Compile Include="Errors\AssertionError.cs" />
     <Compile Include="Errors\DivergenceError.cs" />
     <Compile Include="Errors\RaceError.cs" />
     <Compile Include="Errors\RepairableError.cs" />

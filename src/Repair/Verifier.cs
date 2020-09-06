@@ -111,19 +111,6 @@
                 }
             }
 
-            // enabling certain barriers could cause assertion errors
-            else if (example is AssertCounterexample)
-            {
-                AssertionError assertion = new AssertionError(example, implementation);
-                IEnumerable<string> names = assignments.Where(x => x.Value == true).Select(x => x.Key);
-
-                IEnumerable<Barrier> barriers = ProgramMetadata.Barriers
-                    .Where(x => names.Contains(x.Key)).Select(x => x.Value);
-                assertion.Variables = barriers.Select(x => x.Variable).ToList();
-
-                return assertion;
-            }
-
             return new Error(example, implementation);
         }
 
