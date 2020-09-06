@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using GPURepair.Common;
+    using GPURepair.Common.Diagnostics;
     using Microsoft.Boogie;
 
     public static class ProgramMetadata
@@ -52,6 +53,9 @@
             PopulateLocations(filePath.Replace(".cbpl", ".loc"));
             PopulateBarriers(program);
             PopulateLoopInformation(program);
+
+            Logger.Log($"GridLevelBarriers;{Barriers.Values.Where(x => x.GridLevel).Count()}");
+            Logger.Log($"BarriersInsideLoop;{Barriers.Values.Where(x => x.LoopDepth > 0).Count()}");
         }
 
         /// <summary>

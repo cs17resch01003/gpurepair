@@ -20,6 +20,9 @@
             List<string> changes = new List<string>();
 
             int barriersBetweenCalls = 0;
+            int gridLevelBarriers = 0;
+            int barriersInsideLoops = 0;
+
             foreach (string barrierName in assignments.Keys)
             {
                 Barrier barrier = ProgramMetadata.Barriers[barrierName];
@@ -49,12 +52,16 @@
                     lines.Add(message);
                     changes.Add(location);
 
-                    if (locations.Count > 1)
-                        barriersBetweenCalls++;
+                    barriersBetweenCalls += locations.Count > 1 ? 1 : 0;
+                    gridLevelBarriers += barrier.GridLevel ? 1 : 0;
+                    barriersInsideLoops += barrier.LoopDepth > 0 ? 1 : 0;
                 }
             }
 
-            Logger.Log($"BarriersBetweenCalls;{barriersBetweenCalls}");
+            Logger.Log($"Solution_BarriersBetweenCalls;{barriersBetweenCalls}");
+            Logger.Log($"Solution_GridLevelBarriers;{gridLevelBarriers}");
+            Logger.Log($"Solution_BarriersInsideLoop;{barriersInsideLoops}");
+
             if (lines.Count != 0)
                 File.AppendAllLines(filename, lines);
 
