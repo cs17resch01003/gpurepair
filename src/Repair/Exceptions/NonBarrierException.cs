@@ -2,13 +2,13 @@
 {
     using System;
 
-    public class RepairError : Exception
+    public class NonBarrierException : Exception
     {
         /// <summary>
         /// The constructor.
         /// </summary>
         /// <param name="message">The error message.</param>
-        public RepairError(string message)
+        public NonBarrierException(string message)
             : base(message)
         {
         }

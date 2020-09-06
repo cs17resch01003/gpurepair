@@ -2,13 +2,13 @@
 {
     using System;
 
-    public class AssertionError : Exception
+    public class RepairException : Exception
     {
         /// <summary>
         /// The constructor.
         /// </summary>
         /// <param name="message">The error message.</param>
-        public AssertionError(string message)
+        public RepairException(string message)
             : base(message)
         {
         }

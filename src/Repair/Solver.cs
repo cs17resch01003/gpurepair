@@ -41,11 +41,11 @@
             else if (type == SolverType.MaxSAT)
                 solution = SolveMaxSAT(clauses, out status);
             else
-                throw new RepairError("Invalid solver type!");
+                throw new RepairException("Invalid solver type!");
 
             ClauseLogger.Log(clauses, type, solution);
             if (status == SolverStatus.Unsatisfiable)
-                throw new RepairError("The program could not be repaired because of unsatisfiable clauses!");
+                throw new RepairException("The program could not be repaired because of unsatisfiable clauses!");
 
             return solution;
         }

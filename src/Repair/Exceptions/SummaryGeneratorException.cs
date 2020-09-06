@@ -2,13 +2,13 @@
 {
     using System;
 
-    public class SummaryGeneratorError : Exception
+    public class SummaryGeneratorException : Exception
     {
         /// <summary>
         /// The constructor.
         /// </summary>
         /// <param name="message">The error message.</param>
-        public SummaryGeneratorError(string message)
+        public SummaryGeneratorException(string message)
             : base(message)
         {
         }

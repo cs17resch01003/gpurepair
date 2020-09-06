@@ -70,7 +70,7 @@
                         errors.AddRange(current_errors);
                     }
                 }
-                catch (AssertionError)
+                catch (AssertionException)
                 {
                     assignments = new Dictionary<string, bool>();
                     foreach (Barrier barrier in ProgramMetadata.Barriers.Values)

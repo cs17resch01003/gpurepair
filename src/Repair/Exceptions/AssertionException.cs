@@ -2,13 +2,13 @@
 {
     using System;
 
-    public class NonBarrierError : Exception
+    public class AssertionException : Exception
     {
         /// <summary>
         /// The constructor.
         /// </summary>
         /// <param name="message">The error message.</param>
-        public NonBarrierError(string message)
+        public AssertionException(string message)
             : base(message)
         {
         }

@@ -65,13 +65,13 @@
                 Logger.Log($"ExceptionMessage;{ex.Message}");
                 Console.Error.WriteLine(ex.Message);
 
-                if (ex is AssertionError)
+                if (ex is AssertionException)
                     statusCode = 201;
-                else if (ex is RepairError)
+                else if (ex is RepairException)
                     statusCode = 202;
-                else if (ex is NonBarrierError)
+                else if (ex is NonBarrierException)
                     statusCode = 203;
-                else if (ex is SummaryGeneratorError)
+                else if (ex is SummaryGeneratorException)
                     statusCode = 204;
             }
 
