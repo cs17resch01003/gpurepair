@@ -394,28 +394,25 @@
             QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
 
             // create the call barrier command if it doesn't exist
-            CallCmd call;
+            Barrier barrier = new Barrier(barrierName);
             if (index - 2 >= 0 && block.Cmds[index - 2] is CallCmd && (block.Cmds[index - 2] as CallCmd).callee == procedureName)
             {
-                call = block.Cmds[index - 2] as CallCmd;
-                call.Attributes.AddLast(barrierAttribute);
+                barrier.Call = block.Cmds[index - 2] as CallCmd;
+                barrier.Call.Attributes.AddLast(barrierAttribute);
+                barrier.Existing = true;
             }
             else
             {
                 QKeyValue instrumentedAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
                 List<Expr> arguments = procedureName == "$bugle_barrier" ? new List<Expr>() { _1bv1, _1bv1 } : new List<Expr>();
 
-                call = new CallCmd(Token.NoToken, procedureName, arguments, new List<IdentifierExpr>(), barrierAttribute);
-                call.Attributes.AddLast(instrumentedAttribute);
+                barrier.Call = new CallCmd(Token.NoToken, procedureName, arguments, new List<IdentifierExpr>(), barrierAttribute);
+                barrier.Call.Attributes.AddLast(instrumentedAttribute);
                 if (locationAttribute != null)
-                    call.Attributes.AddLast(locationAttribute);
+                    barrier.Call.Attributes.AddLast(locationAttribute);
             }
 
-            return new Barrier
-            {
-                Name = barrierName,
-                Call = call,
-            };
+            return barrier;
         }
 
         /// <summary>
@@ -427,8 +424,11 @@
         /// <param name="barrier">The barrier to insert.</param>
         private Block InsertBarrier(Implementation implementation, Block block, int index, Barrier barrier)
         {
-            block.Cmds.Insert(index - 1, barrier.Call);
-            index = index + 1;
+            if (barrier.Existing == false)
+            {
+                block.Cmds.Insert(index - 1, barrier.Call);
+                index = index + 1;
+            }
 
             GlobalVariable variable = CreateGlobalVariable(barrier.Name);
             QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
@@ -609,6 +609,15 @@
         private class Barrier
         {
             /// <summary>
+            /// The constructor.
+            /// </summary>
+            /// <param name="name">The name of the barrier.</param>
+            public Barrier(string name)
+            {
+                Name = name;
+            }
+
+            /// <summary>
             /// The name of the barrier.
             /// </summary>
             public string Name { get; set; }
@@ -617,6 +626,11 @@
             /// The call command associated with the barrier.
             /// </summary>
             public CallCmd Call { get; set; }
+
+            /// <summary>
+            /// Indicates if an existing barrier was used.
+            /// </summary>
+            public bool Existing { get; set; }
         }
     }
 }
