@@ -62,7 +62,14 @@
                         if (type == Solver.SolverType.MaxSAT || type == Solver.SolverType.Optimizer)
                             return constraintGenerator.ConstraintProgram(assignments, errors);
                         else
+                        {
+                            // unassigned barriers are marked as not needed
+                            foreach (string barrierName in ProgramMetadata.Barriers.Keys)
+                                if (!assignments.ContainsKey(barrierName))
+                                    assignments.Add(barrierName, false);
+
                             solution = assignments;
+                        }
                     }
                     else
                     {
