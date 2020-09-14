@@ -252,8 +252,8 @@
         /// </summary>
         private void InstrumentMergeNodes()
         {
-            List<ProgramNode> nodes = analyzer.GetMergeNodes();
-            foreach (ProgramNode node in nodes)
+            Dictionary<ProgramNode, MergeNodeType> nodes = analyzer.GetMergeNodes();
+            foreach (ProgramNode node in nodes.Keys)
             {
                 if (!node.Block.Cmds.Any())
                     continue;
@@ -275,12 +275,40 @@
                     AssertCmd assert = node.Block.Cmds[0] as AssertCmd;
                     if (ContainsAttribute(assert, SourceLocationKey))
                     {
-                        node.Block.Cmds.Insert(i, assert);
-                        node.Block.Cmds.RemoveAt(0);
+                        if (nodes[node] == MergeNodeType.IfElse)
+                        {
+                            node.Block.Cmds.Insert(i, assert);
+                            node.Block.Cmds.RemoveAt(0);
 
-                        // insert a barrier at the beginning of the merge block
-                        AddBarrier(node.Implementation, node.Block, i);
-                        analyzer.LinkBarrier(node.Implementation, node.Block);
+                            // insert a barrier at the beginning of the merge block
+                            AddBarrier(node.Implementation, node.Block, i);
+                            analyzer.LinkBarrier(node.Implementation, node.Block);
+                        }
+                        else
+                        {
+                            List<Block> predecessors = new List<Block>();
+                            foreach (Block block in program.Implementations.SelectMany(x => x.Blocks))
+                                if (block.TransferCmd is GotoCmd)
+                                {
+                                    GotoCmd gotoCmd = block.TransferCmd as GotoCmd;
+                                    if (gotoCmd.labelTargets.Contains(node.Block))
+                                        predecessors.Add(block);
+                                }
+
+                            // get the header nodes in the loop
+                            foreach (Block predecessor in predecessors)
+                            {
+                                if (analyzer.Graph.BackEdges.Any(x => x.Destination == node && x.Source.Block == predecessor))
+                                    continue;
+
+                                predecessor.Cmds.Add(assert);
+                                Implementation implementation = program.Implementations.First(x => x.Blocks.Contains(predecessor));
+
+                                // insert a barrier at the end of the header block
+                                AddBarrier(implementation, predecessor, predecessor.Cmds.Count);
+                                analyzer.LinkBarrier(implementation, predecessor);
+                            }
+                        }
                     }
                 }
             }

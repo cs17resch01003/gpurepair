@@ -11,14 +11,14 @@
     public class GraphAnalyzer
     {
         /// <summary>
-        /// The graph obtained the program.
-        /// </summary>
-        private ProgramGraph graph;
-
-        /// <summary>
         /// Track the nodes which have barriers.
         /// </summary>
         private List<ProgramNode> nodesContainingBarriers = new List<ProgramNode>();
+
+        /// <summary>
+        /// The graph obtained the program.
+        /// </summary>
+        public ProgramGraph Graph { get; set; }
 
         /// <summary>
         /// Initilaizes an instance of <see cref="GraphAnalyzer"/>.
@@ -26,7 +26,7 @@
         /// <param name="program">The boogie program.</param>
         public GraphAnalyzer(Microsoft.Boogie.Program program)
         {
-            graph = new ProgramGraph(program);
+            Graph = new ProgramGraph(program);
         }
 
         /// <summary>
@@ -36,7 +36,7 @@
         /// <param name="block">The block.</param>
         public void LinkBarrier(Implementation implementation, Block block)
         {
-            ProgramNode node = graph.GetNode(implementation, block);
+            ProgramNode node = Graph.GetNode(implementation, block);
             if (node != null && !nodesContainingBarriers.Contains(node))
                 nodesContainingBarriers.Add(node);
         }
@@ -45,27 +45,27 @@
         /// Gets the nodes where the code graph is merging.
         /// </summary>
         /// <returns>The merge nodes.</returns>
-        public List<ProgramNode> GetMergeNodes()
+        public Dictionary<ProgramNode, MergeNodeType> GetMergeNodes()
         {
-            List<ProgramNode> list = new List<ProgramNode>();
+            Dictionary<ProgramNode, MergeNodeType> list = new Dictionary<ProgramNode, MergeNodeType>();
 
             // look for diamond structures and loops in the code
             // this is useful for fixing errors where the usage of the global variable is inside the if/else block
             // but the solution needs a barrier outside the block
-            foreach (ProgramNode node in graph.Nodes)
+            foreach (ProgramNode node in Graph.Nodes)
             {
                 // identify merge points
                 if (node.Predecessors.Count > 1)
                 {
-                    List<BackEdge> backEdges = graph.BackEdges;
+                    List<BackEdge> backEdges = Graph.BackEdges;
                     if (backEdges.Any(x => x.Destination == node))
                     {
                         // loop structures
                         BackEdge edge = backEdges.First(x => x.Destination == node);
-                        List<ProgramNode> loopNodes = graph.GetLoopNodes(edge);
+                        List<ProgramNode> loopNodes = Graph.GetLoopNodes(edge);
 
                         if (loopNodes.Any(x => nodesContainingBarriers.Contains(x)))
-                            list.Add(node);
+                            list.Add(node, MergeNodeType.Loop);
                     }
                     else
                     {
@@ -76,7 +76,7 @@
                         {
                             List<ProgramNode> intermediateNodes = GetIntermediateNodes(lca, node);
                             if (intermediateNodes.Any(x => nodesContainingBarriers.Contains(x)))
-                                list.Add(node);
+                                list.Add(node, MergeNodeType.IfElse);
                         }
                     }
                 }
@@ -105,7 +105,7 @@
 
                 // traverse the predecessors while ignoring loops
                 foreach (ProgramNode node in temp.Predecessors)
-                    if (!graph.BackEdges.Any(x => x.Source == node && x.Destination == temp))
+                    if (!Graph.BackEdges.Any(x => x.Source == node && x.Destination == temp))
                         queue.Enqueue(node);
             }
 

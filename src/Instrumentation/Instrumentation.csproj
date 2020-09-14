@@ -74,6 +74,7 @@
     <Compile Include="GraphAnalyzer.cs" />
     <Compile Include="GRCommandLineOptions.cs" />
     <Compile Include="Instrumentor.cs" />
+    <Compile Include="MergeNodeType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
