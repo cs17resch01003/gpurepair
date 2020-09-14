@@ -275,24 +275,15 @@
                     AssertCmd assert = node.Block.Cmds[0] as AssertCmd;
                     if (ContainsAttribute(assert, SourceLocationKey))
                     {
-                        if (nodes[node] == MergeNodeType.IfElse)
+                        node.Block.Cmds.Insert(i, assert);
+                        node.Block.Cmds.RemoveAt(0);
+
+                        // insert a barrier at the beginning of the merge block
+                        AddBarrier(node.Implementation, node.Block, i);
+                        analyzer.LinkBarrier(node.Implementation, node.Block);
+
+                        if (nodes[node] == MergeNodeType.Loop)
                         {
-                            node.Block.Cmds.Insert(i, assert);
-                            node.Block.Cmds.RemoveAt(0);
-
-                            // insert a barrier at the beginning of the merge block
-                            AddBarrier(node.Implementation, node.Block, i);
-                            analyzer.LinkBarrier(node.Implementation, node.Block);
-                        }
-                        else
-                        {
-                            node.Block.Cmds.Insert(i, assert);
-                            node.Block.Cmds.RemoveAt(0);
-
-                            // insert a barrier at the beginning of the merge block
-                            AddBarrier(node.Implementation, node.Block, i);
-                            analyzer.LinkBarrier(node.Implementation, node.Block);
-
                             // get the header nodes in the loop
                             List<Block> predecessors = new List<Block>();
                             foreach (Block block in program.Implementations.SelectMany(x => x.Blocks))
@@ -308,11 +299,10 @@
                                 if (analyzer.Graph.BackEdges.Any(x => x.Destination == node && x.Source.Block == predecessor))
                                     continue;
 
-                                predecessor.Cmds.Add(assert);
                                 Implementation implementation = program.Implementations.First(x => x.Blocks.Contains(predecessor));
 
                                 // insert a barrier at the end of the header block
-                                AddBarrier(implementation, predecessor, predecessor.Cmds.Count);
+                                AddBarrier(implementation, predecessor, predecessor.Cmds.Count - 1);
                                 analyzer.LinkBarrier(implementation, predecessor);
                             }
                         }
