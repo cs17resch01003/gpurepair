@@ -286,6 +286,14 @@
                         }
                         else
                         {
+                            node.Block.Cmds.Insert(i, assert);
+                            node.Block.Cmds.RemoveAt(0);
+
+                            // insert a barrier at the beginning of the merge block
+                            AddBarrier(node.Implementation, node.Block, i);
+                            analyzer.LinkBarrier(node.Implementation, node.Block);
+
+                            // get the header nodes in the loop
                             List<Block> predecessors = new List<Block>();
                             foreach (Block block in program.Implementations.SelectMany(x => x.Blocks))
                                 if (block.TransferCmd is GotoCmd)
@@ -295,7 +303,6 @@
                                         predecessors.Add(block);
                                 }
 
-                            // get the header nodes in the loop
                             foreach (Block predecessor in predecessors)
                             {
                                 if (analyzer.Graph.BackEdges.Any(x => x.Destination == node && x.Source.Block == predecessor))

@@ -152,6 +152,7 @@
 
                                 barrier.Implementation = implementation;
                                 barrier.Block = block;
+                                barrier.Call = call;
                                 barrier.SourceLocation = location;
                                 barrier.Generated = generated;
                                 barrier.GridLevel = call.callee.Contains("$bugle_grid_barrier");
@@ -175,13 +176,34 @@
                 List<ProgramNode> loopNodes = graph.GetLoopNodes(edge);
                 List<Block> loopBlocks = loopNodes.Select(x => x.Block).ToList();
 
-                List<Barrier> barriers = Barriers.Values
-                    .Where(x => loopBlocks.Contains(x.Block)).ToList();
-                LoopBarriers.Add(edge, barriers);
+                IEnumerable<Barrier> barriers = Barriers.Values.Where(x => loopBlocks.Contains(x.Block));
+                LoopBarriers.Add(edge, barriers.ToList());
             }
 
             foreach (Barrier barrier in Barriers.Values)
                 barrier.LoopDepth = LoopBarriers.Where(x => x.Value.Contains(barrier)).Count();
+
+            // consider barriers instrumented in the header node as a part of the loop
+            // these barriers will not have a loop depth since they are outside the loop
+            foreach (BackEdge edge in graph.BackEdges)
+            {
+                foreach (ProgramNode predecessor in edge.Destination.Predecessors)
+                {
+                    // ignore the other end of the back-edge
+                    if (predecessor == edge.Source)
+                        continue;
+                    else if (predecessor.Block.Cmds.Count > 1)
+                    {
+                        Cmd command = predecessor.Block.Cmds.ElementAt(predecessor.Block.Cmds.Count() - 2);
+                        if (command is CallCmd)
+                        {
+                            Barrier barrier = Barriers.Where(x => x.Value.Call == command).Select(x => x.Value).FirstOrDefault();
+                            if (barrier != null && !LoopBarriers[edge].Contains(barrier))
+                                LoopBarriers[edge].Add(barrier);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>

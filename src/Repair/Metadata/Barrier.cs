@@ -21,6 +21,11 @@
         public Block Block { get; set; }
 
         /// <summary>
+        /// The call command corresponding to the barrier.
+        /// </summary>
+        public CallCmd Call { get; set; }
+
+        /// <summary>
         /// The varibale corresponding to the barrier.
         /// </summary>
         public Variable Variable { get; set; }
