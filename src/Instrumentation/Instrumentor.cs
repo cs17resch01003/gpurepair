@@ -25,6 +25,11 @@
         private const string SourceLocationKey = "sourceloc_num";
 
         /// <summary>
+        /// The block source key.
+        /// </summary>
+        private const string BlockSourceKey = "block_sourceloc";
+
+        /// <summary>
         /// The program to be instrumented.
         /// </summary>
         private Microsoft.Boogie.Program program;
@@ -318,22 +323,28 @@
                                 {
                                     // create an assert from the block source location since initializers don't have source locations
                                     int location = QKeyValue.FindIntAttribute(assert.Attributes, SourceLocationKey, -1);
-
-                                    LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
-                                    assert = new AssertCmd(Token.NoToken, literal);
-
                                     if (location != -1)
                                     {
-                                        LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
-                                        QKeyValue sourceLocationKey = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object>() { locationValue }, null);
+                                        // becomes true when there is only one command in the block
+                                        // in those cases, we don't need to need to add a new assert attribute
+                                        if (!ContainsAttribute(assert, BlockSourceKey))
+                                        {
+                                            // create a new assert to store the location information
+                                            LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
+                                            QKeyValue sourceLocationKey = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object>() { locationValue }, null);
 
-                                        assert.Attributes = sourceLocationKey;
-                                        predecessor.Cmds.Insert(index + 2, assert);
+                                            LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
+                                            assert = new AssertCmd(Token.NoToken, literal);
+                                            assert.Attributes = sourceLocationKey;
+
+                                            index = index + 2;
+                                            predecessor.Cmds.Insert(index, assert);
+                                        }
 
                                         Implementation implementation = program.Implementations.First(x => x.Blocks.Contains(predecessor));
 
                                         // insert a barrier at the end of the header block
-                                        value = AddBarrier(implementation, predecessor, index + 3);
+                                        value = AddBarrier(implementation, predecessor, index + 1);
                                         if (value == true)
                                         {
                                             analyzer.LinkBarrier(implementation, predecessor);

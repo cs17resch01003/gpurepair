@@ -44,10 +44,14 @@
                 }
                 else if (barrier.Generated && assignments[barrierName])
                 {
+                    string loopMessage =
+                        ProgramMetadata.LoopBarriers.SelectMany(x => x.Value).Any(x => x.Name == barrierName) ?
+                        barrier.LoopDepth == 0 ? " outside the loop" : " inside the loop" : string.Empty;
+
                     string message = string.Format(
-                        "Add a {0}barrier at location {1}.",
+                        "Add a {0}barrier at location {1}{2}.",
                         barrier.GridLevel ? "grid-level " : string.Empty,
-                        location);
+                        location, loopMessage);
 
                     lines.Add(message);
                     changes.Add(location);
