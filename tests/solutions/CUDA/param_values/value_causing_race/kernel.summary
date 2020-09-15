@@ -1,0 +1,1 @@
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDA/param_values/value_causing_race/kernel.cu 12.

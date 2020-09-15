@@ -1,0 +1,4208 @@
+type _SIZE_T_TYPE = bv32;
+
+procedure _ATOMIC_OP32(x: [bv32]bv32, y: bv32)
+   returns (z$1: bv32, A$1: [bv32]bv32, z$2: bv32, A$2: [bv32]bv32);
+
+
+
+var {:source_name "Dst"} {:global} $$arg.: [bv32]bv32;
+
+axiom {:array_info "$$arg."} {:global} {:elem_width 32} {:source_name "Dst"} {:source_elem_width 32} {:source_dimensions "*"} true;
+
+var {:race_checking} {:global} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _READ_HAS_OCCURRED_$$arg.: bool;
+
+var {:race_checking} {:global} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _WRITE_HAS_OCCURRED_$$arg.: bool;
+
+var {:race_checking} {:global} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _ATOMIC_HAS_OCCURRED_$$arg.: bool;
+
+axiom {:array_info "$$TexSrc"} {:global} {:elem_width 32} {:source_name "TexSrc"} {:source_elem_width 96} {:source_dimensions "1"} true;
+
+var {:race_checking} {:global} {:elem_width 32} {:source_elem_width 96} {:source_dimensions "*"} _READ_HAS_OCCURRED_$$TexSrc: bool;
+
+var {:race_checking} {:global} {:elem_width 32} {:source_elem_width 96} {:source_dimensions "*"} _WRITE_HAS_OCCURRED_$$TexSrc: bool;
+
+var {:race_checking} {:global} {:elem_width 32} {:source_elem_width 96} {:source_dimensions "*"} _ATOMIC_HAS_OCCURRED_$$TexSrc: bool;
+
+var {:source_name "CurBlockLocal1"} {:group_shared} $$CurBlockLocal1: [bv1][bv32]bv32;
+
+axiom {:array_info "$$CurBlockLocal1"} {:group_shared} {:elem_width 32} {:source_name "CurBlockLocal1"} {:source_elem_width 32} {:source_dimensions "64"} true;
+
+var {:race_checking} {:group_shared} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _READ_HAS_OCCURRED_$$CurBlockLocal1: bool;
+
+var {:race_checking} {:group_shared} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _WRITE_HAS_OCCURRED_$$CurBlockLocal1: bool;
+
+var {:race_checking} {:group_shared} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _ATOMIC_HAS_OCCURRED_$$CurBlockLocal1: bool;
+
+var {:source_name "DCTv8matrix"} {:constant} $$DCTv8matrix$1: [bv32]bv32;
+
+var {:source_name "DCTv8matrix"} {:constant} $$DCTv8matrix$2: [bv32]bv32;
+
+axiom {:array_info "$$DCTv8matrix"} {:constant} {:elem_width 32} {:source_name "DCTv8matrix"} {:source_elem_width 32} {:source_dimensions "64"} true;
+
+var {:source_name "CurBlockLocal2"} {:group_shared} $$CurBlockLocal2: [bv1][bv32]bv32;
+
+axiom {:array_info "$$CurBlockLocal2"} {:group_shared} {:elem_width 32} {:source_name "CurBlockLocal2"} {:source_elem_width 32} {:source_dimensions "64"} true;
+
+var {:race_checking} {:group_shared} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _READ_HAS_OCCURRED_$$CurBlockLocal2: bool;
+
+var {:race_checking} {:group_shared} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _WRITE_HAS_OCCURRED_$$CurBlockLocal2: bool;
+
+var {:race_checking} {:group_shared} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _ATOMIC_HAS_OCCURRED_$$CurBlockLocal2: bool;
+
+const _WATCHED_OFFSET: bv32;
+
+const {:group_id_x} group_id_x$1: bv32;
+
+const {:group_id_x} group_id_x$2: bv32;
+
+const {:group_id_y} group_id_y$1: bv32;
+
+const {:group_id_y} group_id_y$2: bv32;
+
+const {:group_size_x} group_size_x: bv32;
+
+const {:group_size_y} group_size_y: bv32;
+
+const {:group_size_z} group_size_z: bv32;
+
+const {:local_id_x} local_id_x$1: bv32;
+
+const {:local_id_x} local_id_x$2: bv32;
+
+const {:local_id_y} local_id_y$1: bv32;
+
+const {:local_id_y} local_id_y$2: bv32;
+
+const {:num_groups_x} num_groups_x: bv32;
+
+const {:num_groups_y} num_groups_y: bv32;
+
+const {:num_groups_z} num_groups_z: bv32;
+
+const {:sub_group_size} sub_group_size: bv32;
+
+function FADD32(bv32, bv32) : bv32;
+
+function FMUL32(bv32, bv32) : bv32;
+
+function SI32_TO_FP32(bv32) : bv32;
+
+function {:bvbuiltin "bvadd"} BV32_ADD(bv32, bv32) : bv32;
+
+function {:bvbuiltin "bvmul"} BV32_MUL(bv32, bv32) : bv32;
+
+function {:bvbuiltin "bvshl"} BV32_SHL(bv32, bv32) : bv32;
+
+function {:bvbuiltin "bvslt"} BV32_SLT(bv32, bv32) : bool;
+
+procedure {:source_name "CUDAkernel1DCT"} {:kernel} $_Z14CUDAkernel1DCTPfiii($ImgWidth: bv32, $OffsetXBlocks: bv32, $OffsetYBlocks: bv32);
+  requires {:sourceloc_num 0} {:thread 1} (if $ImgWidth == 512bv32 then 1bv1 else 0bv1) != 0bv1;
+  requires !_READ_HAS_OCCURRED_$$arg.
+     && !_WRITE_HAS_OCCURRED_$$arg.
+     && !_ATOMIC_HAS_OCCURRED_$$arg.;
+  requires !_READ_HAS_OCCURRED_$$TexSrc
+     && !_WRITE_HAS_OCCURRED_$$TexSrc
+     && !_ATOMIC_HAS_OCCURRED_$$TexSrc;
+  requires !_READ_HAS_OCCURRED_$$CurBlockLocal1
+     && !_WRITE_HAS_OCCURRED_$$CurBlockLocal1
+     && !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+  requires !_READ_HAS_OCCURRED_$$CurBlockLocal2
+     && !_WRITE_HAS_OCCURRED_$$CurBlockLocal2
+     && !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+  requires BV32_SGT(group_size_x, 0bv32);
+  requires BV32_SGT(num_groups_x, 0bv32);
+  requires BV32_SGE(group_id_x$1, 0bv32);
+  requires BV32_SGE(group_id_x$2, 0bv32);
+  requires BV32_SLT(group_id_x$1, num_groups_x);
+  requires BV32_SLT(group_id_x$2, num_groups_x);
+  requires BV32_SGE(local_id_x$1, 0bv32);
+  requires BV32_SGE(local_id_x$2, 0bv32);
+  requires BV32_SLT(local_id_x$1, group_size_x);
+  requires BV32_SLT(local_id_x$2, group_size_x);
+  requires BV32_SGT(group_size_y, 0bv32);
+  requires BV32_SGT(num_groups_y, 0bv32);
+  requires BV32_SGE(group_id_y$1, 0bv32);
+  requires BV32_SGE(group_id_y$2, 0bv32);
+  requires BV32_SLT(group_id_y$1, num_groups_y);
+  requires BV32_SLT(group_id_y$2, num_groups_y);
+  requires BV32_SGE(local_id_y$1, 0bv32);
+  requires BV32_SGE(local_id_y$2, 0bv32);
+  requires BV32_SLT(local_id_y$1, group_size_y);
+  requires BV32_SLT(local_id_y$2, group_size_y);
+  requires BV32_SGT(group_size_z, 0bv32);
+  requires BV32_SGT(num_groups_z, 0bv32);
+  requires BV32_SGE(group_id_z$1, 0bv32);
+  requires BV32_SGE(group_id_z$2, 0bv32);
+  requires BV32_SLT(group_id_z$1, num_groups_z);
+  requires BV32_SLT(group_id_z$2, num_groups_z);
+  requires BV32_SGE(local_id_z$1, 0bv32);
+  requires BV32_SGE(local_id_z$2, 0bv32);
+  requires BV32_SLT(local_id_z$1, group_size_z);
+  requires BV32_SLT(local_id_z$2, group_size_z);
+  requires group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> local_id_x$1 != local_id_x$2
+       || local_id_y$1 != local_id_y$2
+       || local_id_z$1 != local_id_z$2;
+  modifies b32, b31, b30, b29, b28, b27, b26, b25, b24, b23, b22, b21, b20, b19, b18, b17, b16, b15, b14, b13, b12, b11, b10, b9, b8, b7, b6, b5, b4, b3, b2, b1, $$CurBlockLocal1, $$CurBlockLocal2, $$arg., _TRACKING, _WRITE_HAS_OCCURRED_$$CurBlockLocal1, _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1, _WRITE_HAS_OCCURRED_$$CurBlockLocal2, _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2, _READ_HAS_OCCURRED_$$CurBlockLocal1, _WRITE_HAS_OCCURRED_$$arg., _WRITE_READ_BENIGN_FLAG_$$arg., _READ_HAS_OCCURRED_$$CurBlockLocal2;
+
+
+
+implementation {:source_name "CUDAkernel1DCT"} {:kernel} $_Z14CUDAkernel1DCTPfiii($ImgWidth: bv32, $OffsetXBlocks: bv32, $OffsetYBlocks: bv32)
+{
+  var $.05$1: bv32;
+  var $.05$2: bv32;
+  var $.04$1: bv32;
+  var $.04$2: bv32;
+  var $.03$1: bv32;
+  var $.03$2: bv32;
+  var $.02: bv32;
+  var $.16$1: bv32;
+  var $.16$2: bv32;
+  var $.1$1: bv32;
+  var $.1$2: bv32;
+  var $.01$1: bv32;
+  var $.01$2: bv32;
+  var $.0: bv32;
+  var v0$1: bv32;
+  var v0$2: bv32;
+  var v1$1: bv32;
+  var v1$2: bv32;
+  var v2$1: bv32;
+  var v2$2: bv32;
+  var v3$1: bv32;
+  var v3$2: bv32;
+  var v4$1: bv32;
+  var v4$2: bv32;
+  var v5$1: bv32;
+  var v5$2: bv32;
+  var v6: bool;
+  var v7$1: bv32;
+  var v7$2: bv32;
+  var v8$1: bv32;
+  var v8$2: bv32;
+  var v9: bool;
+  var v10$1: bv32;
+  var v10$2: bv32;
+  var v11$1: bv32;
+  var v11$2: bv32;
+  var v12$1: bv32;
+  var v12$2: bv32;
+  var p0$1: bool;
+  var p0$2: bool;
+  var p1$1: bool;
+  var p1$2: bool;
+  var p2$1: bool;
+  var p2$2: bool;
+  var p3$1: bool;
+  var p3$2: bool;
+  var p4$1: bool;
+  var p4$2: bool;
+  var p5$1: bool;
+  var p5$2: bool;
+  var p6$1: bool;
+  var p6$2: bool;
+  var p7$1: bool;
+  var p7$2: bool;
+  var p8$1: bool;
+  var p8$2: bool;
+  var p9$1: bool;
+  var p9$2: bool;
+  var p10$1: bool;
+  var p10$2: bool;
+  var p11$1: bool;
+  var p11$2: bool;
+  var p12$1: bool;
+  var p12$2: bool;
+  var p13$1: bool;
+  var p13$2: bool;
+  var p14$1: bool;
+  var p14$2: bool;
+  var p15$1: bool;
+  var p15$2: bool;
+  var p16$1: bool;
+  var p16$2: bool;
+  var p17$1: bool;
+  var p17$2: bool;
+  var p18$1: bool;
+  var p18$2: bool;
+  var p19$1: bool;
+  var p19$2: bool;
+  var p20$1: bool;
+  var p20$2: bool;
+  var p21$1: bool;
+  var p21$2: bool;
+  var p22$1: bool;
+  var p22$2: bool;
+  var p23$1: bool;
+  var p23$2: bool;
+  var p24$1: bool;
+  var p24$2: bool;
+  var p25$1: bool;
+  var p25$2: bool;
+  var p26$1: bool;
+  var p26$2: bool;
+  var p27$1: bool;
+  var p27$2: bool;
+  var p28$1: bool;
+  var p28$2: bool;
+  var p29$1: bool;
+  var p29$2: bool;
+  var p30$1: bool;
+  var p30$2: bool;
+  var p31$1: bool;
+  var p31$2: bool;
+  var p32$1: bool;
+  var p32$2: bool;
+  var p33$1: bool;
+  var p33$2: bool;
+  var p34$1: bool;
+  var p34$2: bool;
+  var p35$1: bool;
+  var p35$2: bool;
+  var p36$1: bool;
+  var p36$2: bool;
+  var p37$1: bool;
+  var p37$2: bool;
+  var p38$1: bool;
+  var p38$2: bool;
+  var p39$1: bool;
+  var p39$2: bool;
+  var p40$1: bool;
+  var p40$2: bool;
+  var p41$1: bool;
+  var p41$2: bool;
+  var p42$1: bool;
+  var p42$2: bool;
+  var p43$1: bool;
+  var p43$2: bool;
+  var p44$1: bool;
+  var p44$2: bool;
+  var p45$1: bool;
+  var p45$2: bool;
+  var p46$1: bool;
+  var p46$2: bool;
+  var p47$1: bool;
+  var p47$2: bool;
+  var p48$1: bool;
+  var p48$2: bool;
+  var p49$1: bool;
+  var p49$2: bool;
+  var p50$1: bool;
+  var p50$2: bool;
+  var p51$1: bool;
+  var p51$2: bool;
+  var p52$1: bool;
+  var p52$2: bool;
+  var p53$1: bool;
+  var p53$2: bool;
+  var p54$1: bool;
+  var p54$2: bool;
+  var p55$1: bool;
+  var p55$2: bool;
+  var p56$1: bool;
+  var p56$2: bool;
+  var p57$1: bool;
+  var p57$2: bool;
+  var p58$1: bool;
+  var p58$2: bool;
+  var p59$1: bool;
+  var p59$2: bool;
+  var p60$1: bool;
+  var p60$2: bool;
+  var p61$1: bool;
+  var p61$2: bool;
+  var p62$1: bool;
+  var p62$2: bool;
+  var p63$1: bool;
+  var p63$2: bool;
+
+
+  __partitioned_block_$0_0:
+    b32 := false;
+    b31 := true;
+    b30 := false;
+    b29 := false;
+    b28 := false;
+    b27 := true;
+    b26 := false;
+    b25 := false;
+    b24 := false;
+    b23 := false;
+    b22 := false;
+    b21 := false;
+    b20 := false;
+    b19 := false;
+    b18 := false;
+    b17 := false;
+    b16 := false;
+    b15 := false;
+    b14 := false;
+    b13 := false;
+    b12 := false;
+    b11 := false;
+    b10 := false;
+    b9 := false;
+    b8 := false;
+    b7 := false;
+    b6 := false;
+    b5 := false;
+    b4 := false;
+    b3 := false;
+    b2 := false;
+    b1 := false;
+    v0$1 := BV32_ADD(group_id_x$1, $OffsetXBlocks);
+    v0$2 := BV32_ADD(group_id_x$2, $OffsetXBlocks);
+    v1$1 := BV32_ADD(group_id_y$1, $OffsetYBlocks);
+    v1$2 := BV32_ADD(group_id_y$2, $OffsetYBlocks);
+    p0$1 := false;
+    p0$2 := false;
+    p1$1 := false;
+    p1$2 := false;
+    p2$1 := false;
+    p2$2 := false;
+    p3$1 := false;
+    p3$2 := false;
+    p4$1 := false;
+    p4$2 := false;
+    p5$1 := false;
+    p5$2 := false;
+    p6$1 := false;
+    p6$2 := false;
+    p7$1 := false;
+    p7$2 := false;
+    p8$1 := false;
+    p8$2 := false;
+    p9$1 := false;
+    p9$2 := false;
+    p10$1 := false;
+    p10$2 := false;
+    p11$1 := false;
+    p11$2 := false;
+    p12$1 := false;
+    p12$2 := false;
+    p13$1 := false;
+    p13$2 := false;
+    p14$1 := false;
+    p14$2 := false;
+    p15$1 := false;
+    p15$2 := false;
+    p16$1 := false;
+    p16$2 := false;
+    p17$1 := false;
+    p17$2 := false;
+    p18$1 := false;
+    p18$2 := false;
+    p19$1 := false;
+    p19$2 := false;
+    p0$1 := (if b1 then b1 else p0$1);
+    p0$2 := (if b1 then b1 else p0$2);
+    call {:repair_barrier "b1"} {:repair_instrumented} {:sourceloc_num 2} $bugle_barrier_duplicated_31(1bv1, 1bv1, p0$1, p0$2);
+    p2$1 := (if b2 then b2 else p2$1);
+    p2$2 := (if b2 then b2 else p2$2);
+    call {:repair_barrier "b2"} {:repair_instrumented} {:sourceloc_num 2} $bugle_grid_barrier_duplicated_30(p2$1, p2$2);
+    havoc v2$1, v2$2;
+    p4$1 := (if b11 then b11 else p4$1);
+    p4$2 := (if b11 then b11 else p4$2);
+    call {:repair_barrier "b11"} {:repair_instrumented} {:sourceloc_num 3} $bugle_barrier_duplicated_29(1bv1, 1bv1, p4$1, p4$2);
+    p6$1 := (if b12 then b12 else p6$1);
+    p6$2 := (if b12 then b12 else p6$2);
+    call {:repair_barrier "b12"} {:repair_instrumented} {:sourceloc_num 3} $bugle_grid_barrier_duplicated_28(p6$1, p6$2);
+    havoc v3$1, v3$2;
+    p8$1 := (if b19 then b19 else p8$1);
+    p8$2 := (if b19 then b19 else p8$2);
+    call {:repair_barrier "b19"} {:repair_instrumented} {:sourceloc_num 4} $bugle_barrier_duplicated_27(1bv1, 1bv1, p8$1, p8$2);
+    p10$1 := (if b20 then b20 else p10$1);
+    p10$2 := (if b20 then b20 else p10$2);
+    call {:repair_barrier "b20"} {:repair_instrumented} {:sourceloc_num 4} $bugle_grid_barrier_duplicated_26(p10$1, p10$2);
+    havoc v4$1, v4$2;
+    call {:sourceloc_num 5} v5$1, v5$2 := $_Z5tex2DIfET_7textureIS0_Li2EL19cudaTextureReadMode0EEff(v4$1 ++ v3$1 ++ v2$1, FADD32(SI32_TO_FP32(BV32_ADD(BV32_SHL(v0$1, 3bv32), local_id_x$1)), 1056964608bv32), FADD32(SI32_TO_FP32(BV32_ADD(BV32_SHL(v1$1, 3bv32), local_id_y$1)), 1056964608bv32), v4$2 ++ v3$2 ++ v2$2, FADD32(SI32_TO_FP32(BV32_ADD(BV32_SHL(v0$2, 3bv32), local_id_x$2)), 1056964608bv32), FADD32(SI32_TO_FP32(BV32_ADD(BV32_SHL(v1$2, 3bv32), local_id_y$2)), 1056964608bv32));
+    assume {:captureState "call_return_state_0"} {:procedureName "$_Z5tex2DIfET_7textureIS0_Li2EL19cudaTextureReadMode0EEff"} true;
+    p12$1 := (if b23 then b23 else p12$1);
+    p12$2 := (if b23 then b23 else p12$2);
+    call {:repair_barrier "b23"} {:repair_instrumented} {:sourceloc_num 6} $bugle_barrier_duplicated_25(1bv1, 1bv1, p12$1, p12$2);
+    p14$1 := (if b24 then b24 else p14$1);
+    p14$2 := (if b24 then b24 else p14$2);
+    call {:repair_barrier "b24"} {:repair_instrumented} {:sourceloc_num 6} $bugle_grid_barrier_duplicated_24(p14$1, p14$2);
+    call {:sourceloc} {:sourceloc_num 6} {:repair_instrumented} _LOG_WRITE_$$CurBlockLocal1(true, BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1), v5$1, $$CurBlockLocal1[1bv1][BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1)]);
+    call _UPDATE_WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1(true, BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2));
+    assume {:do_not_predicate} {:check_id "check_state_0"} {:captureState "check_state_0"} {:sourceloc} {:sourceloc_num 6} {:repair_instrumented} true;
+    call {:check_id "check_state_0"} {:sourceloc} {:sourceloc_num 6} {:repair_instrumented} _CHECK_WRITE_$$CurBlockLocal1(true, BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2), v5$2);
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_WRITE_$$CurBlockLocal1"} true;
+    $$CurBlockLocal1[1bv1][BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1)] := v5$1;
+    $$CurBlockLocal1[(if group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       then 1bv1
+       else 0bv1)][BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2)] := v5$2;
+    p16$1 := (if b27 then b27 else p16$1);
+    p16$2 := (if b27 then b27 else p16$2);
+    call {:repair_barrier "b27"} {:repair_instrumented} {:sourceloc_num 7} $bugle_barrier_duplicated_23(1bv1, 1bv1, p16$1, p16$2);
+    p18$1 := (if b28 then b28 else p18$1);
+    p18$2 := (if b28 then b28 else p18$2);
+    call {:repair_barrier "b28"} {:repair_instrumented} {:sourceloc_num 7} $bugle_grid_barrier_duplicated_22(p18$1, p18$2);
+    assert {:sourceloc_num 7} {:repair_instrumented} {:thread 1} true;
+    $.05$1, $.04$1, $.03$1, $.02 := 0bv32, local_id_y$1, local_id_x$1, 0bv32;
+    $.05$2, $.04$2, $.03$2 := 0bv32, local_id_y$2, local_id_x$2;
+    assume {:captureState "loop_entry_state_1_0"} true;
+    goto __partitioned_block_$1_0;
+
+  __partitioned_block_$1_0:
+    assume {:captureState "loop_head_state_1"} true;
+    assume {:tag "accessedOffsetsSatisfyPredicates"} true
+       ==> 
+      _READ_HAS_OCCURRED_$$CurBlockLocal1
+       ==> BV32_AND(BV32_SUB(8bv32, 1bv32), _WATCHED_OFFSET)
+         == BV32_AND(BV32_SUB(8bv32, 1bv32), local_id_x$1);
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _ATOMIC_HAS_OCCURRED_$$CurBlockLocal2
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _WRITE_HAS_OCCURRED_$$CurBlockLocal2
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _READ_HAS_OCCURRED_$$CurBlockLocal2
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _ATOMIC_HAS_OCCURRED_$$CurBlockLocal1
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _WRITE_HAS_OCCURRED_$$CurBlockLocal1
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _READ_HAS_OCCURRED_$$CurBlockLocal1
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assume {:tag "loopBound"} {:thread 1} true ==> BV32_UGE($.02, 0bv32);
+    assume {:tag "loopBound"} {:thread 1} true ==> BV32_SGE($.02, 0bv32);
+    assume {:tag "guardNonNeg"} {:thread 1} true ==> BV32_SLE(0bv32, $.02);
+    assume {:tag "loopCounterIsStrided"} {:thread 1} true
+       ==> BV32_AND(BV32_SUB(8bv32, 1bv32), $.03$1)
+         == BV32_AND(BV32_SUB(8bv32, 1bv32), local_id_x$1);
+    assume {:tag "loopCounterIsStrided"} {:thread 2} true
+       ==> BV32_AND(BV32_SUB(8bv32, 1bv32), $.03$2)
+         == BV32_AND(BV32_SUB(8bv32, 1bv32), local_id_x$2);
+    assume {:tag "loopCounterIsStrided"} {:thread 1} true
+       ==> BV32_AND(BV32_SUB(8bv32, 1bv32), $.04$1)
+         == BV32_AND(BV32_SUB(8bv32, 1bv32), local_id_y$1);
+    assume {:tag "loopCounterIsStrided"} {:thread 2} true
+       ==> BV32_AND(BV32_SUB(8bv32, 1bv32), $.04$2)
+         == BV32_AND(BV32_SUB(8bv32, 1bv32), local_id_y$2);
+    p20$1 := false;
+    p20$2 := false;
+    p21$1 := false;
+    p21$2 := false;
+    p22$1 := false;
+    p22$2 := false;
+    p23$1 := false;
+    p23$2 := false;
+    p24$1 := false;
+    p24$2 := false;
+    p25$1 := false;
+    p25$2 := false;
+    p26$1 := false;
+    p26$2 := false;
+    p27$1 := false;
+    p27$2 := false;
+    p28$1 := false;
+    p28$2 := false;
+    p29$1 := false;
+    p29$2 := false;
+    p30$1 := false;
+    p30$2 := false;
+    p31$1 := false;
+    p31$2 := false;
+    p32$1 := false;
+    p32$2 := false;
+    p33$1 := false;
+    p33$2 := false;
+    p34$1 := false;
+    p34$2 := false;
+    p35$1 := false;
+    p35$2 := false;
+    p36$1 := false;
+    p36$2 := false;
+    p37$1 := false;
+    p37$2 := false;
+    p38$1 := false;
+    p38$2 := false;
+    p39$1 := false;
+    p39$2 := false;
+    p21$1 := (if b25 then b25 else p21$1);
+    p21$2 := (if b25 then b25 else p21$2);
+    call {:repair_barrier "b25"} {:repair_instrumented} {:sourceloc_num 7} $bugle_barrier_duplicated_21(1bv1, 1bv1, p21$1, p21$2);
+    p23$1 := (if b26 then b26 else p23$1);
+    p23$2 := (if b26 then b26 else p23$2);
+    call {:repair_barrier "b26"} {:repair_instrumented} {:sourceloc_num 7} $bugle_grid_barrier_duplicated_20(p23$1, p23$2);
+    v6 := BV32_SLT($.02, 8bv32);
+    goto __partitioned_block_$truebb_0, __partitioned_block_$falsebb_0;
+
+  __partitioned_block_$falsebb_0:
+    assume {:partition} !v6;
+    p32$1 := (if b5 then b5 else p32$1);
+    p32$2 := (if b5 then b5 else p32$2);
+    call {:repair_barrier "b5"} {:repair_instrumented} {:sourceloc_num 13} $bugle_barrier_duplicated_15(1bv1, 1bv1, p32$1, p32$2);
+    p34$1 := (if b6 then b6 else p34$1);
+    p34$2 := (if b6 then b6 else p34$2);
+    call {:repair_barrier "b6"} {:repair_instrumented} {:sourceloc_num 13} $bugle_grid_barrier_duplicated_14(p34$1, p34$2);
+    call {:sourceloc} {:sourceloc_num 13} {:repair_instrumented} _LOG_WRITE_$$CurBlockLocal2(true, BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1), $.05$1, $$CurBlockLocal2[1bv1][BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1)]);
+    call _UPDATE_WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2(true, BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2));
+    assume {:do_not_predicate} {:check_id "check_state_1"} {:captureState "check_state_1"} {:sourceloc} {:sourceloc_num 13} {:repair_instrumented} true;
+    call {:check_id "check_state_1"} {:sourceloc} {:sourceloc_num 13} {:repair_instrumented} _CHECK_WRITE_$$CurBlockLocal2(true, BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2), $.05$2);
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_WRITE_$$CurBlockLocal2"} true;
+    $$CurBlockLocal2[1bv1][BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1)] := $.05$1;
+    $$CurBlockLocal2[(if group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       then 1bv1
+       else 0bv1)][BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2)] := $.05$2;
+    p36$1 := (if b31 then b31 else p36$1);
+    p36$2 := (if b31 then b31 else p36$2);
+    call {:repair_barrier "b31"} {:repair_instrumented} {:sourceloc_num 14} $bugle_barrier_duplicated_13(1bv1, 1bv1, p36$1, p36$2);
+    p38$1 := (if b32 then b32 else p38$1);
+    p38$2 := (if b32 then b32 else p38$2);
+    call {:repair_barrier "b32"} {:repair_instrumented} {:sourceloc_num 14} $bugle_grid_barrier_duplicated_12(p38$1, p38$2);
+    assert {:sourceloc_num 14} {:repair_instrumented} {:thread 1} true;
+    $.16$1, $.1$1, $.01$1, $.0 := 0bv32, local_id_x$1, BV32_SHL(local_id_y$1, 3bv32), 0bv32;
+    $.16$2, $.1$2, $.01$2 := 0bv32, local_id_x$2, BV32_SHL(local_id_y$2, 3bv32);
+    assume {:captureState "loop_entry_state_0_0"} true;
+    goto __partitioned_block_$5_0;
+
+  __partitioned_block_$5_0:
+    assume {:captureState "loop_head_state_0"} true;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _ATOMIC_HAS_OCCURRED_$$CurBlockLocal2
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _WRITE_HAS_OCCURRED_$$CurBlockLocal2
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _READ_HAS_OCCURRED_$$CurBlockLocal2
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _ATOMIC_HAS_OCCURRED_$$CurBlockLocal1
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _WRITE_HAS_OCCURRED_$$CurBlockLocal1
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assert {:tag "groupSharedArraysDisjointAcrossGroups"} _READ_HAS_OCCURRED_$$CurBlockLocal1
+       ==> group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2;
+    assume {:tag "loopBound"} {:thread 1} true ==> BV32_UGE($.0, 0bv32);
+    assume {:tag "loopBound"} {:thread 1} true ==> BV32_SGE($.0, 0bv32);
+    assume {:tag "guardNonNeg"} {:thread 1} true ==> BV32_SLE(0bv32, $.0);
+    assume {:tag "loopCounterIsStrided"} {:thread 1} true
+       ==> BV32_AND(BV32_SUB(8bv32, 1bv32), $.1$1)
+         == BV32_AND(BV32_SUB(8bv32, 1bv32), local_id_x$1);
+    assume {:tag "loopCounterIsStrided"} {:thread 2} true
+       ==> BV32_AND(BV32_SUB(8bv32, 1bv32), $.1$2)
+         == BV32_AND(BV32_SUB(8bv32, 1bv32), local_id_x$2);
+    p40$1 := false;
+    p40$2 := false;
+    p41$1 := false;
+    p41$2 := false;
+    p42$1 := false;
+    p42$2 := false;
+    p43$1 := false;
+    p43$2 := false;
+    p44$1 := false;
+    p44$2 := false;
+    p45$1 := false;
+    p45$2 := false;
+    p46$1 := false;
+    p46$2 := false;
+    p47$1 := false;
+    p47$2 := false;
+    p48$1 := false;
+    p48$2 := false;
+    p49$1 := false;
+    p49$2 := false;
+    p50$1 := false;
+    p50$2 := false;
+    p51$1 := false;
+    p51$2 := false;
+    p52$1 := false;
+    p52$2 := false;
+    p53$1 := false;
+    p53$2 := false;
+    p54$1 := false;
+    p54$2 := false;
+    p55$1 := false;
+    p55$2 := false;
+    p56$1 := false;
+    p56$2 := false;
+    p57$1 := false;
+    p57$2 := false;
+    p58$1 := false;
+    p58$2 := false;
+    p59$1 := false;
+    p59$2 := false;
+    p60$1 := false;
+    p60$2 := false;
+    p61$1 := false;
+    p61$2 := false;
+    p62$1 := false;
+    p62$2 := false;
+    p63$1 := false;
+    p63$2 := false;
+    p41$1 := (if b29 then b29 else p41$1);
+    p41$2 := (if b29 then b29 else p41$2);
+    call {:repair_barrier "b29"} {:repair_instrumented} {:sourceloc_num 14} $bugle_barrier_duplicated_11(1bv1, 1bv1, p41$1, p41$2);
+    p43$1 := (if b30 then b30 else p43$1);
+    p43$2 := (if b30 then b30 else p43$2);
+    call {:repair_barrier "b30"} {:repair_instrumented} {:sourceloc_num 14} $bugle_grid_barrier_duplicated_10(p43$1, p43$2);
+    v9 := BV32_SLT($.0, 8bv32);
+    goto __partitioned_block_$truebb0_0, __partitioned_block_$falsebb0_0;
+
+  __partitioned_block_$falsebb0_0:
+    assume {:partition} !v9;
+    p52$1 := (if b9 then b9 else p52$1);
+    p52$2 := (if b9 then b9 else p52$2);
+    call {:repair_barrier "b9"} {:repair_instrumented} {:sourceloc_num 20} $bugle_barrier_duplicated_5(1bv1, 1bv1, p52$1, p52$2);
+    p54$1 := (if b10 then b10 else p54$1);
+    p54$2 := (if b10 then b10 else p54$2);
+    call {:repair_barrier "b10"} {:repair_instrumented} {:sourceloc_num 20} $bugle_grid_barrier_duplicated_4(p54$1, p54$2);
+    call {:sourceloc} {:sourceloc_num 20} {:repair_instrumented} _LOG_WRITE_$$CurBlockLocal1(true, BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1), $.16$1, $$CurBlockLocal1[1bv1][BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1)]);
+    call _UPDATE_WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1(true, BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2));
+    assume {:do_not_predicate} {:check_id "check_state_2"} {:captureState "check_state_2"} {:sourceloc} {:sourceloc_num 20} {:repair_instrumented} true;
+    call {:check_id "check_state_2"} {:sourceloc} {:sourceloc_num 20} {:repair_instrumented} _CHECK_WRITE_$$CurBlockLocal1(true, BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2), $.16$2);
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_WRITE_$$CurBlockLocal1"} true;
+    $$CurBlockLocal1[1bv1][BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1)] := $.16$1;
+    $$CurBlockLocal1[(if group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       then 1bv1
+       else 0bv1)][BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2)] := $.16$2;
+    p56$1 := (if b17 then b17 else p56$1);
+    p56$2 := (if b17 then b17 else p56$2);
+    call {:repair_barrier "b17"} {:repair_instrumented} {:sourceloc_num 21} $bugle_barrier_duplicated_3(1bv1, 1bv1, p56$1, p56$2);
+    p58$1 := (if b18 then b18 else p58$1);
+    p58$2 := (if b18 then b18 else p58$2);
+    call {:repair_barrier "b18"} {:repair_instrumented} {:sourceloc_num 21} $bugle_grid_barrier_duplicated_2(p58$1, p58$2);
+    call {:sourceloc} {:sourceloc_num 21} {:repair_instrumented} _LOG_READ_$$CurBlockLocal1(true, BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1), $$CurBlockLocal1[1bv1][BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1)]);
+    assume {:do_not_predicate} {:check_id "check_state_3"} {:captureState "check_state_3"} {:sourceloc} {:sourceloc_num 21} {:repair_instrumented} true;
+    call {:check_id "check_state_3"} {:sourceloc} {:sourceloc_num 21} {:repair_instrumented} _CHECK_READ_$$CurBlockLocal1(true, BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2), $$CurBlockLocal1[(if group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       then 1bv1
+       else 0bv1)][BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2)]);
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_READ_$$CurBlockLocal1"} true;
+    v12$1 := $$CurBlockLocal1[1bv1][BV32_ADD(BV32_SHL(local_id_y$1, 3bv32), local_id_x$1)];
+    v12$2 := $$CurBlockLocal1[(if group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       then 1bv1
+       else 0bv1)][BV32_ADD(BV32_SHL(local_id_y$2, 3bv32), local_id_x$2)];
+    p60$1 := (if b21 then b21 else p60$1);
+    p60$2 := (if b21 then b21 else p60$2);
+    call {:repair_barrier "b21"} {:repair_instrumented} {:sourceloc_num 22} $bugle_barrier_duplicated_1(1bv1, 1bv1, p60$1, p60$2);
+    p62$1 := (if b22 then b22 else p62$1);
+    p62$2 := (if b22 then b22 else p62$2);
+    call {:repair_barrier "b22"} {:repair_instrumented} {:sourceloc_num 22} $bugle_grid_barrier_duplicated_0(p62$1, p62$2);
+    call {:sourceloc} {:sourceloc_num 22} {:repair_instrumented} _LOG_WRITE_$$arg.(true, BV32_ADD(BV32_MUL(BV32_ADD(BV32_SHL(v1$1, 3bv32), local_id_y$1), $ImgWidth), 
+      BV32_ADD(BV32_SHL(v0$1, 3bv32), local_id_x$1)), v12$1, $$arg.[BV32_ADD(BV32_MUL(BV32_ADD(BV32_SHL(v1$1, 3bv32), local_id_y$1), $ImgWidth), 
+      BV32_ADD(BV32_SHL(v0$1, 3bv32), local_id_x$1))]);
+    call _UPDATE_WRITE_READ_BENIGN_FLAG_$$arg.(true, BV32_ADD(BV32_MUL(BV32_ADD(BV32_SHL(v1$2, 3bv32), local_id_y$2), $ImgWidth), 
+      BV32_ADD(BV32_SHL(v0$2, 3bv32), local_id_x$2)));
+    assume {:do_not_predicate} {:check_id "check_state_4"} {:captureState "check_state_4"} {:sourceloc} {:sourceloc_num 22} {:repair_instrumented} true;
+    call {:check_id "check_state_4"} {:sourceloc} {:sourceloc_num 22} {:repair_instrumented} _CHECK_WRITE_$$arg.(true, BV32_ADD(BV32_MUL(BV32_ADD(BV32_SHL(v1$2, 3bv32), local_id_y$2), $ImgWidth), 
+      BV32_ADD(BV32_SHL(v0$2, 3bv32), local_id_x$2)), v12$2);
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_WRITE_$$arg."} true;
+    $$arg.[BV32_ADD(BV32_MUL(BV32_ADD(BV32_SHL(v1$1, 3bv32), local_id_y$1), $ImgWidth), 
+      BV32_ADD(BV32_SHL(v0$1, 3bv32), local_id_x$1))] := v12$1;
+    $$arg.[BV32_ADD(BV32_MUL(BV32_ADD(BV32_SHL(v1$2, 3bv32), local_id_y$2), $ImgWidth), 
+      BV32_ADD(BV32_SHL(v0$2, 3bv32), local_id_x$2))] := v12$2;
+    return;
+
+  __partitioned_block_$truebb0_0:
+    assume {:partition} v9;
+    p45$1 := (if b7 then b7 else p45$1);
+    p45$2 := (if b7 then b7 else p45$2);
+    call {:repair_barrier "b7"} {:repair_instrumented} {:sourceloc_num 16} $bugle_barrier_duplicated_9(1bv1, 1bv1, p45$1, p45$2);
+    p47$1 := (if b8 then b8 else p47$1);
+    p47$2 := (if b8 then b8 else p47$2);
+    call {:repair_barrier "b8"} {:repair_instrumented} {:sourceloc_num 16} $bugle_grid_barrier_duplicated_8(p47$1, p47$2);
+    call {:sourceloc} {:sourceloc_num 16} {:repair_instrumented} _LOG_READ_$$CurBlockLocal2(true, $.01$1, $$CurBlockLocal2[1bv1][$.01$1]);
+    assume {:do_not_predicate} {:check_id "check_state_5"} {:captureState "check_state_5"} {:sourceloc} {:sourceloc_num 16} {:repair_instrumented} true;
+    call {:check_id "check_state_5"} {:sourceloc} {:sourceloc_num 16} {:repair_instrumented} _CHECK_READ_$$CurBlockLocal2(true, $.01$2, $$CurBlockLocal2[(if group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       then 1bv1
+       else 0bv1)][$.01$2]);
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_READ_$$CurBlockLocal2"} true;
+    v10$1 := $$CurBlockLocal2[1bv1][$.01$1];
+    v10$2 := $$CurBlockLocal2[(if group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       then 1bv1
+       else 0bv1)][$.01$2];
+    p49$1 := (if b15 then b15 else p49$1);
+    p49$2 := (if b15 then b15 else p49$2);
+    call {:repair_barrier "b15"} {:repair_instrumented} {:sourceloc_num 17} $bugle_barrier_duplicated_7(1bv1, 1bv1, p49$1, p49$2);
+    p51$1 := (if b16 then b16 else p51$1);
+    p51$2 := (if b16 then b16 else p51$2);
+    call {:repair_barrier "b16"} {:repair_instrumented} {:sourceloc_num 17} $bugle_grid_barrier_duplicated_6(p51$1, p51$2);
+    v11$1 := $$DCTv8matrix$1[$.1$1];
+    v11$2 := $$DCTv8matrix$2[$.1$2];
+    $.16$1, $.1$1, $.01$1, $.0 := FADD32($.16$1, FMUL32(v10$1, v11$1)), BV32_ADD($.1$1, 8bv32), BV32_ADD($.01$1, 1bv32), BV32_ADD($.0, 1bv32);
+    $.16$2, $.1$2, $.01$2 := FADD32($.16$2, FMUL32(v10$2, v11$2)), BV32_ADD($.1$2, 8bv32), BV32_ADD($.01$2, 1bv32);
+    assume {:captureState "loop_back_edge_state_0_0"} true;
+    goto __partitioned_block_$5_0;
+
+  __partitioned_block_$truebb_0:
+    assume {:partition} v6;
+    p25$1 := (if b3 then b3 else p25$1);
+    p25$2 := (if b3 then b3 else p25$2);
+    call {:repair_barrier "b3"} {:repair_instrumented} {:sourceloc_num 9} $bugle_barrier_duplicated_19(1bv1, 1bv1, p25$1, p25$2);
+    p27$1 := (if b4 then b4 else p27$1);
+    p27$2 := (if b4 then b4 else p27$2);
+    call {:repair_barrier "b4"} {:repair_instrumented} {:sourceloc_num 9} $bugle_grid_barrier_duplicated_18(p27$1, p27$2);
+    v7$1 := $$DCTv8matrix$1[$.04$1];
+    v7$2 := $$DCTv8matrix$2[$.04$2];
+    p29$1 := (if b13 then b13 else p29$1);
+    p29$2 := (if b13 then b13 else p29$2);
+    call {:repair_barrier "b13"} {:repair_instrumented} {:sourceloc_num 10} $bugle_barrier_duplicated_17(1bv1, 1bv1, p29$1, p29$2);
+    p31$1 := (if b14 then b14 else p31$1);
+    p31$2 := (if b14 then b14 else p31$2);
+    call {:repair_barrier "b14"} {:repair_instrumented} {:sourceloc_num 10} $bugle_grid_barrier_duplicated_16(p31$1, p31$2);
+    call {:sourceloc} {:sourceloc_num 10} {:repair_instrumented} _LOG_READ_$$CurBlockLocal1(true, $.03$1, $$CurBlockLocal1[1bv1][$.03$1]);
+    assume {:do_not_predicate} {:check_id "check_state_6"} {:captureState "check_state_6"} {:sourceloc} {:sourceloc_num 10} {:repair_instrumented} true;
+    call {:check_id "check_state_6"} {:sourceloc} {:sourceloc_num 10} {:repair_instrumented} _CHECK_READ_$$CurBlockLocal1(true, $.03$2, $$CurBlockLocal1[(if group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       then 1bv1
+       else 0bv1)][$.03$2]);
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_READ_$$CurBlockLocal1"} true;
+    v8$1 := $$CurBlockLocal1[1bv1][$.03$1];
+    v8$2 := $$CurBlockLocal1[(if group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       then 1bv1
+       else 0bv1)][$.03$2];
+    $.05$1, $.04$1, $.03$1, $.02 := FADD32($.05$1, FMUL32(v7$1, v8$1)), BV32_ADD($.04$1, 8bv32), BV32_ADD($.03$1, 8bv32), BV32_ADD($.02, 1bv32);
+    $.05$2, $.04$2, $.03$2 := FADD32($.05$2, FMUL32(v7$2, v8$2)), BV32_ADD($.04$2, 8bv32), BV32_ADD($.03$2, 8bv32);
+    assume {:captureState "loop_back_edge_state_1_0"} true;
+    goto __partitioned_block_$1_0;
+}
+
+
+
+procedure {:source_name "_Z5tex2DIfET_7textureIS0_Li2EL19cudaTextureReadMode0EEff"} $_Z5tex2DIfET_7textureIS0_Li2EL19cudaTextureReadMode0EEff($0$1: bv96, $1$1: bv32, $2$1: bv32, $0$2: bv96, $1$2: bv32, $2$2: bv32)
+   returns ($ret$1: bv32, $ret$2: bv32);
+
+
+
+axiom (if group_size_x == 8bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if group_size_y == 8bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if group_size_z == 1bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if num_groups_x == 64bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if num_groups_y == 64bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if num_groups_z == 1bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if sub_group_size == 32bv32 then 1bv1 else 0bv1) != 0bv1;
+
+procedure {:grid_barrier} $bugle_grid_barrier();
+
+
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b1: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b2: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b3: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b4: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b5: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b6: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b7: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b8: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b9: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b10: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b11: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b12: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b13: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b14: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b15: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b16: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b17: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b18: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b19: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b20: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b21: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b22: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b23: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b24: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b25: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b26: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b27: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b28: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b29: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b30: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b31: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b32: bool;
+
+const {:local_id_z} local_id_z$1: bv32;
+
+const {:local_id_z} local_id_z$2: bv32;
+
+const {:group_id_z} group_id_z$1: bv32;
+
+const {:group_id_z} group_id_z$2: bv32;
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_0(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_1($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_2(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_3($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_4(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_5($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_6(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_7($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_8(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_9($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_10(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_11($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_12(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_13($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_14(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_15($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_16(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_17($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_18(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_19($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_20(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_21($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_22(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_23($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_24(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_25($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_26(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_27($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_28(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_29($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_30(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_31($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg., $$CurBlockLocal1, $$CurBlockLocal2;
+
+
+
+function {:bvbuiltin "bvsub"} BV32_SUB(bv32, bv32) : bv32;
+
+function {:bvbuiltin "bvand"} BV32_AND(bv32, bv32) : bv32;
+
+function {:bvbuiltin "bvsle"} BV32_SLE(bv32, bv32) : bool;
+
+function {:bvbuiltin "bvsge"} BV32_SGE(bv32, bv32) : bool;
+
+function {:bvbuiltin "bvule"} BV32_ULE(bv32, bv32) : bool;
+
+function {:bvbuiltin "bvuge"} BV32_UGE(bv32, bv32) : bool;
+
+const _WATCHED_VALUE_$$arg.: bv32;
+
+procedure {:inline 1} _LOG_READ_$$arg.(_P: bool, _offset: bv32, _value: bv32);
+  modifies _READ_HAS_OCCURRED_$$arg.;
+
+
+
+implementation {:inline 1} _LOG_READ_$$arg.(_P: bool, _offset: bv32, _value: bv32)
+{
+
+  log_access_entry:
+    _READ_HAS_OCCURRED_$$arg. := (if _P && _TRACKING && _WATCHED_OFFSET == _offset && _WATCHED_VALUE_$$arg. == _value
+       then true
+       else _READ_HAS_OCCURRED_$$arg.);
+    return;
+}
+
+
+
+procedure _CHECK_READ_$$arg.(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "Dst"} {:array "$$arg."} {:race} {:write_read} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$arg.
+     && _WATCHED_OFFSET == _offset
+     && _WRITE_READ_BENIGN_FLAG_$$arg.);
+  requires {:source_name "Dst"} {:array "$$arg."} {:race} {:atomic_read} !(_P && _ATOMIC_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset);
+
+
+
+var _WRITE_READ_BENIGN_FLAG_$$arg.: bool;
+
+procedure {:inline 1} _LOG_WRITE_$$arg.(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32);
+  modifies _WRITE_HAS_OCCURRED_$$arg., _WRITE_READ_BENIGN_FLAG_$$arg.;
+
+
+
+implementation {:inline 1} _LOG_WRITE_$$arg.(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32)
+{
+
+  log_access_entry:
+    _WRITE_HAS_OCCURRED_$$arg. := (if _P && _TRACKING && _WATCHED_OFFSET == _offset && _WATCHED_VALUE_$$arg. == _value
+       then true
+       else _WRITE_HAS_OCCURRED_$$arg.);
+    _WRITE_READ_BENIGN_FLAG_$$arg. := (if _P && _TRACKING && _WATCHED_OFFSET == _offset && _WATCHED_VALUE_$$arg. == _value
+       then _value != _value_old
+       else _WRITE_READ_BENIGN_FLAG_$$arg.);
+    return;
+}
+
+
+
+procedure _CHECK_WRITE_$$arg.(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "Dst"} {:array "$$arg."} {:race} {:write_write} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$arg.
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$arg. != _value);
+  requires {:source_name "Dst"} {:array "$$arg."} {:race} {:read_write} !(
+    _P
+     && _READ_HAS_OCCURRED_$$arg.
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$arg. != _value);
+  requires {:source_name "Dst"} {:array "$$arg."} {:race} {:atomic_write} !(_P && _ATOMIC_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset);
+
+
+
+procedure {:inline 1} _LOG_ATOMIC_$$arg.(_P: bool, _offset: bv32);
+  modifies _ATOMIC_HAS_OCCURRED_$$arg.;
+
+
+
+implementation {:inline 1} _LOG_ATOMIC_$$arg.(_P: bool, _offset: bv32)
+{
+
+  log_access_entry:
+    _ATOMIC_HAS_OCCURRED_$$arg. := (if _P && _TRACKING && _WATCHED_OFFSET == _offset
+       then true
+       else _ATOMIC_HAS_OCCURRED_$$arg.);
+    return;
+}
+
+
+
+procedure _CHECK_ATOMIC_$$arg.(_P: bool, _offset: bv32);
+  requires {:source_name "Dst"} {:array "$$arg."} {:race} {:write_atomic} !(_P && _WRITE_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset);
+  requires {:source_name "Dst"} {:array "$$arg."} {:race} {:read_atomic} !(_P && _READ_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset);
+
+
+
+procedure {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$arg.(_P: bool, _offset: bv32);
+  modifies _WRITE_READ_BENIGN_FLAG_$$arg.;
+
+
+
+implementation {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$arg.(_P: bool, _offset: bv32)
+{
+
+  _UPDATE_BENIGN_FLAG:
+    _WRITE_READ_BENIGN_FLAG_$$arg. := (if _P && _WRITE_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset
+       then false
+       else _WRITE_READ_BENIGN_FLAG_$$arg.);
+    return;
+}
+
+
+
+const _WATCHED_VALUE_$$TexSrc: bv32;
+
+procedure {:inline 1} _LOG_READ_$$TexSrc(_P: bool, _offset: bv32, _value: bv32);
+  modifies _READ_HAS_OCCURRED_$$TexSrc;
+
+
+
+implementation {:inline 1} _LOG_READ_$$TexSrc(_P: bool, _offset: bv32, _value: bv32)
+{
+
+  log_access_entry:
+    _READ_HAS_OCCURRED_$$TexSrc := (if _P
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+         && _WATCHED_VALUE_$$TexSrc == _value
+       then true
+       else _READ_HAS_OCCURRED_$$TexSrc);
+    return;
+}
+
+
+
+procedure _CHECK_READ_$$TexSrc(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "TexSrc"} {:array "$$TexSrc"} {:race} {:write_read} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$TexSrc
+     && _WATCHED_OFFSET == _offset
+     && _WRITE_READ_BENIGN_FLAG_$$TexSrc);
+  requires {:source_name "TexSrc"} {:array "$$TexSrc"} {:race} {:atomic_read} !(_P && _ATOMIC_HAS_OCCURRED_$$TexSrc && _WATCHED_OFFSET == _offset);
+
+
+
+var _WRITE_READ_BENIGN_FLAG_$$TexSrc: bool;
+
+procedure {:inline 1} _LOG_WRITE_$$TexSrc(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32);
+  modifies _WRITE_HAS_OCCURRED_$$TexSrc, _WRITE_READ_BENIGN_FLAG_$$TexSrc;
+
+
+
+implementation {:inline 1} _LOG_WRITE_$$TexSrc(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32)
+{
+
+  log_access_entry:
+    _WRITE_HAS_OCCURRED_$$TexSrc := (if _P
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+         && _WATCHED_VALUE_$$TexSrc == _value
+       then true
+       else _WRITE_HAS_OCCURRED_$$TexSrc);
+    _WRITE_READ_BENIGN_FLAG_$$TexSrc := (if _P
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+         && _WATCHED_VALUE_$$TexSrc == _value
+       then _value != _value_old
+       else _WRITE_READ_BENIGN_FLAG_$$TexSrc);
+    return;
+}
+
+
+
+procedure _CHECK_WRITE_$$TexSrc(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "TexSrc"} {:array "$$TexSrc"} {:race} {:write_write} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$TexSrc
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$TexSrc != _value);
+  requires {:source_name "TexSrc"} {:array "$$TexSrc"} {:race} {:read_write} !(
+    _P
+     && _READ_HAS_OCCURRED_$$TexSrc
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$TexSrc != _value);
+  requires {:source_name "TexSrc"} {:array "$$TexSrc"} {:race} {:atomic_write} !(_P && _ATOMIC_HAS_OCCURRED_$$TexSrc && _WATCHED_OFFSET == _offset);
+
+
+
+procedure {:inline 1} _LOG_ATOMIC_$$TexSrc(_P: bool, _offset: bv32);
+  modifies _ATOMIC_HAS_OCCURRED_$$TexSrc;
+
+
+
+implementation {:inline 1} _LOG_ATOMIC_$$TexSrc(_P: bool, _offset: bv32)
+{
+
+  log_access_entry:
+    _ATOMIC_HAS_OCCURRED_$$TexSrc := (if _P && _TRACKING && _WATCHED_OFFSET == _offset
+       then true
+       else _ATOMIC_HAS_OCCURRED_$$TexSrc);
+    return;
+}
+
+
+
+procedure _CHECK_ATOMIC_$$TexSrc(_P: bool, _offset: bv32);
+  requires {:source_name "TexSrc"} {:array "$$TexSrc"} {:race} {:write_atomic} !(_P && _WRITE_HAS_OCCURRED_$$TexSrc && _WATCHED_OFFSET == _offset);
+  requires {:source_name "TexSrc"} {:array "$$TexSrc"} {:race} {:read_atomic} !(_P && _READ_HAS_OCCURRED_$$TexSrc && _WATCHED_OFFSET == _offset);
+
+
+
+procedure {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$TexSrc(_P: bool, _offset: bv32);
+  modifies _WRITE_READ_BENIGN_FLAG_$$TexSrc;
+
+
+
+implementation {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$TexSrc(_P: bool, _offset: bv32)
+{
+
+  _UPDATE_BENIGN_FLAG:
+    _WRITE_READ_BENIGN_FLAG_$$TexSrc := (if _P && _WRITE_HAS_OCCURRED_$$TexSrc && _WATCHED_OFFSET == _offset
+       then false
+       else _WRITE_READ_BENIGN_FLAG_$$TexSrc);
+    return;
+}
+
+
+
+const _WATCHED_VALUE_$$CurBlockLocal1: bv32;
+
+procedure {:inline 1} _LOG_READ_$$CurBlockLocal1(_P: bool, _offset: bv32, _value: bv32);
+  modifies _READ_HAS_OCCURRED_$$CurBlockLocal1;
+
+
+
+implementation {:inline 1} _LOG_READ_$$CurBlockLocal1(_P: bool, _offset: bv32, _value: bv32)
+{
+
+  log_access_entry:
+    _READ_HAS_OCCURRED_$$CurBlockLocal1 := (if _P
+         && group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+         && _WATCHED_VALUE_$$CurBlockLocal1 == _value
+       then true
+       else _READ_HAS_OCCURRED_$$CurBlockLocal1);
+    return;
+}
+
+
+
+procedure _CHECK_READ_$$CurBlockLocal1(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "CurBlockLocal1"} {:array "$$CurBlockLocal1"} {:race} {:write_read} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$CurBlockLocal1
+     && _WATCHED_OFFSET == _offset
+     && _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+  requires {:source_name "CurBlockLocal1"} {:array "$$CurBlockLocal1"} {:race} {:atomic_read} !(
+    _P
+     && _ATOMIC_HAS_OCCURRED_$$CurBlockLocal1
+     && _WATCHED_OFFSET == _offset
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+
+
+
+var _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1: bool;
+
+procedure {:inline 1} _LOG_WRITE_$$CurBlockLocal1(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32);
+  modifies _WRITE_HAS_OCCURRED_$$CurBlockLocal1, _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1;
+
+
+
+implementation {:inline 1} _LOG_WRITE_$$CurBlockLocal1(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32)
+{
+
+  log_access_entry:
+    _WRITE_HAS_OCCURRED_$$CurBlockLocal1 := (if _P
+         && group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+         && _WATCHED_VALUE_$$CurBlockLocal1 == _value
+       then true
+       else _WRITE_HAS_OCCURRED_$$CurBlockLocal1);
+    _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1 := (if _P
+         && group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+         && _WATCHED_VALUE_$$CurBlockLocal1 == _value
+       then _value != _value_old
+       else _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1);
+    return;
+}
+
+
+
+procedure _CHECK_WRITE_$$CurBlockLocal1(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "CurBlockLocal1"} {:array "$$CurBlockLocal1"} {:race} {:write_write} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$CurBlockLocal1
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$CurBlockLocal1 != _value
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+  requires {:source_name "CurBlockLocal1"} {:array "$$CurBlockLocal1"} {:race} {:read_write} !(
+    _P
+     && _READ_HAS_OCCURRED_$$CurBlockLocal1
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$CurBlockLocal1 != _value
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+  requires {:source_name "CurBlockLocal1"} {:array "$$CurBlockLocal1"} {:race} {:atomic_write} !(
+    _P
+     && _ATOMIC_HAS_OCCURRED_$$CurBlockLocal1
+     && _WATCHED_OFFSET == _offset
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+
+
+
+procedure {:inline 1} _LOG_ATOMIC_$$CurBlockLocal1(_P: bool, _offset: bv32);
+  modifies _ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+
+
+
+implementation {:inline 1} _LOG_ATOMIC_$$CurBlockLocal1(_P: bool, _offset: bv32)
+{
+
+  log_access_entry:
+    _ATOMIC_HAS_OCCURRED_$$CurBlockLocal1 := (if _P
+         && group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+       then true
+       else _ATOMIC_HAS_OCCURRED_$$CurBlockLocal1);
+    return;
+}
+
+
+
+procedure _CHECK_ATOMIC_$$CurBlockLocal1(_P: bool, _offset: bv32);
+  requires {:source_name "CurBlockLocal1"} {:array "$$CurBlockLocal1"} {:race} {:write_atomic} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$CurBlockLocal1
+     && _WATCHED_OFFSET == _offset
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+  requires {:source_name "CurBlockLocal1"} {:array "$$CurBlockLocal1"} {:race} {:read_atomic} !(
+    _P
+     && _READ_HAS_OCCURRED_$$CurBlockLocal1
+     && _WATCHED_OFFSET == _offset
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+
+
+
+procedure {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1(_P: bool, _offset: bv32);
+  modifies _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1;
+
+
+
+implementation {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1(_P: bool, _offset: bv32)
+{
+
+  _UPDATE_BENIGN_FLAG:
+    _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1 := (if _P && _WRITE_HAS_OCCURRED_$$CurBlockLocal1 && _WATCHED_OFFSET == _offset
+       then false
+       else _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal1);
+    return;
+}
+
+
+
+const _WATCHED_VALUE_$$CurBlockLocal2: bv32;
+
+procedure {:inline 1} _LOG_READ_$$CurBlockLocal2(_P: bool, _offset: bv32, _value: bv32);
+  modifies _READ_HAS_OCCURRED_$$CurBlockLocal2;
+
+
+
+implementation {:inline 1} _LOG_READ_$$CurBlockLocal2(_P: bool, _offset: bv32, _value: bv32)
+{
+
+  log_access_entry:
+    _READ_HAS_OCCURRED_$$CurBlockLocal2 := (if _P
+         && group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+         && _WATCHED_VALUE_$$CurBlockLocal2 == _value
+       then true
+       else _READ_HAS_OCCURRED_$$CurBlockLocal2);
+    return;
+}
+
+
+
+procedure _CHECK_READ_$$CurBlockLocal2(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "CurBlockLocal2"} {:array "$$CurBlockLocal2"} {:race} {:write_read} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$CurBlockLocal2
+     && _WATCHED_OFFSET == _offset
+     && _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+  requires {:source_name "CurBlockLocal2"} {:array "$$CurBlockLocal2"} {:race} {:atomic_read} !(
+    _P
+     && _ATOMIC_HAS_OCCURRED_$$CurBlockLocal2
+     && _WATCHED_OFFSET == _offset
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+
+
+
+var _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2: bool;
+
+procedure {:inline 1} _LOG_WRITE_$$CurBlockLocal2(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32);
+  modifies _WRITE_HAS_OCCURRED_$$CurBlockLocal2, _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2;
+
+
+
+implementation {:inline 1} _LOG_WRITE_$$CurBlockLocal2(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32)
+{
+
+  log_access_entry:
+    _WRITE_HAS_OCCURRED_$$CurBlockLocal2 := (if _P
+         && group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+         && _WATCHED_VALUE_$$CurBlockLocal2 == _value
+       then true
+       else _WRITE_HAS_OCCURRED_$$CurBlockLocal2);
+    _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2 := (if _P
+         && group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+         && _WATCHED_VALUE_$$CurBlockLocal2 == _value
+       then _value != _value_old
+       else _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2);
+    return;
+}
+
+
+
+procedure _CHECK_WRITE_$$CurBlockLocal2(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "CurBlockLocal2"} {:array "$$CurBlockLocal2"} {:race} {:write_write} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$CurBlockLocal2
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$CurBlockLocal2 != _value
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+  requires {:source_name "CurBlockLocal2"} {:array "$$CurBlockLocal2"} {:race} {:read_write} !(
+    _P
+     && _READ_HAS_OCCURRED_$$CurBlockLocal2
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$CurBlockLocal2 != _value
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+  requires {:source_name "CurBlockLocal2"} {:array "$$CurBlockLocal2"} {:race} {:atomic_write} !(
+    _P
+     && _ATOMIC_HAS_OCCURRED_$$CurBlockLocal2
+     && _WATCHED_OFFSET == _offset
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+
+
+
+procedure {:inline 1} _LOG_ATOMIC_$$CurBlockLocal2(_P: bool, _offset: bv32);
+  modifies _ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+
+
+
+implementation {:inline 1} _LOG_ATOMIC_$$CurBlockLocal2(_P: bool, _offset: bv32)
+{
+
+  log_access_entry:
+    _ATOMIC_HAS_OCCURRED_$$CurBlockLocal2 := (if _P
+         && group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && _TRACKING
+         && _WATCHED_OFFSET == _offset
+       then true
+       else _ATOMIC_HAS_OCCURRED_$$CurBlockLocal2);
+    return;
+}
+
+
+
+procedure _CHECK_ATOMIC_$$CurBlockLocal2(_P: bool, _offset: bv32);
+  requires {:source_name "CurBlockLocal2"} {:array "$$CurBlockLocal2"} {:race} {:write_atomic} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$CurBlockLocal2
+     && _WATCHED_OFFSET == _offset
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+  requires {:source_name "CurBlockLocal2"} {:array "$$CurBlockLocal2"} {:race} {:read_atomic} !(
+    _P
+     && _READ_HAS_OCCURRED_$$CurBlockLocal2
+     && _WATCHED_OFFSET == _offset
+     && group_id_x$1 == group_id_x$2
+     && group_id_y$1 == group_id_y$2
+     && group_id_z$1 == group_id_z$2);
+
+
+
+procedure {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2(_P: bool, _offset: bv32);
+  modifies _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2;
+
+
+
+implementation {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2(_P: bool, _offset: bv32)
+{
+
+  _UPDATE_BENIGN_FLAG:
+    _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2 := (if _P && _WRITE_HAS_OCCURRED_$$CurBlockLocal2 && _WATCHED_OFFSET == _offset
+       then false
+       else _WRITE_READ_BENIGN_FLAG_$$CurBlockLocal2);
+    return;
+}
+
+
+
+var _TRACKING: bool;
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_0(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_1($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_2(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_3($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_4(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_5($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_6(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_7($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_8(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_9($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_10(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_11($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_12(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_13($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_14(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_15($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_16(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_17($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_18(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_19($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_20(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_21($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_22(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_23($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_24(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_25($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_26(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_27($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_28(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_29($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_30(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume true ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume true ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} false;
+    goto anon5;
+
+  anon5:
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} false;
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} true;
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_31($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon9_Then, anon9_Else;
+
+  anon9_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal1;
+    assume _P$1 && $0 != 0bv1 ==> !_READ_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_WRITE_HAS_OCCURRED_$$CurBlockLocal2;
+    assume _P$1 && $0 != 0bv1 ==> !_ATOMIC_HAS_OCCURRED_$$CurBlockLocal2;
+    goto anon10_Then, anon10_Else;
+
+  anon10_Else:
+    assume {:partition} !((_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1));
+    goto anon5;
+
+  anon5:
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon11_Then, anon11_Else;
+
+  anon11_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon8;
+
+  anon8:
+    havoc _TRACKING;
+    return;
+
+  anon11_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon8;
+
+  anon10_Then:
+    assume {:partition} (_P$1 && $0 != 0bv1) || (_P$2 && $0 != 0bv1);
+    havoc $$CurBlockLocal1;
+    havoc $$CurBlockLocal2;
+    goto anon5;
+
+  anon9_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+function {:bvbuiltin "bvsgt"} BV32_SGT(bv32, bv32) : bool;

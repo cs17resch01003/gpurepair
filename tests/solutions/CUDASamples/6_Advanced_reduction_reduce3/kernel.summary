@@ -1,0 +1,1 @@
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/6_Advanced_reduction_reduce3/kernel.cu 30 inside the loop.

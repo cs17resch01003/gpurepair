@@ -1,0 +1,1 @@
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/4_Finance_SobolQRNG_sobol/kernel.cu 32 outside the loop.

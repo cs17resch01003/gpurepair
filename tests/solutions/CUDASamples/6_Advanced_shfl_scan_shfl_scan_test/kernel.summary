@@ -1,0 +1,2 @@
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/6_Advanced_shfl_scan_shfl_scan_test/kernel.cu 49.
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/6_Advanced_shfl_scan_shfl_scan_test/kernel.cu 71.

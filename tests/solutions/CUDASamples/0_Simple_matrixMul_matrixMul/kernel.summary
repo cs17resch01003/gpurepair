@@ -1,0 +1,2 @@
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/0_Simple_matrixMul_matrixMul/kernel.cu 56 inside the loop.
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/0_Simple_matrixMul_matrixMul/kernel.cu 67 inside the loop.

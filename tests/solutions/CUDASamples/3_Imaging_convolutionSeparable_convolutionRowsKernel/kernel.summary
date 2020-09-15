@@ -1,0 +1,1 @@
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/3_Imaging_convolutionSeparable_convolutionRowsKernel/kernel.cu 65 outside the loop.

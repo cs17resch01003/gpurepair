@@ -1,0 +1,753 @@
+type _SIZE_T_TYPE = bv32;
+
+procedure _ATOMIC_OP32(x: [bv32]bv32, y: bv32)
+   returns (z$1: bv32, A$1: [bv32]bv32, z$2: bv32, A$2: [bv32]bv32);
+
+
+
+var {:source_name "A"} {:global} $$arg.: [bv32]bv32;
+
+axiom {:array_info "$$arg."} {:global} {:elem_width 32} {:source_name "A"} {:source_elem_width 32} {:source_dimensions "*"} true;
+
+var {:race_checking} {:global} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _READ_HAS_OCCURRED_$$arg.: bool;
+
+var {:race_checking} {:global} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _WRITE_HAS_OCCURRED_$$arg.: bool;
+
+var {:race_checking} {:global} {:elem_width 32} {:source_elem_width 32} {:source_dimensions "*"} _ATOMIC_HAS_OCCURRED_$$arg.: bool;
+
+const _WATCHED_OFFSET: bv32;
+
+const {:group_size_x} group_size_x: bv32;
+
+const {:group_size_y} group_size_y: bv32;
+
+const {:group_size_z} group_size_z: bv32;
+
+const {:local_id_x} local_id_x$1: bv32;
+
+const {:local_id_x} local_id_x$2: bv32;
+
+const {:num_groups_x} num_groups_x: bv32;
+
+const {:num_groups_y} num_groups_y: bv32;
+
+const {:num_groups_z} num_groups_z: bv32;
+
+const {:sub_group_size} sub_group_size: bv32;
+
+function {:bvbuiltin "bvadd"} BV32_ADD(bv32, bv32) : bv32;
+
+procedure {:source_name "test_Prog"} {:kernel} $_Z9test_ProgPii($N: bv32);
+  requires !_READ_HAS_OCCURRED_$$arg.
+     && !_WRITE_HAS_OCCURRED_$$arg.
+     && !_ATOMIC_HAS_OCCURRED_$$arg.;
+  requires BV32_SGT(group_size_x, 0bv32);
+  requires BV32_SGT(num_groups_x, 0bv32);
+  requires BV32_SGE(group_id_x$1, 0bv32);
+  requires BV32_SGE(group_id_x$2, 0bv32);
+  requires BV32_SLT(group_id_x$1, num_groups_x);
+  requires BV32_SLT(group_id_x$2, num_groups_x);
+  requires BV32_SGE(local_id_x$1, 0bv32);
+  requires BV32_SGE(local_id_x$2, 0bv32);
+  requires BV32_SLT(local_id_x$1, group_size_x);
+  requires BV32_SLT(local_id_x$2, group_size_x);
+  requires BV32_SGT(group_size_y, 0bv32);
+  requires BV32_SGT(num_groups_y, 0bv32);
+  requires BV32_SGE(group_id_y$1, 0bv32);
+  requires BV32_SGE(group_id_y$2, 0bv32);
+  requires BV32_SLT(group_id_y$1, num_groups_y);
+  requires BV32_SLT(group_id_y$2, num_groups_y);
+  requires BV32_SGE(local_id_y$1, 0bv32);
+  requires BV32_SGE(local_id_y$2, 0bv32);
+  requires BV32_SLT(local_id_y$1, group_size_y);
+  requires BV32_SLT(local_id_y$2, group_size_y);
+  requires BV32_SGT(group_size_z, 0bv32);
+  requires BV32_SGT(num_groups_z, 0bv32);
+  requires BV32_SGE(group_id_z$1, 0bv32);
+  requires BV32_SGE(group_id_z$2, 0bv32);
+  requires BV32_SLT(group_id_z$1, num_groups_z);
+  requires BV32_SLT(group_id_z$2, num_groups_z);
+  requires BV32_SGE(local_id_z$1, 0bv32);
+  requires BV32_SGE(local_id_z$2, 0bv32);
+  requires BV32_SLT(local_id_z$1, group_size_z);
+  requires BV32_SLT(local_id_z$2, group_size_z);
+  requires group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> local_id_x$1 != local_id_x$2
+       || local_id_y$1 != local_id_y$2
+       || local_id_z$1 != local_id_z$2;
+  modifies b6, b5, b4, b3, b2, b1, $$arg., _TRACKING, _READ_HAS_OCCURRED_$$arg., _WRITE_HAS_OCCURRED_$$arg., _WRITE_READ_BENIGN_FLAG_$$arg.;
+
+
+
+implementation {:source_name "test_Prog"} {:kernel} $_Z9test_ProgPii($N: bv32)
+{
+  var v0$1: bv32;
+  var v0$2: bv32;
+  var v1$1: bv32;
+  var v1$2: bv32;
+  var p0$1: bool;
+  var p0$2: bool;
+  var p1$1: bool;
+  var p1$2: bool;
+  var p2$1: bool;
+  var p2$2: bool;
+  var p3$1: bool;
+  var p3$2: bool;
+  var p4$1: bool;
+  var p4$2: bool;
+  var p5$1: bool;
+  var p5$2: bool;
+  var p6$1: bool;
+  var p6$2: bool;
+  var p7$1: bool;
+  var p7$2: bool;
+  var p8$1: bool;
+  var p8$2: bool;
+  var p9$1: bool;
+  var p9$2: bool;
+  var p10$1: bool;
+  var p10$2: bool;
+  var p11$1: bool;
+  var p11$2: bool;
+
+
+  __partitioned_block_$0_0:
+    b6 := false;
+    b5 := false;
+    b4 := false;
+    b3 := true;
+    b2 := false;
+    b1 := false;
+    p0$1 := false;
+    p0$2 := false;
+    p1$1 := false;
+    p1$2 := false;
+    p2$1 := false;
+    p2$2 := false;
+    p3$1 := false;
+    p3$2 := false;
+    p4$1 := false;
+    p4$2 := false;
+    p5$1 := false;
+    p5$2 := false;
+    p6$1 := false;
+    p6$2 := false;
+    p7$1 := false;
+    p7$2 := false;
+    p8$1 := false;
+    p8$2 := false;
+    p9$1 := false;
+    p9$2 := false;
+    p10$1 := false;
+    p10$2 := false;
+    p11$1 := false;
+    p11$2 := false;
+    p0$1 := (if b1 then b1 else p0$1);
+    p0$2 := (if b1 then b1 else p0$2);
+    call {:repair_barrier "b1"} {:repair_instrumented} {:sourceloc_num 1} $bugle_barrier_duplicated_5(1bv1, 1bv1, p0$1, p0$2);
+    p2$1 := (if b2 then b2 else p2$1);
+    p2$2 := (if b2 then b2 else p2$2);
+    call {:repair_barrier "b2"} {:repair_instrumented} {:sourceloc_num 1} $bugle_grid_barrier_duplicated_4(p2$1, p2$2);
+    call {:sourceloc} {:sourceloc_num 1} {:repair_instrumented} _LOG_READ_$$arg.(true, BV32_ADD(local_id_x$1, 1bv32), $$arg.[BV32_ADD(local_id_x$1, 1bv32)]);
+    assume {:do_not_predicate} {:check_id "check_state_0"} {:captureState "check_state_0"} {:sourceloc} {:sourceloc_num 1} {:repair_instrumented} true;
+    call {:check_id "check_state_0"} {:sourceloc} {:sourceloc_num 1} {:repair_instrumented} _CHECK_READ_$$arg.(true, BV32_ADD(local_id_x$2, 1bv32), $$arg.[BV32_ADD(local_id_x$2, 1bv32)]);
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_READ_$$arg."} true;
+    v0$1 := $$arg.[BV32_ADD(local_id_x$1, 1bv32)];
+    v0$2 := $$arg.[BV32_ADD(local_id_x$2, 1bv32)];
+    p4$1 := (if b3 then b3 else p4$1);
+    p4$2 := (if b3 then b3 else p4$2);
+    call {:repair_barrier "b3"} {:repair_instrumented} {:sourceloc_num 2} $bugle_barrier_duplicated_3(1bv1, 1bv1, p4$1, p4$2);
+    p6$1 := (if b4 then b4 else p6$1);
+    p6$2 := (if b4 then b4 else p6$2);
+    call {:repair_barrier "b4"} {:repair_instrumented} {:sourceloc_num 2} $bugle_grid_barrier_duplicated_2(p6$1, p6$2);
+    call {:sourceloc} {:sourceloc_num 2} {:repair_instrumented} _LOG_READ_$$arg.(true, local_id_x$1, $$arg.[local_id_x$1]);
+    assume {:do_not_predicate} {:check_id "check_state_1"} {:captureState "check_state_1"} {:sourceloc} {:sourceloc_num 2} {:repair_instrumented} true;
+    call {:check_id "check_state_1"} {:sourceloc} {:sourceloc_num 2} {:repair_instrumented} _CHECK_READ_$$arg.(true, local_id_x$2, $$arg.[local_id_x$2]);
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_READ_$$arg."} true;
+    v1$1 := $$arg.[local_id_x$1];
+    v1$2 := $$arg.[local_id_x$2];
+    p8$1 := (if b5 then b5 else p8$1);
+    p8$2 := (if b5 then b5 else p8$2);
+    call {:repair_barrier "b5"} {:repair_instrumented} {:sourceloc_num 3} $bugle_barrier_duplicated_1(1bv1, 1bv1, p8$1, p8$2);
+    p10$1 := (if b6 then b6 else p10$1);
+    p10$2 := (if b6 then b6 else p10$2);
+    call {:repair_barrier "b6"} {:repair_instrumented} {:sourceloc_num 3} $bugle_grid_barrier_duplicated_0(p10$1, p10$2);
+    call {:sourceloc} {:sourceloc_num 3} {:repair_instrumented} _LOG_WRITE_$$arg.(true, local_id_x$1, BV32_ADD(v1$1, BV32_ADD(v0$1, 11bv32)), $$arg.[local_id_x$1]);
+    call _UPDATE_WRITE_READ_BENIGN_FLAG_$$arg.(true, local_id_x$2);
+    assume {:do_not_predicate} {:check_id "check_state_2"} {:captureState "check_state_2"} {:sourceloc} {:sourceloc_num 3} {:repair_instrumented} true;
+    call {:check_id "check_state_2"} {:sourceloc} {:sourceloc_num 3} {:repair_instrumented} _CHECK_WRITE_$$arg.(true, local_id_x$2, BV32_ADD(v1$2, BV32_ADD(v0$2, 11bv32)));
+    assume {:captureState "call_return_state_0"} {:procedureName "_CHECK_WRITE_$$arg."} true;
+    $$arg.[local_id_x$1] := BV32_ADD(v1$1, BV32_ADD(v0$1, 11bv32));
+    $$arg.[local_id_x$2] := BV32_ADD(v1$2, BV32_ADD(v0$2, 11bv32));
+    return;
+}
+
+
+
+axiom (if group_size_y == 1bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if group_size_z == 1bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if num_groups_y == 1bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if num_groups_z == 1bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if group_size_x == 32bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if num_groups_x == 1bv32 then 1bv1 else 0bv1) != 0bv1;
+
+axiom (if sub_group_size == 32bv32 then 1bv1 else 0bv1) != 0bv1;
+
+procedure {:grid_barrier} $bugle_grid_barrier();
+
+
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b1: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b2: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b3: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b4: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b5: bool;
+
+var {:source_dimensions "*"} {:source_elem_width 32} {:elem_width 32} {:global} {:race_checking} {:repair} b6: bool;
+
+const {:local_id_y} local_id_y$1: bv32;
+
+const {:local_id_y} local_id_y$2: bv32;
+
+const {:local_id_z} local_id_z$1: bv32;
+
+const {:local_id_z} local_id_z$2: bv32;
+
+const {:group_id_x} group_id_x$1: bv32;
+
+const {:group_id_x} group_id_x$2: bv32;
+
+const {:group_id_y} group_id_y$1: bv32;
+
+const {:group_id_y} group_id_y$2: bv32;
+
+const {:group_id_z} group_id_z$1: bv32;
+
+const {:group_id_z} group_id_z$2: bv32;
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_0(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg.;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_1($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg.;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_2(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg.;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_3($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg.;
+
+
+
+procedure {:inline 1} {:grid_barrier} $bugle_grid_barrier_duplicated_4(_P$1: bool, _P$2: bool);
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg.;
+
+
+
+procedure {:inline 1} {:barrier} $bugle_barrier_duplicated_5($0: bv1, $1: bv1, _P$1: bool, _P$2: bool);
+  requires _P$1 ==> $0 == 1bv1;
+  requires _P$2 ==> $0 == 1bv1;
+  requires _P$1 ==> $1 == 1bv1;
+  requires _P$2 ==> $1 == 1bv1;
+  requires {:barrier_divergence} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+     ==> (_P$1 <==> _P$2);
+  modifies _TRACKING, $$arg.;
+
+
+
+const _WATCHED_VALUE_$$arg.: bv32;
+
+procedure {:inline 1} _LOG_READ_$$arg.(_P: bool, _offset: bv32, _value: bv32);
+  modifies _READ_HAS_OCCURRED_$$arg.;
+
+
+
+implementation {:inline 1} _LOG_READ_$$arg.(_P: bool, _offset: bv32, _value: bv32)
+{
+
+  log_access_entry:
+    _READ_HAS_OCCURRED_$$arg. := (if _P && _TRACKING && _WATCHED_OFFSET == _offset && _WATCHED_VALUE_$$arg. == _value
+       then true
+       else _READ_HAS_OCCURRED_$$arg.);
+    return;
+}
+
+
+
+procedure _CHECK_READ_$$arg.(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "A"} {:array "$$arg."} {:race} {:write_read} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$arg.
+     && _WATCHED_OFFSET == _offset
+     && _WRITE_READ_BENIGN_FLAG_$$arg.);
+  requires {:source_name "A"} {:array "$$arg."} {:race} {:atomic_read} !(_P && _ATOMIC_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset);
+
+
+
+var _WRITE_READ_BENIGN_FLAG_$$arg.: bool;
+
+procedure {:inline 1} _LOG_WRITE_$$arg.(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32);
+  modifies _WRITE_HAS_OCCURRED_$$arg., _WRITE_READ_BENIGN_FLAG_$$arg.;
+
+
+
+implementation {:inline 1} _LOG_WRITE_$$arg.(_P: bool, _offset: bv32, _value: bv32, _value_old: bv32)
+{
+
+  log_access_entry:
+    _WRITE_HAS_OCCURRED_$$arg. := (if _P && _TRACKING && _WATCHED_OFFSET == _offset && _WATCHED_VALUE_$$arg. == _value
+       then true
+       else _WRITE_HAS_OCCURRED_$$arg.);
+    _WRITE_READ_BENIGN_FLAG_$$arg. := (if _P && _TRACKING && _WATCHED_OFFSET == _offset && _WATCHED_VALUE_$$arg. == _value
+       then _value != _value_old
+       else _WRITE_READ_BENIGN_FLAG_$$arg.);
+    return;
+}
+
+
+
+procedure _CHECK_WRITE_$$arg.(_P: bool, _offset: bv32, _value: bv32);
+  requires {:source_name "A"} {:array "$$arg."} {:race} {:write_write} !(
+    _P
+     && _WRITE_HAS_OCCURRED_$$arg.
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$arg. != _value);
+  requires {:source_name "A"} {:array "$$arg."} {:race} {:read_write} !(
+    _P
+     && _READ_HAS_OCCURRED_$$arg.
+     && _WATCHED_OFFSET == _offset
+     && _WATCHED_VALUE_$$arg. != _value);
+  requires {:source_name "A"} {:array "$$arg."} {:race} {:atomic_write} !(_P && _ATOMIC_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset);
+
+
+
+procedure {:inline 1} _LOG_ATOMIC_$$arg.(_P: bool, _offset: bv32);
+  modifies _ATOMIC_HAS_OCCURRED_$$arg.;
+
+
+
+implementation {:inline 1} _LOG_ATOMIC_$$arg.(_P: bool, _offset: bv32)
+{
+
+  log_access_entry:
+    _ATOMIC_HAS_OCCURRED_$$arg. := (if _P && _TRACKING && _WATCHED_OFFSET == _offset
+       then true
+       else _ATOMIC_HAS_OCCURRED_$$arg.);
+    return;
+}
+
+
+
+procedure _CHECK_ATOMIC_$$arg.(_P: bool, _offset: bv32);
+  requires {:source_name "A"} {:array "$$arg."} {:race} {:write_atomic} !(_P && _WRITE_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset);
+  requires {:source_name "A"} {:array "$$arg."} {:race} {:read_atomic} !(_P && _READ_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset);
+
+
+
+procedure {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$arg.(_P: bool, _offset: bv32);
+  modifies _WRITE_READ_BENIGN_FLAG_$$arg.;
+
+
+
+implementation {:inline 1} _UPDATE_WRITE_READ_BENIGN_FLAG_$$arg.(_P: bool, _offset: bv32)
+{
+
+  _UPDATE_BENIGN_FLAG:
+    _WRITE_READ_BENIGN_FLAG_$$arg. := (if _P && _WRITE_HAS_OCCURRED_$$arg. && _WATCHED_OFFSET == _offset
+       then false
+       else _WRITE_READ_BENIGN_FLAG_$$arg.);
+    return;
+}
+
+
+
+var _TRACKING: bool;
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_0(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon4_Then, anon4_Else;
+
+  anon4_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon5_Then, anon5_Else;
+
+  anon5_Else:
+    assume {:partition} false;
+    goto anon3;
+
+  anon3:
+    havoc _TRACKING;
+    return;
+
+  anon5_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon3;
+
+  anon4_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_1($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon4_Then, anon4_Else;
+
+  anon4_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon5_Then, anon5_Else;
+
+  anon5_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon3;
+
+  anon3:
+    havoc _TRACKING;
+    return;
+
+  anon5_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon3;
+
+  anon4_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_2(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon4_Then, anon4_Else;
+
+  anon4_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon5_Then, anon5_Else;
+
+  anon5_Else:
+    assume {:partition} false;
+    goto anon3;
+
+  anon3:
+    havoc _TRACKING;
+    return;
+
+  anon5_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon3;
+
+  anon4_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_3($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon4_Then, anon4_Else;
+
+  anon4_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon5_Then, anon5_Else;
+
+  anon5_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon3;
+
+  anon3:
+    havoc _TRACKING;
+    return;
+
+  anon5_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon3;
+
+  anon4_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_grid_barrier_duplicated_4(_P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon4_Then, anon4_Else;
+
+  anon4_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume true ==> true ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume true ==> true ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon5_Then, anon5_Else;
+
+  anon5_Else:
+    assume {:partition} false;
+    goto anon3;
+
+  anon3:
+    havoc _TRACKING;
+    return;
+
+  anon5_Then:
+    assume {:partition} true;
+    havoc $$arg.;
+    goto anon3;
+
+  anon4_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+implementation {:inline 1} $bugle_barrier_duplicated_5($0: bv1, $1: bv1, _P$1: bool, _P$2: bool)
+{
+
+  __BarrierImpl:
+    goto anon4_Then, anon4_Else;
+
+  anon4_Else:
+    assume {:partition} !((!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2)));
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_READ_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_WRITE_HAS_OCCURRED_$$arg.;
+    assume group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+       ==> 
+      _P$1 && $1 != 0bv1
+       ==> !_ATOMIC_HAS_OCCURRED_$$arg.;
+    goto anon5_Then, anon5_Else;
+
+  anon5_Else:
+    assume {:partition} !(
+      group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1));
+    goto anon3;
+
+  anon3:
+    havoc _TRACKING;
+    return;
+
+  anon5_Then:
+    assume {:partition} group_id_x$1 == group_id_x$2
+       && group_id_y$1 == group_id_y$2
+       && group_id_z$1 == group_id_z$2
+       && _P$1
+       && _P$2
+       && ($1 != 0bv1 || $1 != 0bv1);
+    havoc $$arg.;
+    goto anon3;
+
+  anon4_Then:
+    assume {:partition} (!_P$1 && !_P$2)
+       || (
+        group_id_x$1 == group_id_x$2
+         && group_id_y$1 == group_id_y$2
+         && group_id_z$1 == group_id_z$2
+         && (!_P$1 || !_P$2));
+    return;
+}
+
+
+
+function {:bvbuiltin "bvsgt"} BV32_SGT(bv32, bv32) : bool;
+
+function {:bvbuiltin "bvsge"} BV32_SGE(bv32, bv32) : bool;
+
+function {:bvbuiltin "bvslt"} BV32_SLT(bv32, bv32) : bool;
