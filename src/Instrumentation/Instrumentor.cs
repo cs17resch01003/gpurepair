@@ -325,6 +325,8 @@
                                     int location = QKeyValue.FindIntAttribute(assert.Attributes, SourceLocationKey, -1);
                                     if (location != -1)
                                     {
+                                        assert = predecessor.Cmds[index] as AssertCmd;
+
                                         // becomes true when there is only one command in the block
                                         // in those cases, we don't need to need to add a new assert attribute
                                         if (!ContainsAttribute(assert, BlockSourceKey))
