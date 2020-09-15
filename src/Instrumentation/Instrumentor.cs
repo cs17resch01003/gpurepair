@@ -363,6 +363,9 @@
         {
             // an assert statement is needed to obtain the source location
             // skipping instrumentation if it doesn't exist
+            if (index - 1 < 0)
+                return;
+
             AssertCmd assert = block.Cmds[index - 1] as AssertCmd;
             if (assert == null)
                 return;
