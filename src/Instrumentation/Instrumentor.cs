@@ -197,12 +197,15 @@
                             // and we haven't instrumented it already
                             if (!ContainsAttribute(assert, InstrumentationKey))
                             {
-                                AddBarrier(implementation, block, i);
-                                if (command is CallCmd)
-                                    call_commands++;
+                                bool value = AddBarrier(implementation, block, i);
+                                if (value == true)
+                                {
+                                    if (command is CallCmd)
+                                        call_commands++;
 
-                                analyzer.LinkBarrier(implementation, block);
-                                return true;
+                                    analyzer.LinkBarrier(implementation, block);
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -279,8 +282,11 @@
                         node.Block.Cmds.RemoveAt(0);
 
                         // insert a barrier at the beginning of the merge block
-                        AddBarrier(node.Implementation, node.Block, i);
-                        analyzer.LinkBarrier(node.Implementation, node.Block);
+                        bool value = AddBarrier(node.Implementation, node.Block, i);
+                        if (value == true)
+                        {
+                            analyzer.LinkBarrier(node.Implementation, node.Block);
+                        }
 
                         if (nodes[node] == MergeNodeType.Loop)
                         {
@@ -302,8 +308,11 @@
                                 Implementation implementation = program.Implementations.First(x => x.Blocks.Contains(predecessor));
 
                                 // insert a barrier at the end of the header block
-                                AddBarrier(implementation, predecessor, predecessor.Cmds.Count - 1);
-                                analyzer.LinkBarrier(implementation, predecessor);
+                                value = AddBarrier(implementation, predecessor, predecessor.Cmds.Count - 1);
+                                if (value == true)
+                                {
+                                    analyzer.LinkBarrier(implementation, predecessor);
+                                }
                             }
                         }
                     }
@@ -359,16 +368,16 @@
         /// <param name="implementation">The procedure where the blocks are being added.</param>
         /// <param name="block">The block containing the shared read/write command.</param>
         /// <param name="index">The index of the assign command.</param>
-        private void AddBarrier(Implementation implementation, Block block, int index)
+        private bool AddBarrier(Implementation implementation, Block block, int index)
         {
             // an assert statement is needed to obtain the source location
             // skipping instrumentation if it doesn't exist
             if (index - 1 < 0)
-                return;
+                return false;
 
             AssertCmd assert = block.Cmds[index - 1] as AssertCmd;
             if (assert == null)
-                return;
+                return false;
 
             // add the instrumentation key to the assert command
             QKeyValue assertAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
@@ -400,6 +409,8 @@
                 Barrier barrier = CreateCallCommand(block, locationAttribute, index, "$bugle_barrier");
                 InsertBarrier(implementation, block, index, barrier);
             }
+
+            return true;
         }
 
         /// <summary>
