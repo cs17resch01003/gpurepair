@@ -192,15 +192,42 @@
                     // ignore the other end of the back-edge
                     if (predecessor == edge.Source)
                         continue;
-                    else if (predecessor.Block.Cmds.Count > 1)
+
+                    // identify the last thread-level and grid-level barrier in the predecessor
+                    int? thread = null, grid = null;
+
+                    int location = predecessor.Block.Cmds.Count - 1;
+                    while (location >= 0)
                     {
-                        Cmd command = predecessor.Block.Cmds.ElementAt(predecessor.Block.Cmds.Count() - 2);
-                        if (command is CallCmd)
+                        if (predecessor.Block.Cmds[location] is CallCmd)
                         {
-                            Barrier barrier = Barriers.Where(x => x.Value.Call == command).Select(x => x.Value).FirstOrDefault();
-                            if (barrier != null && !LoopBarriers[edge].Contains(barrier))
-                                LoopBarriers[edge].Add(barrier);
+                            CallCmd command = predecessor.Block.Cmds[location] as CallCmd;
+                            if (thread == null && command.callee.Contains("$bugle_barrier"))
+                                thread = location;
+
+                            if (grid == null && command.callee.Contains("bugle_grid_barrier"))
+                                grid = location;
                         }
+
+                        if (thread != null && grid != null)
+                            break;
+                        location = location - 1;
+                    }
+
+                    if (thread != null)
+                    {
+                        CallCmd command = predecessor.Block.Cmds[thread.Value] as CallCmd;
+                        Barrier barrier = Barriers.Where(x => x.Value.Call == command).Select(x => x.Value).FirstOrDefault();
+                        if (barrier != null && !LoopBarriers[edge].Contains(barrier))
+                            LoopBarriers[edge].Add(barrier);
+                    }
+
+                    if (grid != null)
+                    {
+                        CallCmd command = predecessor.Block.Cmds[grid.Value] as CallCmd;
+                        Barrier barrier = Barriers.Where(x => x.Value.Call == command).Select(x => x.Value).FirstOrDefault();
+                        if (barrier != null && !LoopBarriers[edge].Contains(barrier))
+                            LoopBarriers[edge].Add(barrier);
                     }
                 }
             }

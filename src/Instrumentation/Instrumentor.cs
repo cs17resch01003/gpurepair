@@ -305,13 +305,40 @@
                                 if (analyzer.Graph.BackEdges.Any(x => x.Destination == node && x.Source.Block == predecessor))
                                     continue;
 
-                                Implementation implementation = program.Implementations.First(x => x.Blocks.Contains(predecessor));
-
-                                // insert a barrier at the end of the header block
-                                value = AddBarrier(implementation, predecessor, predecessor.Cmds.Count - 1);
-                                if (value == true)
+                                // identify the location of the initialize statement of the loop
+                                int index = predecessor.Cmds.Count - 1;
+                                while (index >= 0)
                                 {
-                                    analyzer.LinkBarrier(implementation, predecessor);
+                                    if (predecessor.Cmds[index] is AssertCmd)
+                                        break;
+                                    index = index - 1;
+                                }
+
+                                if (index != -1)
+                                {
+                                    // create an assert from the block source location since initializers don't have source locations
+                                    int location = QKeyValue.FindIntAttribute(assert.Attributes, SourceLocationKey, -1);
+
+                                    LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
+                                    assert = new AssertCmd(Token.NoToken, literal);
+
+                                    if (location != -1)
+                                    {
+                                        LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
+                                        QKeyValue sourceLocationKey = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object>() { locationValue }, null);
+
+                                        assert.Attributes = sourceLocationKey;
+                                        predecessor.Cmds.Insert(index + 2, assert);
+
+                                        Implementation implementation = program.Implementations.First(x => x.Blocks.Contains(predecessor));
+
+                                        // insert a barrier at the end of the header block
+                                        value = AddBarrier(implementation, predecessor, index + 3);
+                                        if (value == true)
+                                        {
+                                            analyzer.LinkBarrier(implementation, predecessor);
+                                        }
+                                    }
                                 }
                             }
                         }

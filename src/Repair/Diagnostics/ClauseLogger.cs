@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using GPURepair.Solvers;
     using static GPURepair.Repair.Solver;
@@ -37,10 +38,12 @@
                         builder.AppendFormat("{0}{1} ", pair.Value ? string.Empty : "-", pair.Key);
 
                 lines.Add("Solution: " + builder.ToString());
-
                 lines.Add("Clauses:");
+
+                List<string> clause_strings = new List<string>();
                 foreach (Clause clause in clauses)
-                    lines.Add(clause.ToString());
+                    clause_strings.Add(clause.ToString());
+                lines.AddRange(clause_strings.Distinct());
 
                 string clauseLog = string.Format("{0}.satlog", FileName);
                 File.AppendAllLines(clauseLog, lines);
