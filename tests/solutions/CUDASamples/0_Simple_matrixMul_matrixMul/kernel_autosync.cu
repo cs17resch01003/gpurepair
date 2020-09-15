@@ -46,6 +46,7 @@ matrixMulCUDA(float *C, float *A, float *B, int wA, int wB)
         // store the sub-matrix of A
         __shared__ float As[BLOCK_SIZE][BLOCK_SIZE];
 
+__syncthreads();
         // Declaration of the shared memory array Bs used to
         // store the sub-matrix of B
         __shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
@@ -56,6 +57,7 @@ matrixMulCUDA(float *C, float *A, float *B, int wA, int wB)
         As[ty][tx] = A[a + wA * ty + tx];
         Bs[ty][tx] = B[b + wB * ty + tx];
 
+__syncthreads();
         // Synchronize to make sure the matrices are loaded
         // __syncthreads();
 
@@ -63,7 +65,6 @@ matrixMulCUDA(float *C, float *A, float *B, int wA, int wB)
         // each thread computes one element
         // of the block sub-matrix
 #pragma unroll
-__syncthreads();
 
         for (int k = 0; k < BLOCK_SIZE; ++k)
         {
