@@ -1,0 +1,6 @@
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 20 outside the loop.
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 18.
+Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 7 => /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 21.
+Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 7 => /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 23.
+Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 7 => /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 15.
+Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 7 => /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test3/kernel.cl 13.

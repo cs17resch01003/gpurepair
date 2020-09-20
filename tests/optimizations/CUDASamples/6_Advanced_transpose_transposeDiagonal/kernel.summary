@@ -1,0 +1,3 @@
+Remove the barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/6_Advanced_transpose_transposeDiagonal/kernel.cu 53.
+Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/6_Advanced_transpose_transposeDiagonal/kernel.cu 48 inside the loop.
+Remove the barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/6_Advanced_transpose_transposeDiagonal/kernel.cu 66.
