@@ -6,9 +6,9 @@
     public class GRCommandLineOptions : GVCommandLineOptions
     {
         /// <summary>
-        /// Enables additional logging.
+        /// Enables detailed logging.
         /// </summary>
-        public bool AdditionalLogging { get; set; } = false;
+        public bool DetailedLogging { get; set; } = false;
 
         /// <summary>
         /// Enables logging of clauses.
@@ -18,7 +18,7 @@
         /// <summary>
         /// The solver type.
         /// </summary>
-        public Solver.SolverType SolverType = Solver.SolverType.MHS;
+        public Solver.SolverType SolverType = Solver.SolverType.mhs;
 
         /// <summary>
         /// Initializes an instance of <see cref="GRCommandLineOptions"/>.
@@ -36,10 +36,10 @@
         /// <returns>True if the parsing was successful.</returns>
         protected override bool ParseOption(string name, CommandLineParseState ps)
         {
-            if (name == "additionalLogging")
+            if (name == "detailedLogging")
             {
                 if (ps.ConfirmArgumentCount(1))
-                    AdditionalLogging = bool.Parse(ps.args[ps.i]);
+                    DetailedLogging = bool.Parse(ps.args[ps.i]);
                 return true;
             }
             else if (name == "logClauses")

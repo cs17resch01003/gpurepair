@@ -29,9 +29,9 @@
         }
 
         /// <summary>
-        /// Enables additional logging.
+        /// Enables detailed logging.
         /// </summary>
-        public static bool AdditionalLogging;
+        public static bool DetailedLogging;
 
         /// <summary>
         /// Logs the message in the log file.
@@ -39,7 +39,7 @@
         /// <param name="message">The message.</param>
         public static void Log(string message)
         {
-            if (AdditionalLogging)
+            if (DetailedLogging)
                 File.AppendAllLines(logFile, new List<string> { message });
         }
     }

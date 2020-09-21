@@ -117,7 +117,7 @@
         /// Populates the barriers.
         /// </summary>
         /// <param name="program">The given program.</param>
-        private static void PopulateBarriers(Microsoft.Boogie.Program program)
+        private static void PopulateBarriers(Program program)
         {
             Barriers = new Dictionary<string, Barrier>();
             Regex regex = new Regex(@"^b\d+$");
@@ -137,8 +137,11 @@
                 }
 
             foreach (Implementation implementation in program.Implementations)
+            {
                 foreach (Block block in implementation.Blocks)
+                {
                     foreach (Cmd command in block.Cmds)
+                    {
                         if (command is CallCmd)
                         {
                             CallCmd call = command as CallCmd;
@@ -148,23 +151,29 @@
                                 string barrierName = QKeyValue.FindStringAttribute(call.Attributes, "repair_barrier");
                                 bool generated = ContainsAttribute(call, "repair_instrumented");
 
-                                Barrier barrier = Barriers[barrierName];
+                                if (barrierName != null)
+                                {
+                                    Barrier barrier = Barriers[barrierName];
 
-                                barrier.Implementation = implementation;
-                                barrier.Block = block;
-                                barrier.Call = call;
-                                barrier.SourceLocation = location;
-                                barrier.Generated = generated;
-                                barrier.GridLevel = call.callee.Contains("$bugle_grid_barrier");
+                                    barrier.Implementation = implementation;
+                                    barrier.Block = block;
+                                    barrier.Call = call;
+                                    barrier.SourceLocation = location;
+                                    barrier.Generated = generated;
+                                    barrier.GridLevel = call.callee.Contains("$bugle_grid_barrier");
+                                }
                             }
                         }
+                    }
+                }
+            }
         }
 
         /// <summary>
         /// Populates the loop information.
         /// </summary>
         /// <param name="program">The given program.</param>
-        private static void PopulateLoopInformation(Microsoft.Boogie.Program program)
+        private static void PopulateLoopInformation(Program program)
         {
             ProgramGraph graph = new ProgramGraph(program);
 

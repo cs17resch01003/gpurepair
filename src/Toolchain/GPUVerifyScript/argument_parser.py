@@ -4,7 +4,7 @@ import argparse
 import os
 import subprocess
 
-from .constants import AnalysisMode, SourceLanguage
+from .constants import AnalysisMode, SourceLanguage, SolverType
 from .error_codes import ErrorCodes
 from .util import is_hex_string, is_positive_string, GlobalSizeError, \
   get_num_groups
@@ -304,6 +304,27 @@ def __build_parser(default_solver, version):
   inference.add_argument("--k-induction-depth=", type = __positive, default = 0,
     metavar = "X", help = "Applies k-induction with k=X to all loops")
 
+  repair = parser.add_argument_group("REPAIR OPTIONS")
+  repair.add_argument("--detailed-logging", action = 'store_true',
+    help = "Enables detailed logging for instrumentation and repair")
+  repair.add_argument("--log-clauses", action = 'store_true',
+    help = "Enables logging of clauses during the repair process")
+  repair.add_argument("--disable-inspection", action = 'store_true',
+    help = "Disables inspection of programmer inserted barriers")
+  repair.add_argument("--disable-grid-barriers", action = 'store_true',
+    help = "Disables grid-level barriers during instrumentation")
+
+  solverType = repair.add_mutually_exclusive_group()
+  solverType.add_argument("--mhs", dest = 'solver_type',
+    action = 'store_const', const = SolverType.mhs,
+    help = "Use the mhs solver in the repair process")
+  solverType.add_argument("--maxsat", dest = 'solver_type',
+    action = 'store_const', const = SolverType.MaxSAT,
+    help = "Use the MaxSAT solver in the repair process")
+  solverType.add_argument("--sat", dest = 'solver_type',
+    action = 'store_const', const = SolverType.SAT,
+    help = "Use the SAT solver in the repair process")
+
   return parser
 
 class __ldict(dict):
@@ -406,6 +427,9 @@ def parse_arguments(argv, default_solver, llvm_bin_dir, version):
 
   if not args.source_language and __need_source_language(args.kernel_ext):
     args.source_language = __get_source_language(args, parser, llvm_bin_dir)
+
+  if not args.solver_type:
+    args.solver_type = SolverType.mhs
 
   args.num_groups = __get_num_groups(args, parser)
   __check_global_offset(args, parser)

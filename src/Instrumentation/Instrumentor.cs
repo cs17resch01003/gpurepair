@@ -40,14 +40,14 @@
         private SourceLanguage sourceLanguage;
 
         /// <summary>
-        /// Enables instrumentation of programmer inserted barriers.
+        /// Disables inspection of programmer inserted barriers.
         /// </summary>
-        private bool instrumentExistingBarriers;
+        private bool disableInspection;
 
         /// <summary>
-        /// Enables the grid-level barriers.
+        /// Disables grid-level barriers during instrumentation.
         /// </summary>
-        private bool enableGridBarriers;
+        private bool disableGridBarriers;
 
         /// <summary>
         /// The definition of the barrier.
@@ -86,12 +86,12 @@
         /// <param name="sourceLanguage">The source language of the input program.</param>
         /// <param name="enableGridBarriers">Enables the grid-level barriers.</param>
         public Instrumentor(Microsoft.Boogie.Program program, SourceLanguage sourceLanguage,
-            bool instrumentExistingBarriers, bool enableGridBarriers)
+            bool disableInspection, bool disableGridBarriers)
         {
             this.program = program;
             this.sourceLanguage = sourceLanguage;
-            this.instrumentExistingBarriers = instrumentExistingBarriers;
-            this.enableGridBarriers = enableGridBarriers;
+            this.disableInspection = disableInspection;
+            this.disableGridBarriers = disableGridBarriers;
 
             analyzer = new GraphAnalyzer(program);
             foreach (Declaration declaration in program.TopLevelDeclarations)
@@ -120,7 +120,7 @@
             do program_modified = InstrumentCommand();
             while (program_modified);
 
-            if (instrumentExistingBarriers)
+            if (!disableInspection)
             {
                 do program_modified = InstrumentBarrier();
                 while (program_modified);
@@ -446,7 +446,7 @@
             }
 
             // create a conditional barrier
-            if (sourceLanguage == SourceLanguage.CUDA && enableGridBarriers)
+            if (sourceLanguage == SourceLanguage.CUDA && !disableGridBarriers)
             {
                 Barrier barrier = CreateCallCommand(block, locationAttribute, index, "$bugle_barrier");
                 Barrier grid_barrier = CreateCallCommand(block, locationAttribute, index, "$bugle_grid_barrier");
@@ -483,7 +483,8 @@
 
             // create the call barrier command if it doesn't exist
             Barrier barrier = new Barrier(barrierName);
-            if (index - 2 >= 0 && block.Cmds[index - 2] is CallCmd && (block.Cmds[index - 2] as CallCmd).callee == procedureName)
+            if (!disableInspection && index - 2 >= 0 && block.Cmds[index - 2] is CallCmd &&
+                (block.Cmds[index - 2] as CallCmd).callee == procedureName)
             {
                 barrier.Call = block.Cmds[index - 2] as CallCmd;
                 barrier.Call.Attributes.AddLast(barrierAttribute);

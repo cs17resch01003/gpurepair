@@ -12,3 +12,8 @@ class SourceLanguage(object):
   Unknown = 0
   OpenCL = 1
   CUDA = 2
+
+class SolverType(object):
+  mhs = 0
+  MaxSAT = 1
+  SAT = 2

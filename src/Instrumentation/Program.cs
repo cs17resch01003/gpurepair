@@ -29,7 +29,7 @@
                     throw new Exception("GPURepair can work on only one file at a time!");
 
                 Logger.FileName = CommandLineOptions.Clo.Files.First();
-                Logger.AdditionalLogging = ((GRCommandLineOptions)CommandLineOptions.Clo).AdditionalLogging;
+                Logger.DetailedLogging = ((GRCommandLineOptions)CommandLineOptions.Clo).DetailedLogging;
 
                 Microsoft.Boogie.Program program;
                 Parser.Parse(Logger.FileName, new List<string>() { "FILE_0" }, out program);
@@ -45,11 +45,11 @@
 
                 // start instrumenting the program
                 SourceLanguage sourceLanguage = ((GRCommandLineOptions)CommandLineOptions.Clo).SourceLanguage;
-                bool instrumentExistingBarriers = ((GRCommandLineOptions)CommandLineOptions.Clo).InstrumentExistingBarriers;
-                bool enableGridBarriers = ((GRCommandLineOptions)CommandLineOptions.Clo).EnableGridBarriers;
+                bool disableInspection = ((GRCommandLineOptions)CommandLineOptions.Clo).DisableInspection;
+                bool disableGridBarriers = ((GRCommandLineOptions)CommandLineOptions.Clo).DisableGridBarriers;
 
                 Instrumentor instrumentor = new Instrumentor(program, sourceLanguage,
-                    instrumentExistingBarriers, enableGridBarriers);
+                    disableInspection, disableGridBarriers);
                 instrumentor.Instrument();
 
                 // create the instrumented Boogie IR for the next steps

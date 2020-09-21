@@ -28,7 +28,7 @@
 
             if (type == SolverType.SAT)
                 solution = SolveSAT(clauses, out status);
-            else if (type == SolverType.MHS)
+            else if (type == SolverType.mhs)
             {
                 solution = SolveMHS(clauses, out status);
                 if (status != SolverStatus.Satisfiable)
@@ -189,7 +189,7 @@
         public enum SolverType
         {
             SAT,
-            MHS,
+            mhs,
             MaxSAT,
             Optimizer
         }

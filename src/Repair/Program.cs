@@ -35,7 +35,7 @@
                     throw new Exception("GPURepair can work on only one file at a time!");
 
                 Logger.FileName = CommandLineOptions.Clo.Files.First();
-                Logger.AdditionalLogging = ((GRCommandLineOptions)CommandLineOptions.Clo).AdditionalLogging;
+                Logger.DetailedLogging = ((GRCommandLineOptions)CommandLineOptions.Clo).DetailedLogging;
 
                 ClauseLogger.FileName = CommandLineOptions.Clo.Files.First();
                 ClauseLogger.LogCLauses = ((GRCommandLineOptions)CommandLineOptions.Clo).LogClauses;

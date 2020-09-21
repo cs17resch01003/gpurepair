@@ -22,7 +22,7 @@ else:
   import StringIO as io
 
 from GPUVerifyScript.argument_parser import ArgumentParserError, parse_arguments
-from GPUVerifyScript.constants import AnalysisMode, SourceLanguage
+from GPUVerifyScript.constants import AnalysisMode, SourceLanguage, SolverType
 from GPUVerifyScript.error_codes import ErrorCodes
 
 import getversion
@@ -316,6 +316,14 @@ class GPURepairInstance(object):
     elif args.source_language == SourceLanguage.OpenCL:
       return "cl"
 
+  def getSolverTypeString(self, args):
+    if args.solver_type == SolverType.mhs:
+      return "mhs"
+    elif args.solver_type == SolverType.MaxSAT:
+      return "MaxSAT"
+    elif args.solver_type == SolverType.SAT:
+      return "SAT"
+
   def getOptOptions(self, args):
     options = ["-mem2reg", "-globaldce"]
     options += sum([a.split() for a in args.opt_options], [])
@@ -352,8 +360,14 @@ class GPURepairInstance(object):
   def getInstrumentationOptions(self, args):
     options = []
 
-    if args.time_as_csv is not None:
-      options.append("/additionalLogging:true")
+    if args.detailed_logging:
+      options.append("/detailedLogging:true")
+
+    if args.disable_inspection:
+      options.append("/disableInspection:true")
+
+    if args.disable_grid_barriers:
+      options.append("/disableGridBarriers:true")
       
     if args.source_language:
       options.append("/sourceLanguage:" + self.getSourceLanguageString(args))
@@ -472,8 +486,14 @@ class GPURepairInstance(object):
   def getRepairOptions(self, args):
     options = self.getSharedCruncherAndBoogieOptions(args)
 
-    if args.time_as_csv is not None:
-      options.append("/additionalLogging:true")
+    if args.detailed_logging:
+      options.append("/detailedLogging:true")
+
+    if args.log_clauses:
+      options.append("/logClauses:true")
+
+    if args.solver_type:
+      options.append("/solverType:" + self.getSolverTypeString(args))
 
     if args.mode == AnalysisMode.FINDBUGS:
       options.append("/loopUnroll:" + str(args.loop_unwind))

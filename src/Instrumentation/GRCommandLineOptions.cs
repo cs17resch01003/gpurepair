@@ -6,19 +6,19 @@
     public class GRCommandLineOptions : CommandLineOptions
     {
         /// <summary>
-        /// Enables additional logging.
+        /// Enables detailed logging.
         /// </summary>
-        public bool AdditionalLogging { get; set; } = false;
+        public bool DetailedLogging { get; set; } = false;
 
         /// <summary>
-        /// Enables instrumentation of programmer inserted barriers.
+        /// Disables inspection of programmer inserted barriers.
         /// </summary>
-        public bool InstrumentExistingBarriers { get; set; } = true;
+        public bool DisableInspection { get; set; } = false;
 
         /// <summary>
-        /// Enables grid-level barriers during instrumentation.
+        /// Disables grid-level barriers during instrumentation.
         /// </summary>
-        public bool EnableGridBarriers { get; set; } = true;
+        public bool DisableGridBarriers { get; set; } = false;
 
         /// <summary>
         /// Sets the language of the input program.
@@ -41,24 +41,24 @@
         /// <returns>True if the parsing was successful.</returns>
         protected override bool ParseOption(string name, CommandLineParseState ps)
         {
-            if (name == "additionalLogging")
+            if (name == "detailedLogging")
             {
                 if (ps.ConfirmArgumentCount(1))
-                    AdditionalLogging = bool.Parse(ps.args[ps.i]);
+                    DetailedLogging = bool.Parse(ps.args[ps.i]);
                 return true;
             }
 
-            if (name == "instrumentExistingBarriers")
+            if (name == "disableInspection")
             {
                 if (ps.ConfirmArgumentCount(1))
-                    InstrumentExistingBarriers = bool.Parse(ps.args[ps.i]);
+                    DisableInspection = bool.Parse(ps.args[ps.i]);
                 return true;
             }
 
-            if (name == "enableGridBarriers")
+            if (name == "disableGridBarriers")
             {
                 if (ps.ConfirmArgumentCount(1))
-                    EnableGridBarriers = bool.Parse(ps.args[ps.i]);
+                    DisableGridBarriers = bool.Parse(ps.args[ps.i]);
                 return true;
             }
 
