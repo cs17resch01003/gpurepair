@@ -40,42 +40,45 @@
             int gridLevelBarriers = 0;
             int barriersInsideLoops = 0;
 
-            foreach (string barrierName in assignments.Keys)
+            if (source_weight != repaired_weight)
             {
-                Barrier barrier = ProgramMetadata.Barriers[barrierName];
-                List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
-
-                string location = ToString(locations);
-                if (!barrier.Generated && !assignments[barrierName])
+                foreach (string barrierName in assignments.Keys)
                 {
-                    string message = string.Format(
-                        "Remove the {0}barrier at location {1}.",
-                        barrier.GridLevel ? "grid-level " : string.Empty,
-                        location);
+                    Barrier barrier = ProgramMetadata.Barriers[barrierName];
+                    List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
 
-                    lines.Add(message);
-                    changes.Add(location);
+                    string location = ToString(locations);
+                    if (!barrier.Generated && !assignments[barrierName])
+                    {
+                        string message = string.Format(
+                            "Remove the {0}barrier at location {1}.",
+                            barrier.GridLevel ? "grid-level " : string.Empty,
+                            location);
 
-                    if (locations.Count > 1)
-                        barriersBetweenCalls++;
-                }
-                else if (barrier.Generated && assignments[barrierName])
-                {
-                    string loopMessage =
-                        ProgramMetadata.LoopBarriers.SelectMany(x => x.Value).Any(x => x.Name == barrierName) ?
-                        barrier.LoopDepth == 0 ? " outside the loop" : " inside the loop" : string.Empty;
+                        lines.Add(message);
+                        changes.Add(location);
 
-                    string message = string.Format(
-                        "Add a {0}barrier at location {1}{2}.",
-                        barrier.GridLevel ? "grid-level " : string.Empty,
-                        location, loopMessage);
+                        if (locations.Count > 1)
+                            barriersBetweenCalls++;
+                    }
+                    else if (barrier.Generated && assignments[barrierName])
+                    {
+                        string loopMessage =
+                            ProgramMetadata.LoopBarriers.SelectMany(x => x.Value).Any(x => x.Name == barrierName) ?
+                            barrier.LoopDepth == 0 ? " outside the loop" : " inside the loop" : string.Empty;
 
-                    lines.Add(message);
-                    changes.Add(location);
+                        string message = string.Format(
+                            "Add a {0}barrier at location {1}{2}.",
+                            barrier.GridLevel ? "grid-level " : string.Empty,
+                            location, loopMessage);
 
-                    barriersBetweenCalls += locations.Count > 1 ? 1 : 0;
-                    gridLevelBarriers += barrier.GridLevel ? 1 : 0;
-                    barriersInsideLoops += barrier.LoopDepth > 0 ? 1 : 0;
+                        lines.Add(message);
+                        changes.Add(location);
+
+                        barriersBetweenCalls += locations.Count > 1 ? 1 : 0;
+                        gridLevelBarriers += barrier.GridLevel ? 1 : 0;
+                        barriersInsideLoops += barrier.LoopDepth > 0 ? 1 : 0;
+                    }
                 }
             }
 

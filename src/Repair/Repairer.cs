@@ -41,13 +41,41 @@
                 try
                 {
                     Solver.SolverType type = defaultType;
-
                     Solver solver = new Solver();
-                    assignments = solution == null ? solver.Solve(errors, ref type) : solver.Optimize(errors, solution, out type);
+
+                    if (solution == null)
+                    {
+                        if (!errors.Any())
+                        {
+                            // for the first run, disable all the barriers
+                            assignments = new Dictionary<string, bool>();
+                            foreach (string barrierName in ProgramMetadata.Barriers.Keys)
+                                assignments.Add(barrierName, false);
+                        }
+                        else
+                        {
+                            // try finding a solution for the errors encountered so far
+                            assignments = solver.Solve(errors, ref type);
+                        }
+                    }
+                    else if (solution.Any(x => x.Value == true))
+                    {
+                        // if the tentative solution has any barriers enabled, optimize it
+                        assignments = solver.Optimize(errors, solution, out type);
+                    }
+                    else
+                    {
+                        // if the tentative solution has no barriers enabled, it is the optimum solution
+                        type = Solver.SolverType.Optimizer;
+                        assignments = solution;
+                    }
 
                     // skip the verification if the solution wasn't optimized
-                    if (type == Solver.SolverType.Optimizer && assignments.Count(x => x.Value == true) == solution.Count(x => x.Value == true))
+                    if (type == Solver.SolverType.Optimizer &&
+                        assignments.Count(x => x.Value == true) == solution.Count(x => x.Value == true))
+                    {
                         return constraintGenerator.ConstraintProgram(assignments, errors);
+                    }
 
                     IEnumerable<RepairableError> current_errors = VerifyProgram(assignments, errors);
                     if (type == Solver.SolverType.Optimizer)
