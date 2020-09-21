@@ -40,6 +40,11 @@
         private SourceLanguage sourceLanguage;
 
         /// <summary>
+        /// Enables instrumentation of programmer inserted barriers.
+        /// </summary>
+        private bool instrumentExistingBarriers;
+
+        /// <summary>
         /// Enables the grid-level barriers.
         /// </summary>
         private bool enableGridBarriers;
@@ -80,11 +85,12 @@
         /// <param name="program">The source Boogie program.</param>
         /// <param name="sourceLanguage">The source language of the input program.</param>
         /// <param name="enableGridBarriers">Enables the grid-level barriers.</param>
-        public Instrumentor(Microsoft.Boogie.Program program,
-            SourceLanguage sourceLanguage, bool enableGridBarriers)
+        public Instrumentor(Microsoft.Boogie.Program program, SourceLanguage sourceLanguage,
+            bool instrumentExistingBarriers, bool enableGridBarriers)
         {
             this.program = program;
             this.sourceLanguage = sourceLanguage;
+            this.instrumentExistingBarriers = instrumentExistingBarriers;
             this.enableGridBarriers = enableGridBarriers;
 
             analyzer = new GraphAnalyzer(program);
@@ -114,8 +120,11 @@
             do program_modified = InstrumentCommand();
             while (program_modified);
 
-            do program_modified = InstrumentBarrier();
-            while (program_modified);
+            if (instrumentExistingBarriers)
+            {
+                do program_modified = InstrumentBarrier();
+                while (program_modified);
+            }
 
             InstrumentMergeNodes();
 

@@ -11,6 +11,11 @@
         public bool AdditionalLogging { get; set; } = false;
 
         /// <summary>
+        /// Enables instrumentation of programmer inserted barriers.
+        /// </summary>
+        public bool InstrumentExistingBarriers { get; set; } = true;
+
+        /// <summary>
         /// Enables grid-level barriers during instrumentation.
         /// </summary>
         public bool EnableGridBarriers { get; set; } = true;
@@ -40,6 +45,13 @@
             {
                 if (ps.ConfirmArgumentCount(1))
                     AdditionalLogging = bool.Parse(ps.args[ps.i]);
+                return true;
+            }
+
+            if (name == "instrumentExistingBarriers")
+            {
+                if (ps.ConfirmArgumentCount(1))
+                    InstrumentExistingBarriers = bool.Parse(ps.args[ps.i]);
                 return true;
             }
 

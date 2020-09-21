@@ -83,10 +83,10 @@
             Logger.Log($"Solution_GridLevelBarriers;{gridLevelBarriers}");
             Logger.Log($"Solution_BarriersInsideLoop;{barriersInsideLoops}");
 
-            if (lines.Count != 0)
-                File.AppendAllLines(filename, lines);
+            if (lines.Any())
+                File.AppendAllLines(filename, lines.Distinct());
 
-            return changes;
+            return changes.Distinct();
         }
 
         /// <summary>

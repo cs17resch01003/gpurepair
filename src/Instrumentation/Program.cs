@@ -45,9 +45,11 @@
 
                 // start instrumenting the program
                 SourceLanguage sourceLanguage = ((GRCommandLineOptions)CommandLineOptions.Clo).SourceLanguage;
+                bool instrumentExistingBarriers = ((GRCommandLineOptions)CommandLineOptions.Clo).InstrumentExistingBarriers;
                 bool enableGridBarriers = ((GRCommandLineOptions)CommandLineOptions.Clo).EnableGridBarriers;
 
-                Instrumentor instrumentor = new Instrumentor(program, sourceLanguage, enableGridBarriers);
+                Instrumentor instrumentor = new Instrumentor(program, sourceLanguage,
+                    instrumentExistingBarriers, enableGridBarriers);
                 instrumentor.Instrument();
 
                 // create the instrumented Boogie IR for the next steps
