@@ -131,7 +131,6 @@ class GPUVerifyTestKernel(object):
             }
 
             for index in range(0,len(self.gpuverifyCmdArgs)):
-
                 if self.gpuverifyCmdArgs[index].find('$') != -1:
                     #We're probably going to do a substitution
                     template=string.Template(self.gpuverifyCmdArgs[index])
@@ -743,8 +742,8 @@ def main(arg):
   parser.add_argument("-p","--canonical-path-prefix", type=str, default="testsuite", help="When trying to generate canonical path names for tests, look for this prefix. (default: \"%(default)s\")")
   parser.add_argument("-r,","--compare-run", type=str, default="", help="After performing test runs compare the result of that run with the runs recorded in a pickle file.")
   parser.add_argument("-j","--threads", type=int, default=multiprocessing.cpu_count(), help="Number of tests to run in parallel (default: %(default)s)")
-  parser.add_argument("--gvopt=", type=str, default=None, action='append',
-                      help="Pass a command line options to GPUVerify for all tests. This option can be specified multiple times.  E.g. --gvopt=--keep-temps --gvopt=--no-benign",
+  parser.add_argument("--gropt=", type=str, default=None, action='append',
+                      help="Pass a command line options to GPURepair for all tests. This option can be specified multiple times.  E.g. --gropt=--keep-temps --gropt=--no-benign",
                       metavar='GPUVerifyCmdLineOption')
   parser.add_argument("--time-as-csv", action="store_true", default=False, help="Print timing of each test as CSV")
   parser.add_argument("--csv-file", type=str, default=None, help="Write timing data to a file (Note: requires --time-as-csv to be enabled)")
@@ -823,7 +822,7 @@ def main(arg):
   csvFile = open(args.csv_file,"w") if args.csv_file else sys.stdout
   for kernelPath in kernelFiles:
     try:
-      tests.append(GPUVerifyTestKernel(kernelPath, args.time_as_csv, csvFile, getattr(args,'gvopt=') ))
+      tests.append(GPUVerifyTestKernel(kernelPath, args.time_as_csv, csvFile, getattr(args,'gropt=') ))
     except KernelParseError as e:
       logging.error(e)
       if args.stop_on_fail:
