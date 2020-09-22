@@ -15,6 +15,7 @@ import subprocess
 import pickle
 import time
 import string
+import distutils.spawn
 
 try:
     # Python 2.x
