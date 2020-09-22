@@ -61,8 +61,8 @@ Global
 		{CD5213A3-1658-4638-A5E1-4C7EDD8B247A}.Debug|x86.Build.0 = Debug|x86
 		{CD5213A3-1658-4638-A5E1-4C7EDD8B247A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD5213A3-1658-4638-A5E1-4C7EDD8B247A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CD5213A3-1658-4638-A5E1-4C7EDD8B247A}.Release|x86.ActiveCfg = Release|Any CPU
-		{CD5213A3-1658-4638-A5E1-4C7EDD8B247A}.Release|x86.Build.0 = Release|Any CPU
+		{CD5213A3-1658-4638-A5E1-4C7EDD8B247A}.Release|x86.ActiveCfg = Release|x86
+		{CD5213A3-1658-4638-A5E1-4C7EDD8B247A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
