@@ -15,6 +15,7 @@ import subprocess
 import pickle
 import time
 import string
+
 try:
     # Python 2.x
     from Queue import Queue
@@ -22,8 +23,31 @@ except ImportError:
     # Python 3.x
     from queue import Queue
 
+# To properly kill child processes cross platform
+try:
+  import psutil
+except ImportError:
+  sys.stderr.write("GPUVerify requires Python to be equipped with the psutil module.\n")
+  sys.stderr.write("We recommend installing psutil with pip:\n")
+  sys.stderr.write("  pip install psutil\n")
+  raise ConfigurationError("Module psutil not found")
+
 import threading
 import multiprocessing # Only for determining number of CPU cores available
+
+# Try to import the paths need for GPUVerify's tools
+try:
+  import gvfindtools
+  # Initialise the paths (only needed for deployment version of gvfindtools.py)
+  gvfindtools.init(sys.path[0])
+except ImportError:
+  raise ConfigurationError("Cannot find 'gvfindtools.py' "
+                           "Did you forget to create it from a template?")
+
+if gvfindtools.useMono:
+  # Check mono in path
+  if distutils.spawn.find_executable('mono') == None:
+    raise ConfigurationError("Could not find the mono executable in your PATH")
 
 GPUVerifyExecutable=sys.path[0] + os.sep + "GPURepair.py"
 
@@ -650,7 +674,6 @@ class FileCounters:
       logging.warning("Not a valid kernel:\"{}\"".format(filename))
       self.unknown+=1
 
-
 def getFileListSingleFile(filename):
   assert os.path.isfile(filename)
   return [filename]
@@ -719,6 +742,38 @@ def getFileListMultipleFiles(recursionRootPath, args):
     logging.info("Found {0} OpenCL kernels, {1} CUDA kernels and {2} miscellaneous tests".format(counters.openCLCount, counters.cudaCount, counters.miscCount))
 
   return kernelFiles
+
+def run(command):
+  """ Run a command with an optional timeout. A timeout of zero
+      implies no timeout.
+  """
+  popenargs = {}
+  popenargs['bufsize'] = 0
+
+  popenargs["stdout"] = sys.stdout
+  popenargs["stderr"] = sys.stderr
+
+  # Redirect stdin, othewise terminal text becomes unreadable after timeout
+  popenargs['stdin'] = subprocess.PIPE
+
+  proc = psutil.Popen(command, **popenargs)
+  if "get_children" not in dir(proc):
+    proc.get_children = proc.children
+
+  return_code = proc.wait()
+
+  return return_code
+
+def generateMetrics(args):
+    if args.csv_file:
+        command = []
+        if gvfindtools.useMono:
+          command += ['mono']
+        
+        filename = args.csv_file.replace('.csv', '.metrics.csv')
+        command += [gvfindtools.gpuRepairBinDir + "/GPURepair.ReportGenerator.exe", "metrics", args.directory_or_file, filename]
+
+        run(command)
 
 def main(arg):
   global GPUVerifyExecutable
@@ -856,6 +911,8 @@ def main(arg):
   except KeyboardInterrupt:
     sys.exit(GPUVerifyTesterErrorCodes.GENERAL_ERROR)
 
+  generateMetrics(args)
+
   end = time.time()
   logging.info("Finished running tests.")
 
@@ -874,7 +931,6 @@ def main(arg):
     print("Time taken to run tests: " + str((end - start)) )
 
   return GPUVerifyTesterErrorCodes.SUCCESS
-
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv[1:]))

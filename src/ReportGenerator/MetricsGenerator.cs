@@ -99,13 +99,7 @@
                 summary.Add(metrics);
             }
 
-            if (!summaryFilename.EndsWith(".metrics.csv"))
-            {
-                summaryFilename = summaryFilename.Replace(".csv", string.Empty);
-                summaryFilename += ".metrics.csv";
-            }
-
-            using (StreamWriter writer = new StreamWriter(Path.Combine(directory, summaryFilename)))
+            using (StreamWriter writer = new StreamWriter(summaryFilename))
             using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.ShouldQuote = (field, context) =>
