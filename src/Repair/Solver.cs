@@ -153,7 +153,7 @@
         /// <returns>The solution.</returns>
         private Dictionary<string, bool> SolveMHS(List<Clause> clauses, out SolverStatus status)
         {
-            using (Watch watch = new Watch(Measure.MHS))
+            using (Watch watch = new Watch(Measure.mhs))
             {
                 Dictionary<string, double> weights = new Dictionary<string, double>();
                 foreach (Barrier barrier in ProgramMetadata.Barriers.Values)

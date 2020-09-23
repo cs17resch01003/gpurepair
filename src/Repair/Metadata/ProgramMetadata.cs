@@ -55,7 +55,7 @@
             PopulateLoopInformation(program);
 
             Logger.Log($"GridLevelBarriers;{Barriers.Values.Where(x => x.GridLevel).Count()}");
-            Logger.Log($"BarriersInsideLoop;{Barriers.Values.Where(x => x.LoopDepth > 0).Count()}");
+            Logger.Log($"LoopBarriers;{Barriers.Values.Where(x => x.LoopDepth > 0).Count()}");
         }
 
         /// <summary>

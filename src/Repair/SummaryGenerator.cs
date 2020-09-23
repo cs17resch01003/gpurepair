@@ -36,9 +36,9 @@
             List<string> lines = new List<string>();
             List<string> changes = new List<string>();
 
-            int barriersBetweenCalls = 0;
-            int gridLevelBarriers = 0;
-            int barriersInsideLoops = 0;
+            int solutionCalls = 0;
+            int solutionGrid = 0;
+            int solutionLoop = 0;
 
             if (source_weight != repaired_weight)
             {
@@ -59,7 +59,7 @@
                         changes.Add(location);
 
                         if (locations.Count > 1)
-                            barriersBetweenCalls++;
+                            solutionCalls++;
                     }
                     else if (barrier.Generated && assignments[barrierName])
                     {
@@ -75,16 +75,16 @@
                         lines.Add(message);
                         changes.Add(location);
 
-                        barriersBetweenCalls += locations.Count > 1 ? 1 : 0;
-                        gridLevelBarriers += barrier.GridLevel ? 1 : 0;
-                        barriersInsideLoops += barrier.LoopDepth > 0 ? 1 : 0;
+                        solutionCalls += locations.Count > 1 ? 1 : 0;
+                        solutionGrid += barrier.GridLevel ? 1 : 0;
+                        solutionLoop += barrier.LoopDepth > 0 ? 1 : 0;
                     }
                 }
             }
 
-            Logger.Log($"Solution_BarriersBetweenCalls;{barriersBetweenCalls}");
-            Logger.Log($"Solution_GridLevelBarriers;{gridLevelBarriers}");
-            Logger.Log($"Solution_BarriersInsideLoop;{barriersInsideLoops}");
+            Logger.Log($"SolutionCalls;{solutionCalls}");
+            Logger.Log($"SolutionGrid;{solutionGrid}");
+            Logger.Log($"SolutionLoop;{solutionLoop}");
 
             if (lines.Any())
                 File.AppendAllLines(filename, lines.Distinct());

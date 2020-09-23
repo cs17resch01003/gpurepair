@@ -80,9 +80,9 @@
                     IEnumerable<RepairableError> current_errors = VerifyProgram(assignments, errors);
                     if (type == Solver.SolverType.Optimizer)
                     {
-                        Logger.Log($"VerifierRunsAfterOptimization");
+                        Logger.Log($"RunsAfterOpt");
                         if (current_errors.Any())
-                            Logger.Log($"VerifierFailuresAfterOptimization");
+                            Logger.Log($"FailsAfterOpt");
                     }
 
                     if (!current_errors.Any())
