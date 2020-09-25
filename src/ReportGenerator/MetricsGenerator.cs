@@ -113,11 +113,9 @@
                         }
                     }
                 }
-
-                records.Add(record);
             }
 
-            await CsvWrapper.Write(records, summaryFile).ConfigureAwait(false);
+            await CsvWrapper.Write(records.OrderByDescending(x => x.Kernel), summaryFile).ConfigureAwait(false);
         }
     }
 }
