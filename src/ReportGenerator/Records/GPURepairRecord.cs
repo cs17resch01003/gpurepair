@@ -6,103 +6,103 @@
     {
         [Name("blocks")]
         [Index(10)]
-        public int Blocks { get; set; }
+        public double? Blocks { get; set; }
 
         [Name("commands")]
         [Index(11)]
-        public int Commands { get; set; }
+        public double? Commands { get; set; }
 
         [Name("call-commands")]
         [Index(12)]
-        public int CallCommands { get; set; }
+        public double? CallCommands { get; set; }
 
         [Name("barriers")]
         [Index(13)]
-        public int Barriers { get; set; }
+        public double? Barriers { get; set; }
 
         [Name("grid-level-barriers")]
         [Index(14)]
-        public int GridLevelBarriers { get; set; }
+        public double? GridLevelBarriers { get; set; }
 
         [Name("loop-barriers")]
         [Index(15)]
-        public int LoopBarriers { get; set; }
+        public double? LoopBarriers { get; set; }
 
         [Name("changes")]
         [Index(16)]
-        public int Changes { get; set; }
+        public double? Changes { get; set; }
 
         [Name("solution-calls")]
         [Index(17)]
-        public int SolutionCalls { get; set; }
+        public double? SolutionCalls { get; set; }
 
         [Name("solution-grid")]
         [Index(18)]
-        public int SolutionGrid { get; set; }
+        public double? SolutionGrid { get; set; }
 
         [Name("solution-loop")]
         [Index(19)]
-        public int SolutionLoop { get; set; }
+        public double? SolutionLoop { get; set; }
 
         [Name("source-weight")]
         [Index(20)]
-        public int SourceWeight { get; set; }
+        public double? SourceWeight { get; set; }
 
         [Name("repaired-weight")]
         [Index(21)]
-        public int RepairedWeight { get; set; }
+        public double? RepairedWeight { get; set; }
 
         [Name("runs-after-opt")]
         [Index(22)]
-        public int RunsAfterOpt { get; set; }
+        public double? RunsAfterOpt { get; set; }
 
         [Name("fails-after-opt")]
         [Index(23)]
-        public int FailsAfterOpt { get; set; }
+        public double? FailsAfterOpt { get; set; }
 
         [Name("mhs-count")]
         [Index(24)]
-        public int mhsCount { get; set; }
+        public double? mhsCount { get; set; }
 
         [Name("mhs-time")]
         [Index(25)]
-        public int mhsTime { get; set; }
+        public double? mhsTime { get; set; }
 
         [Name("maxsat-count")]
         [Index(26)]
-        public int MaxSATCount { get; set; }
+        public double? MaxSATCount { get; set; }
 
         [Name("maxsat-time")]
         [Index(27)]
-        public int MaxSATTime { get; set; }
+        public double? MaxSATTime { get; set; }
 
         [Name("sat-count")]
         [Index(28)]
-        public int SATCount { get; set; }
+        public double? SATCount { get; set; }
 
         [Name("sat-time")]
         [Index(29)]
-        public int SATTime { get; set; }
+        public double? SATTime { get; set; }
 
         [Name("ver-count")]
         [Index(30)]
-        public int VerCount { get; set; }
+        public double? VerCount { get; set; }
 
         [Name("ver-time")]
         [Index(31)]
-        public int VerTime { get; set; }
+        public double? VerTime { get; set; }
 
         [Name("opt-count")]
         [Index(32)]
-        public int OptCount { get; set; }
+        public double? OptCount { get; set; }
 
         [Name("opt-time")]
         [Index(33)]
-        public int OptTime { get; set; }
+        public double? OptTime { get; set; }
 
         [Name("solver-count")]
         [Index(34)]
-        public int SolverCount
+        public double? SolverCount
         {
             get { return MaxSATCount + SATCount + OptCount; }
         }

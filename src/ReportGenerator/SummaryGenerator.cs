@@ -26,6 +26,11 @@
                 directory + Path.DirectorySeparatorChar + "gpuverify");
             await CsvWrapper.Write(gpuverify.OrderBy(x => x.Kernel),
                 directory + Path.DirectorySeparatorChar + "generated" + Path.DirectorySeparatorChar + "gpuverify.csv").ConfigureAwait(false);
+
+            IEnumerable<GPURepairRecord> gpurepair = GetGPURepairRecords(
+                directory + Path.DirectorySeparatorChar + "gpurepair");
+            await CsvWrapper.Write(gpurepair.OrderBy(x => x.Kernel),
+                directory + Path.DirectorySeparatorChar + "generated" + Path.DirectorySeparatorChar + "gpurepair.csv").ConfigureAwait(false);
         }
 
         private IEnumerable<AutoSyncOutRecord> GetAutoSyncRecords(string directory)
@@ -155,6 +160,88 @@
             record.Cruncher = records.Select(x => x.Cruncher).Average();
             record.BoogieDriver = records.Select(x => x.BoogieDriver).Average();
             record.Total = records.Select(x => x.Total).Average();
+
+            return record;
+        }
+
+        private IEnumerable<GPURepairRecord> GetGPURepairRecords(string directory)
+        {
+            IEnumerable<string> files = Directory.EnumerateFiles(directory, "*.metrics.csv", SearchOption.AllDirectories);
+            List<GPURepairRecord> records = new List<GPURepairRecord>();
+
+            // consolidate records from all the files in a single list
+
+            foreach (string file in files)
+            {
+                IEnumerable<GPURepairRecord> list = CsvWrapper.Read<GPURepairRecord>(file);
+                records.AddRange(list);
+            }
+
+            // standardize the kernel name
+            records.ForEach(x => x.Kernel = Common.StandardizeKernelName(x.Kernel));
+
+            List<GPURepairRecord> summary = new List<GPURepairRecord>();
+            foreach (GPURepairRecord record in records)
+            {
+                // already visited this record
+                if (summary.Any(x => x.Kernel == record.Kernel))
+                    continue;
+
+                IEnumerable<GPURepairRecord> matches = records.Where(x => x.Kernel == record.Kernel);
+                summary.Add(GetGPURepairRecord(matches));
+            }
+
+            return summary;
+        }
+
+        private GPURepairRecord GetGPURepairRecord(IEnumerable<GPURepairRecord> records)
+        {
+            GPURepairRecord record = new GPURepairRecord();
+            record.Kernel = records.First().Kernel;
+
+            // if the runs have multiple statuses, choose the one based on priority
+            GPURepairTimeRecord.Status status;
+            if (records.Select(x => x.ResultEnum).Distinct().Count() == 1)
+                status = records.First().ResultEnum;
+            else
+                status = records.Select(x => x.ResultEnum).OrderByDescending(x => x.Priority).First();
+
+            records = records.Where(x => x.ResultEnum == status);
+
+            record.Result = status.ToString();
+            record.Clang = records.Select(x => x.Clang).Average();
+            record.Opt = records.Select(x => x.Opt).Average();
+            record.Bugle = records.Select(x => x.Bugle).Average();
+            record.Instrumentation = records.Select(x => x.Instrumentation).Average();
+            record.VCGen = records.Select(x => x.VCGen).Average();
+            record.Cruncher = records.Select(x => x.Cruncher).Average();
+            record.Repair = records.Select(x => x.Repair).Average();
+            record.Total = records.Select(x => x.Total).Average();
+            record.Blocks = records.Select(x => x.Blocks).Average();
+            record.Commands = records.Select(x => x.Commands).Average();
+            record.CallCommands = records.Select(x => x.CallCommands).Average();
+            record.Barriers = records.Select(x => x.Barriers).Average();
+            record.GridLevelBarriers = records.Select(x => x.GridLevelBarriers).Average();
+            record.LoopBarriers = records.Select(x => x.LoopBarriers).Average();
+            record.Changes = records.Select(x => x.Changes).Average();
+            record.SolutionCalls = records.Select(x => x.SolutionCalls).Average();
+            record.SolutionGrid = records.Select(x => x.SolutionGrid).Average();
+            record.SolutionLoop = records.Select(x => x.SolutionLoop).Average();
+            record.SourceWeight = records.Select(x => x.SourceWeight).Average();
+            record.RepairedWeight = records.Select(x => x.RepairedWeight).Average();
+            record.RunsAfterOpt = records.Select(x => x.RunsAfterOpt).Average();
+            record.FailsAfterOpt = records.Select(x => x.FailsAfterOpt).Average();
+            record.mhsCount = records.Select(x => x.mhsCount).Average();
+            record.mhsTime = records.Select(x => x.mhsTime).Average();
+            record.MaxSATCount = records.Select(x => x.MaxSATCount).Average();
+            record.MaxSATTime = records.Select(x => x.MaxSATTime).Average();
+            record.SATCount = records.Select(x => x.SATCount).Average();
+            record.SATTime = records.Select(x => x.SATTime).Average();
+            record.VerCount = records.Select(x => x.VerCount).Average();
+            record.VerTime = records.Select(x => x.VerTime).Average();
+            record.OptCount = records.Select(x => x.OptCount).Average();
+            record.OptTime = records.Select(x => x.OptTime).Average();
+            record.ExceptionMessage = string.Join(";", records.Select(x => x.ExceptionMessage).Distinct());
 
             return record;
         }

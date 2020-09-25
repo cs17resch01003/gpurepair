@@ -24,26 +24,30 @@
         public async Task Generate()
         {
             List<GPURepairTimeRecord> timings = CsvWrapper.Read<GPURepairTimeRecord>(timeFile);
-            timings.ForEach(x => x.Kernel = Common.StandardizeKernelName(x.Kernel));
-
-            IEnumerable<string> files = Directory.EnumerateFiles(directory, "metrics.log", SearchOption.AllDirectories);
             List<GPURepairRecord> records = new List<GPURepairRecord>();
 
+            foreach (GPURepairTimeRecord timing in timings)
+            {
+                timing.Kernel = Common.StandardizeKernelName(timing.Kernel);
+                records.Add(new GPURepairRecord
+                {
+                    Kernel = timing.Kernel,
+                    Result = timing.Result,
+                    Clang = timing.Clang,
+                    Opt = timing.Opt,
+                    Bugle = timing.Bugle,
+                    Instrumentation = timing.Instrumentation,
+                    VCGen = timing.VCGen,
+                    Cruncher = timing.Cruncher,
+                    Repair = timing.Repair,
+                    Total = timing.Total,
+                });
+            }
+
+            IEnumerable<string> files = Directory.EnumerateFiles(directory, "metrics.log", SearchOption.AllDirectories);
             foreach (string file in files)
             {
-                GPURepairTimeRecord timing = timings.First(x => x.Kernel == Common.StandardizeKernelName(file));
-                GPURepairRecord record = new GPURepairRecord();
-
-                record.Kernel = timing.Kernel;
-                record.Result = timing.Result;
-                record.Clang = timing.Clang;
-                record.Opt = timing.Opt;
-                record.Bugle = timing.Bugle;
-                record.Instrumentation = timing.Instrumentation;
-                record.VCGen = timing.VCGen;
-                record.Cruncher = timing.Cruncher;
-                record.Repair = timing.Repair;
-                record.Total = timing.Total;
+                GPURepairRecord record = records.First(x => x.Kernel == Common.StandardizeKernelName(file));
 
                 string[] lines = File.ReadAllLines(file);
                 foreach (string line in lines)
