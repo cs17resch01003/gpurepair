@@ -1,4 +1,4 @@
-﻿namespace ReportGenerator
+﻿namespace GPURepair.ReportGenerator
 {
     using System;
     using System.Threading.Tasks;
@@ -21,11 +21,16 @@
                 }
                 else if (args.Length == 2)
                 {
+                    Console.WriteLine("Specify the filename of the file containing the timings!");
+                    return;
+                }
+                else if (args.Length == 3)
+                {
                     Console.WriteLine("Specify the filename of the summary file!");
                     return;
                 }
 
-                MetricsGenerator metrics = new MetricsGenerator(args[1], args[2]);
+                MetricsGenerator metrics = new MetricsGenerator(args[1], args[2], args[3]);
                 await metrics.Generate().ConfigureAwait(false);
             }
             else if (args[0] == "summary")
@@ -35,11 +40,9 @@
                     Console.WriteLine("Specify the directory to search recursively for the csv files!");
                     return;
                 }
-                else if (args.Length == 2)
-                {
-                    Console.WriteLine("Specify the filename of the summary file!");
-                    return;
-                }
+
+                SummaryGenerator summary = new SummaryGenerator(args[1]);
+                await summary.Generate().ConfigureAwait(false);
             }
         }
     }

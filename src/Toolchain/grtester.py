@@ -772,7 +772,7 @@ def generateMetrics(args):
           command += ['mono']
         
         filename = args.csv_file.replace('.csv', '.metrics.csv')
-        command += [gvfindtools.gpuRepairBinDir + "/GPURepair.ReportGenerator.exe", "metrics", args.directory_or_file, filename]
+        command += [gvfindtools.gpuRepairBinDir + "/GPURepair.ReportGenerator.exe", "metrics", args.directory_or_file, args.csv_file, filename]
 
         run(command)
 
@@ -912,6 +912,8 @@ def main(arg):
   except KeyboardInterrupt:
     sys.exit(GPUVerifyTesterErrorCodes.GENERAL_ERROR)
 
+  if args.csv_file:
+    csvFile.close()
   generateMetrics(args)
 
   end = time.time()
