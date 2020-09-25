@@ -14,15 +14,15 @@
 
         [Name("time")]
         [Index(2)]
-        public double? Time { get; set; }
+        public double Time { get; set; }
 
         [Name("ver-count")]
         [Index(3)]
-        public double? VerCount { get; set; }
+        public double VerCount { get; set; }
 
         [Name("changes")]
         [Index(4)]
-        public double? Changes { get; set; }
+        public double Changes { get; set; }
 
         [Name("exception")]
         [Index(5)]

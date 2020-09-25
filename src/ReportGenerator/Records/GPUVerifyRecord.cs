@@ -21,31 +21,31 @@
 
         [Name("clang")]
         [Index(2)]
-        public double? Clang { get; set; }
+        public double Clang { get; set; }
 
         [Name("opt")]
         [Index(3)]
-        public double? Opt { get; set; }
+        public double Opt { get; set; }
 
         [Name("bugle")]
         [Index(4)]
-        public double? Bugle { get; set; }
+        public double Bugle { get; set; }
 
         [Name("vcgen")]
         [Index(5)]
-        public double? VCGen { get; set; }
+        public double VCGen { get; set; }
 
         [Name("cruncher")]
         [Index(6)]
-        public double? Cruncher { get; set; }
+        public double Cruncher { get; set; }
 
         [Name("boogiedriver")]
         [Index(7)]
-        public double? BoogieDriver { get; set; }
+        public double BoogieDriver { get; set; }
 
         [Name("total")]
         [Index(8)]
-        public double? Total { get; set; }
+        public double Total { get; set; }
 
         public class Status
         {

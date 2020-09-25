@@ -9,13 +9,13 @@
         public string Kernel { get; set; }
 
         [Index(1)]
-        public double? Time { get; set; }
+        public double Time { get; set; }
 
         [Index(2)]
-        public double? VerCount { get; set; }
+        public double VerCount { get; set; }
 
         [Index(3)]
-        public double? Changes { get; set; }
+        public double Changes { get; set; }
 
         [Index(4)]
         public string Exception { get; set; }
