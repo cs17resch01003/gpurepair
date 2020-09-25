@@ -86,8 +86,8 @@
             if (errors.Contains(status))
             {
                 record.Time = 300;
-                record.VerCount = null;
-                record.Changes = null;
+                record.VerCount = 0;
+                record.Changes = 0;
             }
             else
             {
@@ -95,7 +95,7 @@
                 record.VerCount = records.Select(x => x.VerCount).Average();
 
                 if (status == AutoSyncRecord.Status.RepairError)
-                    record.Changes = null;
+                    record.Changes = 0;
                 else
                     record.Changes = records.Select(x => x.Changes).Average();
             }
