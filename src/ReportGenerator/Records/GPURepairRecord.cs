@@ -4,111 +4,115 @@
 
     public class GPURepairRecord : GPURepairTimeRecord
     {
-        [Name("blocks")]
+        [Name("lines")]
         [Index(10)]
+        public double Lines { get; set; }
+
+        [Name("blocks")]
+        [Index(11)]
         public double Blocks { get; set; }
 
         [Name("commands")]
-        [Index(11)]
+        [Index(12)]
         public double Commands { get; set; }
 
         [Name("call-commands")]
-        [Index(12)]
+        [Index(13)]
         public double CallCommands { get; set; }
 
         [Name("barriers")]
-        [Index(13)]
+        [Index(14)]
         public double Barriers { get; set; }
 
         [Name("grid-level-barriers")]
-        [Index(14)]
+        [Index(15)]
         public double GridLevelBarriers { get; set; }
 
         [Name("loop-barriers")]
-        [Index(15)]
+        [Index(16)]
         public double LoopBarriers { get; set; }
 
         [Name("changes")]
-        [Index(16)]
+        [Index(17)]
         public double Changes { get; set; }
 
         [Name("solution-calls")]
-        [Index(17)]
+        [Index(18)]
         public double SolutionCalls { get; set; }
 
         [Name("solution-grid")]
-        [Index(18)]
+        [Index(19)]
         public double SolutionGrid { get; set; }
 
         [Name("solution-loop")]
-        [Index(19)]
+        [Index(20)]
         public double SolutionLoop { get; set; }
 
         [Name("source-weight")]
-        [Index(20)]
+        [Index(21)]
         public double SourceWeight { get; set; }
 
         [Name("repaired-weight")]
-        [Index(21)]
+        [Index(22)]
         public double RepairedWeight { get; set; }
 
         [Name("runs-after-opt")]
-        [Index(22)]
+        [Index(23)]
         public double RunsAfterOpt { get; set; }
 
         [Name("fails-after-opt")]
-        [Index(23)]
+        [Index(24)]
         public double FailsAfterOpt { get; set; }
 
         [Name("mhs-count")]
-        [Index(24)]
+        [Index(25)]
         public double mhsCount { get; set; }
 
         [Name("mhs-time")]
-        [Index(25)]
+        [Index(26)]
         public double mhsTime { get; set; }
 
         [Name("maxsat-count")]
-        [Index(26)]
+        [Index(27)]
         public double MaxSATCount { get; set; }
 
         [Name("maxsat-time")]
-        [Index(27)]
+        [Index(28)]
         public double MaxSATTime { get; set; }
 
         [Name("sat-count")]
-        [Index(28)]
+        [Index(29)]
         public double SATCount { get; set; }
 
         [Name("sat-time")]
-        [Index(29)]
+        [Index(30)]
         public double SATTime { get; set; }
 
         [Name("ver-count")]
-        [Index(30)]
+        [Index(31)]
         public double VerCount { get; set; }
 
         [Name("ver-time")]
-        [Index(31)]
+        [Index(32)]
         public double VerTime { get; set; }
 
         [Name("opt-count")]
-        [Index(32)]
+        [Index(33)]
         public double OptCount { get; set; }
 
         [Name("opt-time")]
-        [Index(33)]
+        [Index(34)]
         public double OptTime { get; set; }
 
         [Name("solver-count")]
-        [Index(34)]
+        [Index(35)]
         public double SolverCount
         {
             get { return MaxSATCount + SATCount + OptCount; }
         }
 
         [Name("exception-message")]
-        [Index(35)]
+        [Index(36)]
         public string ExceptionMessage { get; set; }
     }
 }

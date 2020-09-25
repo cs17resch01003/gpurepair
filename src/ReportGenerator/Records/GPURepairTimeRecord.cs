@@ -5,6 +5,8 @@
 
     public class GPURepairTimeRecord
     {
+        private double total;
+
         public Status ResultEnum;
 
         [Name("kernel")]
@@ -49,7 +51,11 @@
 
         [Name("total")]
         [Index(9)]
-        public double Total { get; set; }
+        public double Total
+        {
+            get { return total > 300 ? 300 : total; }
+            set { total = value; }
+        }
 
         public class Status
         {

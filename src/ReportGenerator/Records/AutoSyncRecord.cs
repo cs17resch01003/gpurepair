@@ -5,6 +5,13 @@
 
     public class AutoSyncRecord
     {
+        private static List<string> falsePositives;
+
+        static AutoSyncRecord()
+        {
+            falsePositives = CsvWrapper.ReadLines(@"manual\falsepositives.csv");
+        }
+
         [Index(0)]
         public string Kernel { get; set; }
 
@@ -24,34 +31,6 @@
         {
             get
             {
-                List<string> falsePositives = new List<string>()
-                {
-                    "CUDA/atomics/test_abstraction_enforced",
-                    "CUDA/function_pointers/basic_argument_fail",
-                    "CUDA/function_pointers/basic_assignment_fail",
-                    "CUDA/function_pointers/constant_value",
-                    "CUDA/function_pointers/funcptr_to_ptr_add",
-                    "CUDA/function_pointers/pass_struct/call",
-                    "CUDA/function_pointers/soundness_issue",
-                    "CUDA/memcpy/null_dst",
-                    "CUDA/memcpy/null_src",
-                    "CUDA/memcpy/unhandled_varlen",
-                    "CUDA/memset/null_dst",
-                    "CUDA/memset/unhandled_varlen",
-                    "CUDA/memset/unhandled_varval",
-                    "CUDA/misc/fail/miscfail1",
-                    "CUDA/misc/fail/miscfail2",
-                    "CUDA/misc/fail/miscfail5",
-                    "CUDA/misc/fail/miscfail7",
-                    "CUDA/misc/fail/miscfail8",
-                    "CUDA/misc/pass/misc3",
-                    "CUDA/param_values/value_in_assert",
-                    "CUDA/return_val/char",
-                    "CUDA/return_val/longlong",
-                    "CUDA/warpsync/equality_abstraction_issue",
-                    "CUDASamples/3_Imaging_stereoDisparity_stereoDisparity"
-                };
-
                 if (falsePositives.Contains(Kernel))
                     return Status.FalsePositive;
                 else if (Exception == "Timeout!")

@@ -1,0 +1,17 @@
+﻿CUDA/misc/fail/miscfail2
+CUDASamples/3_Imaging_stereoDisparity_stereoDisparity
+OpenCL/annotation_tests/fail_function_wide_invariant
+OpenCL/annotation_tests/fail_ptr_offset
+OpenCL/annotation_tests/global_ensures/fail
+OpenCL/annotation_tests/global_requires/fail
+OpenCL/async_work_group_copy/fail/test12
+OpenCL/async_work_group_copy/fail/test6
+OpenCL/async_work_group_copy/fail/test7
+OpenCL/k-induction/alldifferent-k-too-small
+OpenCL/misc/fail/loop_abstraction_traces_1
+OpenCL/misc/fail/loop_abstraction_traces_2
+OpenCL/misc/fail/miscfail11
+OpenCL/sourcelocation_tests/ensures/fail
+OpenCL/sourcelocation_tests/loop_invariant/fail/entry
+OpenCL/sourcelocation_tests/loop_invariant/fail/maintained
+OpenCL/sourcelocation_tests/requires

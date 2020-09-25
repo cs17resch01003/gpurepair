@@ -1,10 +1,21 @@
 ﻿namespace GPURepair.ReportGenerator.Records
 {
+    using System.Collections.Generic;
     using System.IO;
     using CsvHelper.Configuration.Attributes;
 
     public class GPUVerifyRecord
     {
+        private static List<string> assertionErrors;
+
+        private static List<string> invariantErrors;
+
+        static GPUVerifyRecord()
+        {
+            assertionErrors = CsvWrapper.ReadLines(@"manual\assertionerrors.csv");
+            invariantErrors = CsvWrapper.ReadLines(@"manual\invarianterrors.csv");
+        }
+
         public Status ResultEnum;
 
         [Name("kernel")]
@@ -15,7 +26,15 @@
         [Index(1)]
         public string Result
         {
-            get { return ResultEnum.Value; }
+            get
+            {
+                if (assertionErrors.Contains(Kernel))
+                    return "FAIL(6)-ASSERT";
+                else if (invariantErrors.Contains(Kernel))
+                    return "FAIL(6)-INV";
+                else
+                    return ResultEnum.Value;
+            }
             set { ResultEnum = Status.GetStatus(value); }
         }
 

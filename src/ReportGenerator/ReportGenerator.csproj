@@ -63,9 +63,22 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Records\AutoSyncRecord.cs" />
+    <Compile Include="Reports\GridComparisonRecord.cs" />
+    <Compile Include="Reports\InspectionComparisonRecord.cs" />
+    <Compile Include="Reports\SolverComparisonRecord.cs" />
+    <Compile Include="Reports\ToolComparisonRecord.cs" />
     <Compile Include="SummaryGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="manual\invarianterrors.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="manual\assertionerrors.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="manual\falsepositives.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -10,6 +10,11 @@
 
     public static class CsvWrapper
     {
+        public static List<string> ReadLines(string file)
+        {
+            return File.ReadAllLines(file).ToList();
+        }
+
         public static List<T> Read<T>(string file, bool header = true)
         {
             using (StreamReader reader = new StreamReader(file))

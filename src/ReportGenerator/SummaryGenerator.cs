@@ -1,14 +1,30 @@
 ﻿namespace GPURepair.ReportGenerator
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using GPURepair.ReportGenerator.Records;
+    using GPURepair.ReportGenerator.Reports;
 
     public class SummaryGenerator
     {
         private string directory;
+
+        private IEnumerable<AutoSyncOutRecord> autosync;
+
+        private IEnumerable<GPUVerifyRecord> gpuverify;
+
+        private IEnumerable<GPURepairRecord> gpurepair;
+
+        private IEnumerable<GPURepairRecord> gpurepair_maxsat;
+
+        private IEnumerable<GPURepairRecord> gpurepair_sat;
+
+        private IEnumerable<GPURepairRecord> gpurepair_grid;
+
+        private IEnumerable<GPURepairRecord> gpurepair_inspection;
 
         public SummaryGenerator(string directory)
         {
@@ -17,20 +33,48 @@
 
         public async Task Generate()
         {
-            IEnumerable<AutoSyncOutRecord> autosync = GetAutoSyncRecords(
-                directory + Path.DirectorySeparatorChar + "autosync");
-            await CsvWrapper.Write(autosync.OrderBy(x => x.Kernel),
-                directory + Path.DirectorySeparatorChar + "generated" + Path.DirectorySeparatorChar + "autosync.csv").ConfigureAwait(false);
+            await GenerateFiles();
+            await AnalyzeData();
+        }
 
-            IEnumerable<GPUVerifyRecord> gpuverify = GetGPUVerifyRecords(
-                directory + Path.DirectorySeparatorChar + "gpuverify");
-            await CsvWrapper.Write(gpuverify.OrderBy(x => x.Kernel),
-                directory + Path.DirectorySeparatorChar + "generated" + Path.DirectorySeparatorChar + "gpuverify.csv").ConfigureAwait(false);
+        private async Task GenerateFiles()
+        {
+            autosync = await ParseSource("autosync", "autosync.csv", GetAutoSyncRecords);
+            gpuverify = await ParseSource("gpuverify", "gpuverify.csv", GetGPUVerifyRecords);
+            gpurepair = await ParseSource("gpurepair", "gpurepair.csv", GetGPURepairRecords);
+            gpurepair_maxsat = await ParseSource("gpurepair_maxsat", "gpurepair_maxsat.csv", GetGPURepairRecords);
+            gpurepair_sat = await ParseSource("gpurepair_sat", "gpurepair_sat.csv", GetGPURepairRecords);
+            gpurepair_grid = await ParseSource("gpurepair_grid", "gpurepair_grid.csv", GetGPURepairRecords);
+            gpurepair_inspection = await ParseSource("gpurepair_inspection", "gpurepair_inspection.csv", GetGPURepairRecords);
+        }
 
-            IEnumerable<GPURepairRecord> gpurepair = GetGPURepairRecords(
-                directory + Path.DirectorySeparatorChar + "gpurepair");
-            await CsvWrapper.Write(gpurepair.OrderBy(x => x.Kernel),
-                directory + Path.DirectorySeparatorChar + "generated" + Path.DirectorySeparatorChar + "gpurepair.csv").ConfigureAwait(false);
+        private async Task AnalyzeData()
+        {
+            await AnalyzeData("autosync-gpurepair.csv", GetToolComparisonRecords);
+            await AnalyzeData("autosync-gpurepair-same.csv", GetToolComparisonSameRecords);
+            await AnalyzeData("cooperative-groups.csv", GetGridComparisonRecords);
+            await AnalyzeData("cooperative-groups-cuda.csv", GetGridComparisonSameRecords);
+            await AnalyzeData("solver-comparison.csv", GetSolverComparisonRecords);
+            await AnalyzeData("inspection-comparison.csv", GetInspectionComparisonRecords);
+        }
+
+        private async Task<IEnumerable<T>> ParseSource<T>(string folder, string filename, Func<string, IEnumerable<T>> method)
+        {
+            string source = directory + Path.DirectorySeparatorChar + folder;
+            string generated = directory + Path.DirectorySeparatorChar + "generated" + Path.DirectorySeparatorChar + filename;
+
+            IEnumerable<T> records = method(source);
+            await CsvWrapper.Write(records, generated);
+
+            return records;
+        }
+
+        private async Task AnalyzeData<T>(string filename, Func<IEnumerable<T>> method)
+        {
+            string generated = directory + Path.DirectorySeparatorChar + "analysis" + Path.DirectorySeparatorChar + filename;
+
+            IEnumerable<T> records = method();
+            await CsvWrapper.Write(records, generated);
         }
 
         private IEnumerable<AutoSyncOutRecord> GetAutoSyncRecords(string directory)
@@ -59,7 +103,7 @@
                 summary.Add(GetAutoSyncRecord(matches));
             }
 
-            return summary;
+            return summary.OrderBy(x => x.Kernel);
         }
 
         private AutoSyncOutRecord GetAutoSyncRecord(IEnumerable<AutoSyncRecord> records)
@@ -135,7 +179,7 @@
             summary.Add(new GPUVerifyRecord() { Kernel = "OpenCL/global_size/mismatch_dims", Result = "FAIL(1)" });
             summary.Add(new GPUVerifyRecord() { Kernel = "OpenCL/global_size/num_groups_and_global_size", Result = "FAIL(1)" });
 
-            return summary;
+            return summary.OrderBy(x => x.Kernel);
         }
 
         private GPUVerifyRecord GetGPUVerifyRecord(IEnumerable<GPUVerifyRecord> records)
@@ -191,7 +235,13 @@
                 summary.Add(GetGPURepairRecord(matches));
             }
 
-            return summary;
+            // adding the entries which fail with a command-line error
+            summary.Add(new GPURepairRecord() { Kernel = "OpenCL/fail_equality_and_adversarial", Result = "FAIL(1)" });
+            summary.Add(new GPURepairRecord() { Kernel = "OpenCL/global_size/local_size_fail_divide_global_size", Result = "FAIL(1)" });
+            summary.Add(new GPURepairRecord() { Kernel = "OpenCL/global_size/mismatch_dims", Result = "FAIL(1)" });
+            summary.Add(new GPURepairRecord() { Kernel = "OpenCL/global_size/num_groups_and_global_size", Result = "FAIL(1)" });
+
+            return summary.OrderBy(x => x.Kernel);
         }
 
         private GPURepairRecord GetGPURepairRecord(IEnumerable<GPURepairRecord> records)
@@ -217,6 +267,7 @@
             record.Cruncher = records.Select(x => x.Cruncher).Average();
             record.Repair = records.Select(x => x.Repair).Average();
             record.Total = records.Select(x => x.Total).Average();
+            record.Lines = records.Select(x => x.Lines).Average();
             record.Blocks = records.Select(x => x.Blocks).Average();
             record.Commands = records.Select(x => x.Commands).Average();
             record.CallCommands = records.Select(x => x.CallCommands).Average();
@@ -244,6 +295,164 @@
             record.ExceptionMessage = string.Join(";", records.Select(x => x.ExceptionMessage).Distinct());
 
             return record;
+        }
+
+        private IEnumerable<ToolComparisonRecord> GetToolComparisonRecords()
+        {
+            List<ToolComparisonRecord> records = new List<ToolComparisonRecord>();
+            foreach (GPUVerifyRecord _gpuverify in gpuverify)
+            {
+                records.Add(new ToolComparisonRecord
+                {
+                    Kernel = _gpuverify.Kernel,
+                    GV_Status = _gpuverify.Result
+                });
+            }
+
+            foreach (AutoSyncOutRecord _autoSync in autosync)
+            {
+                ToolComparisonRecord record = records.First(x => x.Kernel == _autoSync.Kernel);
+                record.AS_Status = _autoSync.Status;
+                record.AS_Time = _autoSync.Time;
+                record.AS_VerCount = _autoSync.VerCount;
+                record.AS_Changes = _autoSync.Changes;
+            }
+
+            foreach (GPURepairRecord _gpurepair in gpurepair)
+            {
+                ToolComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.GR_Status = _gpurepair.Result;
+                record.GR_Time = _gpurepair.Total;
+                record.GR_VerCount = _gpurepair.VerCount;
+                record.GR_Changes = _gpurepair.Changes;
+            }
+
+            return records.OrderBy(x => x.Kernel);
+        }
+
+        private IEnumerable<ToolComparisonRecord> GetToolComparisonSameRecords()
+        {
+            IEnumerable<ToolComparisonRecord> records = GetToolComparisonRecords();
+            IEnumerable<ToolComparisonRecord> unchanged = records.Where(
+                x => x.AS_Status == "UNCHANGED" && x.GR_Status == "PASS" && x.GR_Changes == 0);
+            IEnumerable<ToolComparisonRecord> repaired = records.Where(
+                x => x.AS_Status == "REPAIRED" && x.GR_Status == "PASS");
+
+            return unchanged.Union(repaired).OrderBy(x => x.Kernel);
+        }
+
+        private IEnumerable<GridComparisonRecord> GetGridComparisonRecords()
+        {
+            List<GridComparisonRecord> records = new List<GridComparisonRecord>();
+            foreach (GPUVerifyRecord _gpuverify in gpuverify)
+            {
+                records.Add(new GridComparisonRecord
+                {
+                    Kernel = _gpuverify.Kernel,
+                    GV_Status = _gpuverify.Result
+                });
+            }
+
+            foreach (GPURepairRecord _gpurepair in gpurepair)
+            {
+                GridComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.Enabled_Status = _gpurepair.Result;
+                record.Enabled_Time = _gpurepair.Total;
+                record.Enabled_SolverCount = _gpurepair.SolverCount;
+                record.Enabled_VerCount = _gpurepair.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in gpurepair_grid)
+            {
+                GridComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.Disabled_Status = _gpurepair.Result;
+                record.Disabled_Time = _gpurepair.Total;
+                record.Disabled_SolverCount = _gpurepair.SolverCount;
+                record.Disabled_VerCount = _gpurepair.VerCount;
+            }
+
+            return records.OrderBy(x => x.Kernel);
+        }
+
+        private IEnumerable<GridComparisonRecord> GetGridComparisonSameRecords()
+        {
+            IEnumerable<GridComparisonRecord> records = GetGridComparisonRecords();
+            return records.Where(x => x.Enabled_Status == x.Disabled_Status && !x.Kernel.Contains("OpenCL")).OrderBy(x => x.Kernel);
+        }
+
+        private IEnumerable<SolverComparisonRecord> GetSolverComparisonRecords()
+        {
+            List<SolverComparisonRecord> records = new List<SolverComparisonRecord>();
+            foreach (GPUVerifyRecord _gpuverify in gpuverify)
+            {
+                records.Add(new SolverComparisonRecord
+                {
+                    Kernel = _gpuverify.Kernel,
+                    GV_Status = _gpuverify.Result
+                });
+            }
+
+            foreach (GPURepairRecord _gpurepair in gpurepair)
+            {
+                SolverComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.mhs_Status = _gpurepair.Result;
+                record.mhs_Time = _gpurepair.Total;
+                record.mhs_SolverCount = _gpurepair.SolverCount;
+                record.mhs_VerCount = _gpurepair.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in gpurepair_maxsat)
+            {
+                SolverComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.MaxSAT_Status = _gpurepair.Result;
+                record.MaxSAT_Time = _gpurepair.Total;
+                record.MaxSAT_SolverCount = _gpurepair.SolverCount;
+                record.MaxSAT_VerCount = _gpurepair.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in gpurepair_sat)
+            {
+                SolverComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.SAT_Status = _gpurepair.Result;
+                record.SAT_Time = _gpurepair.Total;
+                record.SAT_SolverCount = _gpurepair.SolverCount;
+                record.SAT_VerCount = _gpurepair.VerCount;
+            }
+
+            return records.OrderBy(x => x.Kernel);
+        }
+
+        private IEnumerable<InspectionComparisonRecord> GetInspectionComparisonRecords()
+        {
+            List<InspectionComparisonRecord> records = new List<InspectionComparisonRecord>();
+            foreach (GPUVerifyRecord _gpuverify in gpuverify)
+            {
+                records.Add(new InspectionComparisonRecord
+                {
+                    Kernel = _gpuverify.Kernel,
+                    GV_Status = _gpuverify.Result
+                });
+            }
+
+            foreach (GPURepairRecord _gpurepair in gpurepair)
+            {
+                InspectionComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.Enabled_Status = _gpurepair.Result;
+                record.Enabled_Time = _gpurepair.Total;
+                record.Enabled_SolverCount = _gpurepair.SolverCount;
+                record.Enabled_VerCount = _gpurepair.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in gpurepair_inspection)
+            {
+                InspectionComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.Disabled_Status = _gpurepair.Result;
+                record.Disabled_Time = _gpurepair.Total;
+                record.Disabled_SolverCount = _gpurepair.SolverCount;
+                record.Disabled_VerCount = _gpurepair.VerCount;
+            }
+
+            return records.OrderBy(x => x.Kernel);
         }
     }
 }
