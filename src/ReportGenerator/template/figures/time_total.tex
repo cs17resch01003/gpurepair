@@ -1,0 +1,90 @@
+\begin{figure}[htp]
+\centering
+
+\begin{minipage}{.45\textwidth}
+    \centering
+    \begin{tikzpicture}[scale=0.65]
+    
+    \pgfplotstableread{figures/data/time_scatter.dat}{\data}
+    \selectcolormodel{gray}
+    
+    \begin{axis}[
+        xlabel={GPURepair},
+        ylabel={AutoSync},
+        scaled ticks = false,
+        tick label style={
+            /pgf/number format/fixed,
+            /pgf/number format/precision=3
+        },
+        xmin=1,
+        xmax=300,
+        ymin=1,
+        ymax=300,
+        xmode=log,
+        ymode=log,
+        log ticks with fixed point
+    ]
+    
+    \addplot[
+        scatter=true,
+        only marks,
+        mark=*,
+        scatter src=explicit symbolic,
+        scatter/classes={
+            a={mark=*}
+        }
+    ]
+    table[x=gpurepair,y=autosync,meta=label]{\data};
+    \addplot [black,samples at={0,1}] {x};
+    \draw [black,solid] (rel axis cs:0,0) -- (rel axis cs:1,1);
+    
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Runtime in seconds (Log Scale)}
+    \label{Fi:time_scatter_log}
+\end{minipage}
+\hskip 10pt
+\begin{minipage}{.45\textwidth}
+    \centering
+    \begin{tikzpicture}[scale=0.65]
+    
+    \pgfplotstableread{figures/data/time_repaired.dat}{\data}
+    \selectcolormodel{gray}
+    
+    \begin{axis}[
+        xlabel={GPURepair},
+        ylabel={AutoSync},
+        scaled ticks = false,
+        tick label style={
+            /pgf/number format/fixed,
+            /pgf/number format/precision=3
+        },
+        xmin=1,
+        xmax=300,
+        ymin=1,
+        ymax=300,
+        xmode=log,
+        ymode=log,
+        log ticks with fixed point
+    ]
+    
+    \addplot[
+        scatter=true,
+        only marks,
+        mark=*,
+        scatter src=explicit symbolic,
+        scatter/classes={
+            a={mark=*}
+        }
+    ]
+    table[x=gpurepair,y=autosync,meta=label]{\data};
+    \addplot [black,samples at={0,1}] {x};
+    \draw [black,solid] (rel axis cs:0,0) -- (rel axis cs:1,1);
+    
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Runtime in seconds - Repair Candidates (Log Scale)}
+    \label{Fi:time_repair_log}
+\end{minipage}
+
+\end{figure}

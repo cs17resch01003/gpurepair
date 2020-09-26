@@ -1,0 +1,60 @@
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{amsfonts}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{listings,chngcntr}
+\usepackage{placeins}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\usepackage[caption=false]{subfig}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+\pgfplotsset{compat=1.6}
+\usetikzlibrary{patterns,positioning,shapes.geometric}
+
+\lstset
+{
+    language=C++,
+    basicstyle=\footnotesize\ttfamily,
+    numbers=right,
+    stepnumber=1,
+    tabsize=4,
+    breaklines=true
+}
+
+\include{refs}
+
+\newtheorem{theo}{Theorem}
+
+\newcommand{\highlightcode}[1]{\makebox[0pt][l]{\color{lightgray}\rule[-3pt]{#1\linewidth}{10pt}}}
+
+\newcommand{\True}{\ensuremath{\mathit{true}}\xspace}
+\newcommand{\False}{\ensuremath{\mathit{false}}\xspace}
+\newcommand{\clause}{\ensuremath{\omega}}
+
+\newcommand{\inangleb}[1]{ \ensuremath{\langle #1 \rangle}}
+\newcommand{\inroundb}[1]{\ensuremath{ \left( #1 \right)}}
+
+\newcommand{\toolname}{GPURepair\xspace}
+\newcommand{\verifiername}{GPUVerify\xspace}
+\newcommand{\autosyncname}{AutoSync\xspace}
+
+\newcommand{\tool}{\textsf{GPURepair}\xspace}
+\newcommand{\verifier}{\textsf{GPUVerify}\xspace}
+\newcommand{\autosync}{\textsf{AutoSync}\xspace}
+
+\newcommand{\emp}[1]{\textsf{#1}}
+\newcommand{\TT}[1]{{\tt #1}}
+\newcommand{\EM}[1]{{\em #1}}
+\newcommand{\MB}[1]{\mathbf{#1}}
+\newcommand{\Omit}[1]{}
+
+\colorlet{sjcolor}{blue}
+\colorlet{gmcolor}{red}
+\newcommand{\sjcomment}[1]{\textcolor{sjcolor}{SJ:#1}}
+\newcommand{\gmcomment}[1]{\textcolor{gmcolor}{GM:#1}}

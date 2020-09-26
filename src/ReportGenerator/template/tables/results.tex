@@ -1,0 +1,35 @@
+\begin{table}[t]
+\caption{Count of kernels grouped by category}
+\label{Ta:results}
+\centering
+
+\def\arraystretch{1.1}
+\setlength\tabcolsep{7pt}
+
+\begin{tabular}{|l|r|r|r|}
+\hline
+
+\multicolumn{1}{|c|}{\textbf{Category}} & \multicolumn{1}{|c|}{\textbf{\autosyncname}} & \multicolumn{2}{|c|}{\textbf{\toolname}} \\ \hline
+\multicolumn{1}{|c|}{} & \multicolumn{1}{|c|}{\textbf{CUDA}} & \multicolumn{1}{|c|}{\textbf{CUDA}} & \multicolumn{1}{|c|}{\textbf{OpenCL}} \\
+\multicolumn{1}{|c|}{Total Benchmarks} & $266$ & $266$ & $486$ \\ \hline \hline
+Verified by \verifiername & $152$ & $152$ & $331$ \\ \hline
+\quad No changes made by the tool & $146$ & $134$ & $294$ \\
+\quad Changes recommended by the tool & $0$ & $\MB{17}$ & $24$ \\
+\quad Errors  & $6$ & $\MB{0}$ & $10$ \\
+\quad Timeouts & $0$ & $1$ & $3$ \\ \hline \hline
+
+Data Race/Barrier Divergence Errors & \multirow{2}{*}{$89$} & \multirow{2}{*}{$89$} & \multirow{2}{*}{$69$} \\
+identified by \verifiername & & & \\ \hline
+\quad Repaired by the tool & $31$ & $\MB{55}$ & $30$ \\
+\quad Could not be repaired by the tool & $9$ & $22$ & $34$ \\
+\quad Errors  & $14$ & $\MB{0}$ & $0$ \\
+\quad Timeouts & $35$ & $\MB{12}$ & $5$ \\ \hline \hline
+
+Unrepairable errors identified by & \multirow{2}{*}{$25$} & \multirow{2}{*}{$25$} & \multirow{2}{*}{$86$} \\
+\verifiername & & & \\ \hline
+\quad Handled gracefully by the tool & $0$ & $\MB{25}$ & $86$ \\
+\quad False Positives & $24$ & $\MB{0}$ & $0$ \\
+\quad Errors  & $1$ & $\MB{0}$ & $0$ \\ \hline
+
+\end{tabular}
+\end{table}

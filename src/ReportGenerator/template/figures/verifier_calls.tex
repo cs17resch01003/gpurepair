@@ -1,0 +1,76 @@
+\begin{figure}[htp]
+\centering
+
+\subfloat[All kernels\label{Fi:verifier_calls_all}]{
+    \centering
+    
+    \pgfplotstableread{figures/data/verifier_calls_all.dat}{\data}
+    \begin{tikzpicture}[scale=0.72]
+    \selectcolormodel{gray}
+
+    \begin{axis}[
+        xlabel={GPURepair},
+        ylabel={AutoSync},
+        scaled ticks = true,
+        tick label style={
+            /pgf/number format/fixed,
+            /pgf/number format/precision=3
+        },
+        xmin=0,
+        xmax=6,
+        ymin=0,
+        ymax=6,
+    ]
+
+    \addplot[
+        scatter=true,
+        only marks,
+        mark=*,
+        point meta=explicit symbolic,
+        visualization depends on = {\thisrow{2} \as \perpointmarksize},
+        scatter/@pre marker code/.append style={/tikz/mark size=\perpointmarksize},
+    ] table [meta index=2] {\data};
+    \draw [black,solid] (rel axis cs:0,0) -- (rel axis cs:1,1);
+
+    \end{axis}
+    \end{tikzpicture}
+}\hfil
+\subfloat[Kernels fixed by both tools\label{Fi:verifier_calls_fixes}]{
+    \centering
+    
+    \pgfplotstableread{figures/data/verifier_calls_fixes.dat}{\data}
+    \begin{tikzpicture}[scale=0.72]
+    \selectcolormodel{gray}
+
+    \begin{axis}[
+        xlabel={GPURepair},
+        ylabel={AutoSync},
+        scaled ticks = true,
+        tick label style={
+            /pgf/number format/fixed,
+            /pgf/number format/precision=3
+        },
+        xmin=0,
+        xmax=6,
+        ymin=0,
+        ymax=6,
+    ]
+
+    \addplot[
+        scatter=true,
+        only marks,
+        mark=*,
+        point meta=explicit symbolic,
+        visualization depends on = {\thisrow{2} \as \perpointmarksize},
+        scatter/@pre marker code/.append style={/tikz/mark size=\perpointmarksize},
+    ] table [meta index=2] {\data};
+    \draw [black,solid] (rel axis cs:0,0) -- (rel axis cs:1,1);
+
+    \end{axis}
+    \end{tikzpicture}
+}
+
+\caption{Calls to the Verifier}
+\label{Fi:verifier_calls}
+
+\end{figure}
