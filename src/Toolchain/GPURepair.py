@@ -492,8 +492,11 @@ class GPURepairInstance(object):
     if args.log_clauses:
       options.append("/logClauses:true")
 
-    if args.disable_inspection:
-      options.append("/disableInspection:true")
+    if args.loop_depth_weight:
+      options.append("/loopDepthWeight:" + args.loop_depth_weight)
+
+    if args.grid_barrier_weight:
+      options.append("/gridBarrierWeight:" + args.grid_barrier_weight)
 
     if args.solver_type:
       options.append("/solverType:" + self.getSolverTypeString(args))

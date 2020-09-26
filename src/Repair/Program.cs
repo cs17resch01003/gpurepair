@@ -6,6 +6,7 @@
     using GPURepair.Common.Diagnostics;
     using GPURepair.Repair.Diagnostics;
     using GPURepair.Repair.Exceptions;
+    using GPURepair.Repair.Metadata;
     using Microsoft.Boogie;
 
     public class Program
@@ -39,6 +40,9 @@
 
                 ClauseLogger.FileName = CommandLineOptions.Clo.Files.First();
                 ClauseLogger.LogCLauses = ((GRCommandLineOptions)CommandLineOptions.Clo).LogClauses;
+
+                Barrier.LoopDepthWeight = ((GRCommandLineOptions)CommandLineOptions.Clo).LoopDepthWeight;
+                Barrier.GridBarrierWeight = ((GRCommandLineOptions)CommandLineOptions.Clo).GridBarrierWeight;
 
                 Dictionary<string, bool> assignments;
 

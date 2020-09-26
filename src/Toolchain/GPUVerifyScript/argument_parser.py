@@ -313,6 +313,10 @@ def __build_parser(default_solver, version):
     help = "Disables inspection of programmer inserted barriers")
   repair.add_argument("--disable-grid-barriers", action = 'store_true',
     help = "Disables grid-level barriers during instrumentation")
+  repair.add_argument("--loop-depth-weight", action = 'store_true',
+    help = "The weight of a barrier when it is inside a loop. This value will be raised exponentially based on the loop depth")
+  repair.add_argument("--grid-barrier-weight", action = 'store_true',
+    help = "The weight of a grid-level barrier")
 
   solverType = repair.add_mutually_exclusive_group()
   solverType.add_argument("--mhs", dest = 'solver_type',

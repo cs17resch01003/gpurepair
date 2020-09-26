@@ -21,6 +21,16 @@
         public bool DisableInspection { get; set; } = false;
 
         /// <summary>
+        /// The weight associated with the loop-depth.
+        /// </summary>
+        public int LoopDepthWeight { get; set; } = 10;
+
+        /// <summary>
+        /// The weight associated with a grid-level barrier.
+        /// </summary>
+        public int GridBarrierWeight { get; set; } = 16;
+
+        /// <summary>
         /// The solver type.
         /// </summary>
         public Solver.SolverType SolverType = Solver.SolverType.mhs;
@@ -57,6 +67,18 @@
             {
                 if (ps.ConfirmArgumentCount(1))
                     DisableInspection = bool.Parse(ps.args[ps.i]);
+                return true;
+            }
+            else if (name == "loopDepthWeight")
+            {
+                if (ps.ConfirmArgumentCount(1))
+                    LoopDepthWeight = int.Parse(ps.args[ps.i]);
+                return true;
+            }
+            else if (name == "gridBarrierWeight")
+            {
+                if (ps.ConfirmArgumentCount(1))
+                    GridBarrierWeight = int.Parse(ps.args[ps.i]);
                 return true;
             }
             else if (name == "solverType")

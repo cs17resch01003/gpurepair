@@ -6,6 +6,16 @@
     public class Barrier
     {
         /// <summary>
+        /// The weight associated with the loop-depth.
+        /// </summary>
+        public static int LoopDepthWeight { get; set; }
+
+        /// <summary>
+        /// The weight associated with a grid-level barrier.
+        /// </summary>
+        public static int GridBarrierWeight { get; set; }
+
+        /// <summary>
         /// The name of the barrier.
         /// </summary>
         public string Name { get; set; }
@@ -57,8 +67,8 @@
         {
             get
             {
-                int loopWeight = (int)(LoopDepth == 0 ? 0 : Math.Pow(2, LoopDepth));
-                int barrierWeight = GridLevel ? 16 : 1;
+                int loopWeight = Convert.ToInt32(Math.Pow(LoopDepthWeight, LoopDepth));
+                int barrierWeight = GridLevel ? GridBarrierWeight : 0;
 
                 return loopWeight + barrierWeight;
             }
