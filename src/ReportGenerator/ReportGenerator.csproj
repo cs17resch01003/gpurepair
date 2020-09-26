@@ -69,6 +69,7 @@
     <Compile Include="Reports\SolverComparisonRecord.cs" />
     <Compile Include="Reports\ToolComparisonRecord.cs" />
     <Compile Include="SummaryGenerator.cs" />
+    <Compile Include="TexGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manual\invarianterrors.csv">

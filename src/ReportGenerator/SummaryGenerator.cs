@@ -15,6 +15,7 @@
         {
             await FileParser.ParseFiles(directory);
             await DataAnalyzer.AnalyzeData(directory);
+            TexGenerator.Generate(directory);
         }
     }
 }

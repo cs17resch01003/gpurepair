@@ -11,25 +11,25 @@
 
 \multicolumn{1}{|c|}{\textbf{Category}} & \multicolumn{1}{|c|}{\textbf{\autosyncname}} & \multicolumn{2}{|c|}{\textbf{\toolname}} \\ \hline
 \multicolumn{1}{|c|}{} & \multicolumn{1}{|c|}{\textbf{CUDA}} & \multicolumn{1}{|c|}{\textbf{CUDA}} & \multicolumn{1}{|c|}{\textbf{OpenCL}} \\
-\multicolumn{1}{|c|}{Total Benchmarks} & $266$ & $266$ & $486$ \\ \hline \hline
-Verified by \verifiername & $152$ & $152$ & $331$ \\ \hline
-\quad No changes made by the tool & $146$ & $134$ & $294$ \\
-\quad Changes recommended by the tool & $0$ & $17$ & $24$ \\
-\quad Errors  & $6$ & $0$ & $10$ \\
-\quad Timeouts & $0$ & $1$ & $3$ \\ \hline \hline
+\multicolumn{1}{|c|}{Total Benchmarks} & $@@cuda@@$ & $@@cuda@@$ & $@@opencl@@$ \\ \hline \hline
+Verified by \verifiername & $@@cuda_verified@@$ & $@@cuda_verified@@$ & $@@opencl_verified@@$ \\ \hline
+\quad No changes made by the tool & $@@cuda_verified_as_unchanged@@$ & $@@cuda_verified_gr_unchanged@@$ & $@@opencl_verified_gr_unchanged@@$ \\
+\quad Changes recommended by the tool & $0$ & $@@cuda_verified_gr_changed@@$ & $@@opencl_verified_gr_changed@@$ \\
+\quad Errors  & $@@cuda_verified_as_errors@@$ & $@@cuda_verified_gr_errors@@$ & $@@opencl_verified_gr_errors@@$ \\
+\quad Timeouts & $@@cuda_verified_as_timeout@@$ & $@@cuda_verified_gr_timeout@@$ & $@@opencl_verified_gr_timeout@@$ \\ \hline \hline
 
-Data Race/Barrier Divergence Errors & \multirow{2}{*}{$89$} & \multirow{2}{*}{$89$} & \multirow{2}{*}{$69$} \\
+Data Race/Barrier Divergence Errors & \multirow{2}{*}{$@@cuda_repairable@@$} & \multirow{2}{*}{$@@cuda_repairable@@$} & \multirow{2}{*}{$@@opencl_repairable@@$} \\
 identified by \verifiername & & & \\ \hline
-\quad Repaired by the tool & $31$ & $55$ & $30$ \\
-\quad Could not be repaired by the tool & $9$ & $22$ & $34$ \\
-\quad Errors  & $14$ & $0$ & $0$ \\
-\quad Timeouts & $35$ & $12$ & $5$ \\ \hline \hline
+\quad Repaired by the tool & $@@cuda_repairable_as_repaired@@$ & $@@cuda_repairable_gr_repaired@@$ & $@@opencl_repairable_gr_repaired@@$ \\
+\quad Could not be repaired by the tool & $@@cuda_repairable_as_repairerror@@$ & $@@cuda_repairable_gr_repairerror@@$ & $@@opencl_repairable_gr_repairerror@@$ \\
+\quad Errors  & $@@cuda_repairable_as_errors@@$ & $@@cuda_repairable_gr_errors@@$ & $@@opencl_repairable_gr_errors@@$ \\
+\quad Timeouts & $@@cuda_repairable_as_timeout@@$ & $@@cuda_repairable_gr_timeout@@$ & $@@opencl_repairable_gr_timeout@@$ \\ \hline \hline
 
-Unrepairable errors identified by & \multirow{2}{*}{$25$} & \multirow{2}{*}{$25$} & \multirow{2}{*}{$86$} \\
+Unrepairable errors identified by & \multirow{2}{*}{$@@cuda_unrepairable@@$} & \multirow{2}{*}{$@@cuda_unrepairable@@$} & \multirow{2}{*}{$@@opencl_unrepairable@@$} \\
 \verifiername & & & \\ \hline
-\quad Handled gracefully by the tool & $0$ & $\MB{25}$ & $86$ \\
-\quad False Positives & $24$ & $0$ & $0$ \\
-\quad Errors  & $1$ & $0$ & $0$ \\ \hline
+\quad Handled gracefully by the tool & $0$ & $\MB{@@cuda_unrepairable@@}$ & $@@opencl_unrepairable@@$ \\
+\quad False Positives & $@@cuda_unrepairable_as_falsepositives@@$ & $0$ & $0$ \\
+\quad Errors  & $@@cuda_unrepairable_as_errors@@$ & $0$ & $0$ \\ \hline
 
 \end{tabular}
 \end{table}

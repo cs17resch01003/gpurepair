@@ -22,11 +22,11 @@
 
         public static async Task AnalyzeData(string directory)
         {
-            ToolComparisonRecords = await AnalyzeData(directory, "tool-comparison", GetToolComparisonRecords);
-            ToolComparisonSameRecords = await AnalyzeData(directory, "tool-comparison-same", GetToolComparisonRecords);
-            SolverComparisonRecords = await AnalyzeData(directory, "solver-comparison", GetSolverComparisonRecords);
-            ConfigurationComparisonRecords = await AnalyzeData(directory, "configuration-comparison", GetConfigurationComparisonRecords);
-            ConfigurationComparisonSameRecords = await AnalyzeData(directory, "configuration-comparison-same", GetConfigurationComparisonSameRecords);
+            ToolComparisonRecords = await AnalyzeData(directory, "tool_comparison.csv", GetToolComparisonRecords);
+            ToolComparisonSameRecords = await AnalyzeData(directory, "tool_comparison_same.csv", GetToolComparisonSameRecords);
+            SolverComparisonRecords = await AnalyzeData(directory, "solver_comparison.csv", GetSolverComparisonRecords);
+            ConfigurationComparisonRecords = await AnalyzeData(directory, "configuration_comparison.csv", GetConfigurationComparisonRecords);
+            ConfigurationComparisonSameRecords = await AnalyzeData(directory, "configuration_comparison_same.csv", GetConfigurationComparisonSameRecords);
         }
 
         private static async Task<IEnumerable<T>> AnalyzeData<T>(
