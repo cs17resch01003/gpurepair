@@ -1,0 +1,10 @@
+\section{Solver Comparison}
+
+Besides the $mhs$ implementation of \tool, we introduce two more implementations of \tool, which use $MaxSAT$ and $SAT$ solvers, respectively, to solve the clauses. These implementations of \tool are used to repair all the $752$ kernels from \tableref{benchmark_summary}. \tableref{solver_comparison} summarizes the metrics of these three implementations. \figref{mhs_maxsat} and \figref{mhs_sat} show the time comparison between mhs and MaxSAT.
+
+\input{figures/time_solvers}
+\input{tables/solver_comparison}
+
+All three implementations repaired $83$ kernels ($53$ CUDA and $30$ OpenCL). \tableref{solver_comparison_repaired} summarizes the metrics of these three implementations for these repaired kernels.
+
+\input{tables/solver_comparison_repaired}

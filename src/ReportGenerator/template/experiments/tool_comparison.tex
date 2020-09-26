@@ -1,0 +1,24 @@
+\section{GPURepair vs. AutoSync Comparison}
+
+\subsection{Result Comparison}
+\tableref{results} summarizes the results obtained from running the benchmark suite with \tool and \autosync. The table categorizes the results into three categories based on the output of \verifier. Since \autosync can not take OpenCL kernels as inputs, results for OpenCL is only applicable for \tool.
+
+For $9$ benchmarks, \autosync stated that the error could not be repaired. Out of these $9$, \tool was able to repair $4$, it timed out for $3$, and it could not repair $2$ of these.
+
+\input{tables/results}
+
+\subsection{Time Comparison}
+As described in \tableref{results}, there were $25$ benchmarks in the third category where \verifier itself throws an irreparable error (e.g., either an assertion violation or errors thrown by other stages). We provide a time comparison via the scatter plot shown in \figref{time_scatter_log} for the remaining $241$ benchmarks which are either certified as error free by \verifier or having a presence of data race and/or barrier divergence error.
+
+Out of the $241$ benchmarks, \autosync was faster for $177$ whereas \tool was faster for $64$ benchmarks. Please note that out of these $241$ benchmarks, there are $152$ benchmarks for which \verifier does not show any error. For these benchmarks, \autosync does not have to put any further efforts. On the other hand, \tool attempts to find if there are some programmer inserted barriers that are unnecessary so that they can be removed. \figref{time_repair_log} shows run time comparision for $89$ benchmarks for which \verifier found data-race/barrier divergence errors. \autosync was faster on $31$ benchmarks whereas \tool was faster on $58$ benchmarks out of these $89$ benchmarks. Note that if any of the tools crash on a benchmark, we consider that run to have timed out (e.g., $300$ seconds).
+
+The total time taken for all $241$ benchmarks on average by \autosync is $17302$ seconds whereas \tool takes $6590$ seconds. The median time taken over all the $241$ benchmarks by \autosync is $1.44$ seconds whereas the median time taken by \tool is $1.81$ seconds.
+
+\input{figures/time_total}
+
+\subsection{Verifier Calls Comparison}
+There were $28$ CUDA kernels that were repaired by both \tool and \autosync. For $129$ CUDA kernels neither \tool nor \autosync suggest any changes. \figref{verifier_calls_all} shows the number of queries made to \verifier by \autosync v/s \tool for all $28+129=157$ kernels which both of them repaired or both of them concurred that no changes are required. The size of the dot is proportional to the number of instances. In total for these $157$ benchmarks, \autosync invoked \verifier $212$ times whereas \tool queried \verifier $294$ times.
+
+\figref{verifier_calls_fixes} provides a comparison to the calls made to the \verifier for only $28$ benchmarks that are repaired by both \tool and \autosync. \tool makes $83$ queries while \autosync makes $137$ calls to \verifier.
+
+\input{figures/verifier_calls}

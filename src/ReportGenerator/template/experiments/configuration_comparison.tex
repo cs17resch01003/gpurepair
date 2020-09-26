@@ -1,0 +1,9 @@
+\section{Configuration Comparison}
+
+\tool provides the option of disabling instrumentation of grid-level barriers and disabling inspection of programmer inserted barriers. Disabling these configuration have a significant performance impact. By default both these options are enabled. These configuration options are used to repair all the $752$ kernels from \tableref{benchmark_summary}. \tableref{configuration_comparison} summarizes the metrics of these four configurations.
+
+\input{tables/configuration_comparison}
+
+All four implementations give the same result for $83$ kernels ($53$ CUDA and $30$ OpenCL). \tableref{configuration_comparison_same} summarizes the metrics of these four configurations for these kernels.
+
+\input{tables/configuration_comparison_same}
