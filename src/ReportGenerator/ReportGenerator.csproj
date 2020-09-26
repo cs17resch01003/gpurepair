@@ -55,6 +55,8 @@
   <ItemGroup>
     <Compile Include="Common.cs" />
     <Compile Include="CsvWrapper.cs" />
+    <Compile Include="DataAnalyzer.cs" />
+    <Compile Include="FileParser.cs" />
     <Compile Include="Records\AutoSyncOutRecord.cs" />
     <Compile Include="Records\GPURepairTimeRecord.cs" />
     <Compile Include="Records\GPUVerifyRecord.cs" />
@@ -63,8 +65,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Records\AutoSyncRecord.cs" />
-    <Compile Include="Reports\GridComparisonRecord.cs" />
-    <Compile Include="Reports\InspectionComparisonRecord.cs" />
+    <Compile Include="Reports\ConfigurationComparisonRecord.cs" />
     <Compile Include="Reports\SolverComparisonRecord.cs" />
     <Compile Include="Reports\ToolComparisonRecord.cs" />
     <Compile Include="SummaryGenerator.cs" />
@@ -80,6 +81,92 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <None Include="template\experiments\benchmark_summary.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\experiments\configuration_comparison.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\experiments\solver_comparison.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\experiments\source_information.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\experiments\tool_comparison.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\data\time_mhs_maxsat.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\data\time_mhs_sat.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\data\time_repaired.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\data\time_scatter.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\data\verifier_calls_all.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\data\verifier_calls_fixes.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\instrumentation.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\lines_commands.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\time_solvers.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\time_total.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\figures\verifier_calls.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\main.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\preamble.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\references.bib">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\refs.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\splncs04.bst">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\tables\benchmark_summary.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\tables\configuration_comparison.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\tables\configuration_comparison_same.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\tables\results.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\tables\solver_comparison.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\tables\solver_comparison_repaired.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="template\llncs.cls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Clean">
