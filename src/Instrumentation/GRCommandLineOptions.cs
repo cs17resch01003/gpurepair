@@ -47,22 +47,19 @@
                     DetailedLogging = bool.Parse(ps.args[ps.i]);
                 return true;
             }
-
-            if (name == "disableInspection")
+            else if (name == "disableInspection")
             {
                 if (ps.ConfirmArgumentCount(1))
                     DisableInspection = bool.Parse(ps.args[ps.i]);
                 return true;
             }
-
-            if (name == "disableGridBarriers")
+            else if (name == "disableGridBarriers")
             {
                 if (ps.ConfirmArgumentCount(1))
                     DisableGridBarriers = bool.Parse(ps.args[ps.i]);
                 return true;
             }
-
-            if (name == "sourceLanguage")
+            else if (name == "sourceLanguage")
             {
                 if (ps.ConfirmArgumentCount(1))
                     SourceLanguage = ps.args[ps.i] == "cl" ? SourceLanguage.OpenCL : SourceLanguage.CUDA;

@@ -42,7 +42,8 @@
 
                 Dictionary<string, bool> assignments;
 
-                Repairer repairer = new Repairer(Logger.FileName);
+                Repairer repairer = new Repairer(Logger.FileName,
+                    ((GRCommandLineOptions)CommandLineOptions.Clo).DisableInspection);
                 Microsoft.Boogie.Program program = repairer.Repair(
                     ((GRCommandLineOptions)CommandLineOptions.Clo).SolverType,
                     out assignments);

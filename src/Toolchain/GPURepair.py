@@ -492,6 +492,9 @@ class GPURepairInstance(object):
     if args.log_clauses:
       options.append("/logClauses:true")
 
+    if args.disable_inspection:
+      options.append("/disableInspection:true")
+
     if args.solver_type:
       options.append("/solverType:" + self.getSolverTypeString(args))
 

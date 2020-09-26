@@ -16,6 +16,11 @@
         public bool LogClauses { get; set; } = false;
 
         /// <summary>
+        /// Disables inspection of programmer inserted barriers.
+        /// </summary>
+        public bool DisableInspection { get; set; } = false;
+
+        /// <summary>
         /// The solver type.
         /// </summary>
         public Solver.SolverType SolverType = Solver.SolverType.mhs;
@@ -46,6 +51,12 @@
             {
                 if (ps.ConfirmArgumentCount(1))
                     LogClauses = bool.Parse(ps.args[ps.i]);
+                return true;
+            }
+            else if (name == "disableInspection")
+            {
+                if (ps.ConfirmArgumentCount(1))
+                    DisableInspection = bool.Parse(ps.args[ps.i]);
                 return true;
             }
             else if (name == "solverType")

@@ -16,11 +16,19 @@
         private ConstraintGenerator constraintGenerator;
 
         /// <summary>
+        /// Disables inspection of programmer inserted barriers.
+        /// </summary>
+        private bool disableInspection;
+
+        /// <summary>
         /// Initialize the variables.
         /// </summary>
         /// <param name="filePath">The file path.</param>
-        public Repairer(string filePath)
+        /// <param name="disableInspection">Disables inspection of programmer inserted barriers.</param>
+        public Repairer(string filePath, bool disableInspection)
         {
+            this.disableInspection = disableInspection;
+
             ProgramMetadata.PopulateMetadata(filePath);
             constraintGenerator = new ConstraintGenerator(filePath);
         }
@@ -45,7 +53,7 @@
 
                     if (solution == null)
                     {
-                        if (!errors.Any())
+                        if (!errors.Any() && disableInspection)
                         {
                             // for the first run, disable all the barriers
                             assignments = new Dictionary<string, bool>();
