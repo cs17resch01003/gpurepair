@@ -1,4 +1,6 @@
 #!/bin/bash
+rm -rf /datadrive/reports
+
 for i in 0 1 2 3
 do
 	cd /datadrive/autosync/
