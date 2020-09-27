@@ -19,5 +19,5 @@ do
 	
 	mkdir -p /datadrive/reports
 	mv /datadrive/gpuverify/gpuverify-$i.csv /datadrive/reports/gpuverify-$i.csv
-	mv /datadrive/gpuverify/gpuverify-$i.metrics.csv /datadrive/reports/gpuverify-$i.metrics.csv
+	mv /datadrive/gpuverify/gpuverify-run-$i.log /datadrive/reports/gpuverify-run-$i.log
 done

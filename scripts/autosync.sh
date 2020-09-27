@@ -8,12 +8,12 @@ do
 
 	clear
 	cd /datadrive/autosync/src/AutoSync
-	python testrunner.py /datadrive/autosync/tests/testsuite | tee autosync-run-$i.log
+	python3 testrunner.py /datadrive/autosync/tests/testsuite | tee autosync-run-$i.csv
 
 	cd /datadrive/autosync/tests/testsuite
 	zip -r autosync-snapshot-$i.zip .
 
 	mkdir -p /datadrive/reports
 	mv /datadrive/autosync/src/AutoSync/autosync-run-$i.csv /datadrive/reports/autosync-run-$i.csv
-	mv /datadrive/autosync/tests/testsuite/autosync-snapshot-$i.csv /datadrive/reports/autosync-snapshot-$i.csv
+	mv /datadrive/autosync/tests/testsuite/autosync-snapshot-$i.zip /datadrive/reports/autosync-snapshot-$i.zip
 done
