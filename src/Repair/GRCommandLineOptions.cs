@@ -28,7 +28,7 @@
         /// <summary>
         /// The weight associated with a grid-level barrier.
         /// </summary>
-        public int GridBarrierWeight { get; set; } = 16;
+        public int GridBarrierWeight { get; set; } = 12;
 
         /// <summary>
         /// The solver type.
