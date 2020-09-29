@@ -377,7 +377,7 @@
             ProgramNode next = node.Successors.First();
 
             // the block should have source location information for instrumentation to work
-            if (next.Block.Cmds[1] is AssertCmd)
+            if (next.Block.Cmds.Count > 1 && next.Block.Cmds[1] is AssertCmd)
             {
                 AssertCmd assert = next.Block.Cmds[1] as AssertCmd;
                 assert = DuplicateAssertCmd(assert);
