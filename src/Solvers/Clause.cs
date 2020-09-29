@@ -1,7 +1,7 @@
 ﻿namespace GPURepair.Solvers
 {
     using System.Collections.Generic;
-    using System.Text;
+    using System.Linq;
 
     public class Clause
     {
@@ -42,11 +42,31 @@
         /// <returns>The string representation.</returns>
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
-            foreach (Literal literal in Literals)
-                builder.AppendFormat("{0}{1} ", literal.Value ? string.Empty : "-", literal.Variable);
+            return string.Join(" ", Literals.Distinct().OrderBy(x => x.Value)
+                .ThenBy(x => int.Parse(x.Variable.Replace("b", string.Empty))).Select(x => x.ToString()));
+        }
 
-            return builder.ToString();
+        /// <summary>
+        /// Determines if the specified object is equal to the current object.
+        /// </summary>
+        /// <param name="obj">The specified object.</param>
+        /// <returns>true if the specified object is equal to the current object; otherwise false.</returns>
+        public override bool Equals(object obj)
+        {
+            Clause clause = obj as Clause;
+            if (clause == null)
+                return false;
+
+            return clause.ToString().Equals(ToString());
+        }
+
+        /// <summary>
+        /// Serves as the default hash function.
+        /// </summary>
+        /// <returns>A hash code for the current object.</returns>
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
         }
     }
 }

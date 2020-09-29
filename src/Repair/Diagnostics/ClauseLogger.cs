@@ -1,9 +1,9 @@
 ﻿namespace GPURepair.Repair.Diagnostics
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using GPURepair.Solvers;
     using static GPURepair.Repair.Solver;
 
@@ -32,18 +32,16 @@
                 List<string> lines = new List<string>();
                 lines.Add("Type: " + type.ToString());
 
-                StringBuilder builder = new StringBuilder();
-                if (solution != null)
-                    foreach (KeyValuePair<string, bool> pair in solution)
-                        builder.AppendFormat("{0}{1} ", pair.Value ? string.Empty : "-", pair.Key);
-
-                lines.Add("Solution: " + builder.ToString());
-                lines.Add("Clauses:");
+                string solution_str = string.Join(" ", solution.OrderBy(x => x.Value).ThenBy(x => int.Parse(x.Key.Replace("b", string.Empty)))
+                    .Select(x => string.Format("{0}{1}", x.Value ? string.Empty : "-", x.Key)));
 
                 List<string> clause_strings = new List<string>();
                 foreach (Clause clause in clauses)
                     clause_strings.Add(clause.ToString());
-                lines.AddRange(clause_strings.Distinct());
+
+                lines.Add("Solution: " + solution_str);
+                lines.Add("Clauses:");
+                lines.Add(string.Join(Environment.NewLine, clause_strings));
 
                 string clauseLog = string.Format("{0}.satlog", FileName);
                 File.AppendAllLines(clauseLog, lines);

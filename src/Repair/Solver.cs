@@ -101,13 +101,13 @@
                 bool value = error is RaceError;
 
                 Clause clause = new Clause();
-                foreach (Variable variable in error.Variables)
-                    clause.Add(new Literal(variable.Name, value));
+                foreach (string variable in error.Variables.Select(x => x.Name).Distinct().OrderBy(x => x))
+                    clause.Add(new Literal(variable, value));
 
                 clauses.Add(clause);
             }
 
-            return clauses;
+            return clauses.Distinct().ToList();
         }
 
         /// <summary>

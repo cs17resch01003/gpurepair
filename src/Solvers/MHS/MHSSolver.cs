@@ -106,6 +106,7 @@
                 .Select(x => x.Variable).Distinct();
 
             string chosen = string.Empty;
+            int max_unknown_clauses = 0;
             double max_total_weight = 0;
 
             foreach (string variable in variables)
@@ -113,12 +114,19 @@
                 if (!solution.Assignments.ContainsKey(variable))
                 {
                     int unknown_clauses = clauses.Count(x => x.Literals.Select(y => y.Variable).Contains(variable));
-                    double total_weight = unknown_clauses * weights[variable];
-
-                    if (total_weight > max_total_weight)
+                    if (unknown_clauses > max_unknown_clauses)
                     {
-                        max_total_weight = total_weight;
+                        max_unknown_clauses = unknown_clauses;
                         chosen = variable;
+                    }
+                    else if (unknown_clauses == max_unknown_clauses)
+                    {
+                        double total_weight = unknown_clauses * weights[variable];
+                        if (total_weight > max_total_weight)
+                        {
+                            max_total_weight = total_weight;
+                            chosen = variable;
+                        }
                     }
                 }
             }

@@ -11,7 +11,6 @@ do
 	
 	clear
 	rm -rf Binaries/
-	cd src
 	xbuild /p:Configuration=Release GPUVerify.sln
 	
 	mv ../gvfindtools.py ./gvfindtools.py
