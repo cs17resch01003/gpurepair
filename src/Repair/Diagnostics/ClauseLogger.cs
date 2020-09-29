@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using GPURepair.Repair.Metadata;
     using GPURepair.Solvers;
     using static GPURepair.Repair.Solver;
 
@@ -18,6 +19,21 @@
         /// The file used for logging.
         /// </summary>
         public static string FileName;
+
+        /// <summary>
+        /// Logs the weights of the variables.
+        /// </summary>
+        public static void LogWeights()
+        {
+            if (LogCLauses)
+            {
+                string message = string.Join(" ", ProgramMetadata.Barriers.Select(
+                    x => string.Format("{0}[{1}]", x.Value.Name, x.Value.Weight)));
+
+                string clauseLog = string.Format("{0}.satlog", FileName);
+                File.AppendAllLines(clauseLog, new List<string> { message });
+            }
+        }
 
         /// <summary>
         /// Logs the clauses and the solution to the log file.

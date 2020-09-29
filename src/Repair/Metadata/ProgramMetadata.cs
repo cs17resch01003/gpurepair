@@ -7,6 +7,7 @@
     using System.Text.RegularExpressions;
     using GPURepair.Common;
     using GPURepair.Common.Diagnostics;
+    using GPURepair.Repair.Diagnostics;
     using Microsoft.Boogie;
 
     public static class ProgramMetadata
@@ -48,12 +49,13 @@
         /// <param name="filePath">The file path.</param>
         public static void PopulateMetadata(string filePath)
         {
-            Microsoft.Boogie.Program program = BoogieUtilities.ReadFile(filePath);
+            Program program = BoogieUtilities.ReadFile(filePath);
 
             PopulateLocations(filePath.Replace(".cbpl", ".loc"));
             PopulateBarriers(program);
             PopulateLoopInformation(program);
 
+            ClauseLogger.LogWeights();
             Logger.Log($"GridLevelBarriers;{Barriers.Values.Where(x => x.GridLevel).Count()}");
             Logger.Log($"LoopBarriers;{Barriers.Values.Where(x => x.LoopDepth > 0).Count()}");
         }
