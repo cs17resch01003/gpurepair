@@ -85,7 +85,7 @@
         /// <param name="first">The first location.</param>
         /// <param name="second">The second location.</param>
         /// <returns>true if the current location is between the given two locations; otherwise, false.</returns>
-        public bool IsBetween(Location first, Location second)
+        public bool? IsBetween(Location first, Location second)
         {
             if (Directory != first.Directory || File != first.File)
                 return false;
@@ -93,7 +93,7 @@
                 return false;
 
             if (Line == first.Line && Line == second.Line)
-                return second.Column >= Column && Column > first.Column;
+                return null;
             return second.Line >= Line && Line > first.Line;
         }
     }

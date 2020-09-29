@@ -223,12 +223,42 @@
                 foreach (Location location in locations)
                 {
                     if (start != null && end != null)
-                        if (location.IsBetween(start, end))
+                    {
+                        bool? value = location.IsBetween(start, end);
+                        if (!value.HasValue)
+                        {
                             AddBarrier(location_barriers, barrier);
+
+                            List<Barrier> loop_barriers = GetLoopBarriers(barrier);
+                            foreach (Barrier loop_barrier in loop_barriers)
+                                AddBarrier(location_barriers, loop_barrier);
+                        }
+                        else if (value.Value)
+                            AddBarrier(location_barriers, barrier);
+                    }
                 }
             }
 
             return location_barriers;
+        }
+
+        /// <summary>
+        /// Returns all the loop barriers which are related to the given barrier.
+        /// </summary>
+        /// <param name="barrier">The given barrier.</param>
+        /// <returns></returns>
+        private List<Barrier> GetLoopBarriers(Barrier barrier)
+        {
+            // check if the given barrier is inside a loop
+            List<Barrier> loop_barriers = new List<Barrier>();
+            foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
+            {
+                List<Barrier> temp = ProgramMetadata.LoopBarriers[edge];
+                if (temp.Contains(barrier))
+                    loop_barriers.AddRange(temp);
+            }
+
+            return loop_barriers;
         }
 
         /// <summary>
