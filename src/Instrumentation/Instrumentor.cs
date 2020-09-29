@@ -216,8 +216,6 @@
                                 {
                                     if (command is CallCmd)
                                         call_commands++;
-
-                                    analyzer.LinkBarrier(implementation, block);
                                     return true;
                                 }
                             }
@@ -275,96 +273,136 @@
                 if (!node.Block.Cmds.Any())
                     continue;
 
-                // skips asserts to preserve the invariants at the loop head
-                int i = 1;
-                while (node.Block.Cmds.Count > i && node.Block.Cmds[i] is AssertCmd)
+                if (nodes[node] == MergeNodeType.Loop)
+                    InstrumentLoop(node);
+                else
+                    InstrumentIfElse(node);
+            }
+        }
+
+        /// <summary>
+        /// Instrument the loop.
+        /// </summary>
+        /// <param name="node">The merge node.</param>
+        private void InstrumentLoop(ProgramNode node)
+        {
+            // skips asserts to preserve the invariants at the loop head
+            int i = 1;
+            while (node.Block.Cmds.Count > i && node.Block.Cmds[i] is AssertCmd)
+            {
+                AssertCmd assert = node.Block.Cmds[i] as AssertCmd;
+                if (!ContainsAttribute(assert, "originated_from_invariant"))
+                    break;
+
+                i = i + 1;
+            }
+
+            // the block should have source location information for instrumentation to work
+            if (node.Block.Cmds[0] is AssertCmd)
+            {
+                AssertCmd assert = node.Block.Cmds[0] as AssertCmd;
+                if (ContainsAttribute(assert, SourceLocationKey))
                 {
-                    AssertCmd assert = node.Block.Cmds[i] as AssertCmd;
-                    if (!ContainsAttribute(assert, "originated_from_invariant"))
-                        break;
+                    node.Block.Cmds.Insert(i, assert);
+                    node.Block.Cmds.RemoveAt(0);
 
-                    i = i + 1;
-                }
+                    // insert a barrier at the beginning of the merge block
+                    AddBarrier(node.Implementation, node.Block, i);
 
-                // the block should have source location information for instrumentation to work
-                if (node.Block.Cmds[0] is AssertCmd)
-                {
-                    AssertCmd assert = node.Block.Cmds[0] as AssertCmd;
-                    if (ContainsAttribute(assert, SourceLocationKey))
-                    {
-                        node.Block.Cmds.Insert(i, assert);
-                        node.Block.Cmds.RemoveAt(0);
-
-                        // insert a barrier at the beginning of the merge block
-                        bool value = AddBarrier(node.Implementation, node.Block, i);
-                        if (value == true)
+                    // get the header nodes in the loop
+                    List<Block> predecessors = new List<Block>();
+                    foreach (Block block in program.Implementations.SelectMany(x => x.Blocks))
+                        if (block.TransferCmd is GotoCmd)
                         {
-                            analyzer.LinkBarrier(node.Implementation, node.Block);
+                            GotoCmd gotoCmd = block.TransferCmd as GotoCmd;
+                            if (gotoCmd.labelTargets.Contains(node.Block))
+                                predecessors.Add(block);
                         }
 
-                        if (nodes[node] == MergeNodeType.Loop)
+                    foreach (Block predecessor in predecessors)
+                    {
+                        if (analyzer.Graph.BackEdges.Any(x => x.Destination == node && x.Source.Block == predecessor))
+                            continue;
+
+                        // identify the location of the initialize statement of the loop
+                        int index = predecessor.Cmds.Count - 1;
+                        while (index >= 0)
                         {
-                            // get the header nodes in the loop
-                            List<Block> predecessors = new List<Block>();
-                            foreach (Block block in program.Implementations.SelectMany(x => x.Blocks))
-                                if (block.TransferCmd is GotoCmd)
-                                {
-                                    GotoCmd gotoCmd = block.TransferCmd as GotoCmd;
-                                    if (gotoCmd.labelTargets.Contains(node.Block))
-                                        predecessors.Add(block);
-                                }
+                            if (predecessor.Cmds[index] is AssertCmd)
+                                break;
+                            index = index - 1;
+                        }
 
-                            foreach (Block predecessor in predecessors)
+                        if (index != -1)
+                        {
+                            // create an assert from the block source location since initializers don't have source locations
+                            int location = QKeyValue.FindIntAttribute(assert.Attributes, SourceLocationKey, -1);
+                            if (location != -1)
                             {
-                                if (analyzer.Graph.BackEdges.Any(x => x.Destination == node && x.Source.Block == predecessor))
-                                    continue;
+                                assert = predecessor.Cmds[index] as AssertCmd;
 
-                                // identify the location of the initialize statement of the loop
-                                int index = predecessor.Cmds.Count - 1;
-                                while (index >= 0)
+                                // becomes true when there is only one command in the block
+                                // in those cases, we don't need to need to add a new assert attribute
+                                if (!ContainsAttribute(assert, BlockSourceKey))
                                 {
-                                    if (predecessor.Cmds[index] is AssertCmd)
-                                        break;
-                                    index = index - 1;
+                                    // create a new assert to store the location information
+                                    LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
+                                    QKeyValue sourceLocationKey = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object>() { locationValue }, null);
+
+                                    LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
+                                    assert = new AssertCmd(Token.NoToken, literal);
+                                    assert.Attributes = sourceLocationKey;
+
+                                    index = index + 2;
+                                    predecessor.Cmds.Insert(index, assert);
                                 }
 
-                                if (index != -1)
-                                {
-                                    // create an assert from the block source location since initializers don't have source locations
-                                    int location = QKeyValue.FindIntAttribute(assert.Attributes, SourceLocationKey, -1);
-                                    if (location != -1)
-                                    {
-                                        assert = predecessor.Cmds[index] as AssertCmd;
+                                Implementation implementation = program.Implementations.First(x => x.Blocks.Contains(predecessor));
 
-                                        // becomes true when there is only one command in the block
-                                        // in those cases, we don't need to need to add a new assert attribute
-                                        if (!ContainsAttribute(assert, BlockSourceKey))
-                                        {
-                                            // create a new assert to store the location information
-                                            LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
-                                            QKeyValue sourceLocationKey = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object>() { locationValue }, null);
-
-                                            LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
-                                            assert = new AssertCmd(Token.NoToken, literal);
-                                            assert.Attributes = sourceLocationKey;
-
-                                            index = index + 2;
-                                            predecessor.Cmds.Insert(index, assert);
-                                        }
-
-                                        Implementation implementation = program.Implementations.First(x => x.Blocks.Contains(predecessor));
-
-                                        // insert a barrier at the end of the header block
-                                        value = AddBarrier(implementation, predecessor, index + 1);
-                                        if (value == true)
-                                        {
-                                            analyzer.LinkBarrier(implementation, predecessor);
-                                        }
-                                    }
-                                }
+                                // insert a barrier at the end of the header block
+                                AddBarrier(implementation, predecessor, index + 1);
                             }
                         }
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Instrument the if-else block.
+        /// </summary>
+        /// <param name="node">The lca node.</param>
+        private void InstrumentIfElse(ProgramNode node)
+        {
+            ProgramNode next = node.Successors.First();
+
+            // the block should have source location information for instrumentation to work
+            if (next.Block.Cmds[1] is AssertCmd)
+            {
+                AssertCmd assert = next.Block.Cmds[1] as AssertCmd;
+                assert = DuplicateAssertCmd(assert);
+
+                if (assert != null)
+                {
+                    Block lca = null;
+                    foreach (Block block in program.Implementations.SelectMany(x => x.Blocks))
+                        if (block.TransferCmd is GotoCmd)
+                        {
+                            GotoCmd gotoCmd = block.TransferCmd as GotoCmd;
+                            if (gotoCmd.labelTargets.Contains(next.Block))
+                            {
+                                lca = block;
+                                break;
+                            }
+                        }
+
+                    int index = lca.Cmds.Count;
+                    lca.Cmds.Insert(index, assert);
+
+                    Implementation implementation = program.Implementations.First(x => x.Blocks.Contains(lca));
+
+                    // insert a barrier at the end of the header block
+                    AddBarrier(implementation, lca, index + 1);
                 }
             }
         }
@@ -459,6 +497,7 @@
                 InsertBarrier(implementation, block, index, barrier);
             }
 
+            analyzer.LinkBarrier(implementation, block);
             return true;
         }
 
@@ -694,6 +733,33 @@
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Duplicates the given assert command.
+        /// </summary>
+        /// <param name="assert">The assert command.</param>
+        /// <returns></returns>
+        private AssertCmd DuplicateAssertCmd(AssertCmd assert)
+        {
+            if (ContainsAttribute(assert, SourceLocationKey))
+            {
+                int location = QKeyValue.FindIntAttribute(assert.Attributes, SourceLocationKey, -1);
+                if (location != -1)
+                {
+                    // create a new assert to store the location information
+                    LiteralExpr locationValue = new LiteralExpr(Token.NoToken, BigNum.FromInt(location));
+                    QKeyValue sourceLocationKey = new QKeyValue(Token.NoToken, SourceLocationKey, new List<object>() { locationValue }, null);
+
+                    LiteralExpr literal = new LiteralExpr(Token.NoToken, true);
+                    assert = new AssertCmd(Token.NoToken, literal);
+                    assert.Attributes = sourceLocationKey;
+
+                    return assert;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

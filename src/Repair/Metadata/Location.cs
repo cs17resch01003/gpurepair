@@ -93,8 +93,8 @@
                 return false;
 
             if (Line == first.Line && Line == second.Line)
-                return (second.Column >= Column && Column > first.Column) || (first.Column >= Column && Column > second.Column);
-            return (second.Line >= Line && Line > first.Line) || (first.Line >= Line && Line > second.Line);
+                return second.Column >= Column && Column > first.Column;
+            return second.Line >= Line && Line > first.Line;
         }
     }
 }

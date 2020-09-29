@@ -48,8 +48,9 @@
                 List<string> lines = new List<string>();
                 lines.Add("Type: " + type.ToString());
 
-                string solution_str = string.Join(" ", solution.OrderBy(x => x.Value).ThenBy(x => int.Parse(x.Key.Replace("b", string.Empty)))
-                    .Select(x => string.Format("{0}{1}", x.Value ? string.Empty : "-", x.Key)));
+                string solution_str = solution == null ? string.Empty :
+                    string.Join(" ", solution.OrderBy(x => x.Value).ThenBy(x => int.Parse(x.Key.Replace("b", string.Empty)))
+                        .Select(x => string.Format("{0}{1}", x.Value ? string.Empty : "-", x.Key)));
 
                 List<string> clause_strings = new List<string>();
                 foreach (Clause clause in clauses)

@@ -173,33 +173,62 @@
         /// <returns>The barriers to be considered.</returns>
         private List<Barrier> FilterBarriers(IEnumerable<Barrier> barriers, RaceError race)
         {
-            List<Barrier> filteredBarriers = new List<Barrier>();
+            List<Barrier> location_barriers = FilterBarriers(barriers, race.Start, race.End);
+            if (!location_barriers.Any())
+            {
+                location_barriers = FilterBarriers(barriers, race.End, race.Start);
+
+                // check if these source locations are inside a loop
+                List<Barrier> loop_barriers = new List<Barrier>();
+                foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
+                {
+                    List<Barrier> temp = ProgramMetadata.LoopBarriers[edge];
+                    if (location_barriers.Any(x => temp.Contains(x)))
+                        loop_barriers.AddRange(temp);
+                }
+
+                // the race is a inter-iteration race.
+                if (loop_barriers.Any())
+                {
+                    List<Barrier> inverse = new List<Barrier>();
+                    foreach (Barrier barrier in loop_barriers)
+                        if (!location_barriers.Contains(barrier))
+                            AddBarrier(inverse, barrier);
+
+                    location_barriers = inverse;
+                }
+            }
+
+            List<Barrier> result = new List<Barrier>();
+            foreach (Barrier barrier in location_barriers)
+                if (barriers.Contains(barrier))
+                    result.Add(barrier);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Filter the barriers based on the source information.
+        /// </summary>
+        /// <param name="barriers">The barriers involved in the trace.</param>
+        /// <param name="start">The start location.</param>
+        /// <param name="end">The end location.</param>
+        /// <returns>The barriers to be considered.</returns>
+        private List<Barrier> FilterBarriers(IEnumerable<Barrier> barriers, Location start, Location end)
+        {
+            List<Barrier> location_barriers = new List<Barrier>();
             foreach (Barrier barrier in barriers)
             {
                 List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
                 foreach (Location location in locations)
                 {
-                    if (race.Start != null && race.End != null)
-                        if (location.IsBetween(race.Start, race.End))
-                            filteredBarriers.Add(barrier);
+                    if (start != null && end != null)
+                        if (location.IsBetween(start, end))
+                            AddBarrier(location_barriers, barrier);
                 }
             }
 
-            // check if any of the barriers are inside a loop
-            List<Barrier> result = new List<Barrier>();
-            foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
-            {
-                List<Barrier> loopBarriers = ProgramMetadata.LoopBarriers[edge];
-                if (filteredBarriers.Any(x => loopBarriers.Contains(x)))
-                    foreach (Barrier barrier in loopBarriers)
-                        if (barriers.Contains(barrier))
-                            AddBarrier(result, barrier);
-            }
-
-            foreach (Barrier barrier in filteredBarriers)
-                AddBarrier(result, barrier);
-
-            return result;
+            return location_barriers;
         }
 
         /// <summary>
