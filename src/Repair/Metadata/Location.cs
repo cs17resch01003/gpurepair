@@ -40,6 +40,16 @@
         }
 
         /// <summary>
+        /// Determines whether the specified location is in the same line as the current location.
+        /// </summary>
+        /// <param name="location">The location to compare with the current location.</param>
+        /// <returns>true if the specified location is in the same line as the current location; otherwise, false.</returns>
+        public bool SameLine(Location location)
+        {
+            return Directory == location.Directory && File == location.File && Line == location.Line;
+        }
+
+        /// <summary>
         /// Determines whether the specified object is equal to the current object.
         /// </summary>
         /// <param name="obj">The object to compare with the current object.</param>

@@ -120,28 +120,28 @@
         /// <param name="error">The error.</param>
         private void IdentifyVariables(RepairableError error)
         {
-            Regex regex = new Regex(@"^b\d+$");
-            Dictionary<string, bool> assignments = new Dictionary<string, bool>();
-
-            IEnumerable<Model.Boolean> elements = error.CounterExample.Model.Elements
-                .Where(x => x is Model.Boolean).Select(x => x as Model.Boolean);
-            foreach (Model.Boolean element in elements)
-                element.References.Select(x => x.Func).Where(x => regex.IsMatch(x.Name))
-                    .Select(x => x.Name).ToList().ForEach(x => assignments.Add(x, element.Value));
-
-            foreach (string key in this.assignments.Keys)
-                assignments.Add(key, this.assignments[key]);
-
-            bool value = error is RaceError ? false : true;
-            IEnumerable<string> names = assignments.Where(x => x.Value == value).Select(x => x.Key);
-
-            IEnumerable<Barrier> barriers = ProgramMetadata.Barriers
-                .Where(x => names.Contains(x.Key)).Select(x => x.Value)
-                .Where(x => x.Implementation.Name == error.Implementation.Name);
-
             // Filter the variables based on source locations
             if (error is RaceError)
             {
+                Regex regex = new Regex(@"^b\d+$");
+                Dictionary<string, bool> assignments = new Dictionary<string, bool>();
+
+                IEnumerable<Model.Boolean> elements = error.CounterExample.Model.Elements
+                    .Where(x => x is Model.Boolean).Select(x => x as Model.Boolean);
+                foreach (Model.Boolean element in elements)
+                    element.References.Select(x => x.Func).Where(x => regex.IsMatch(x.Name))
+                        .Select(x => x.Name).ToList().ForEach(x => assignments.Add(x, element.Value));
+
+                foreach (string key in this.assignments.Keys)
+                    assignments.Add(key, this.assignments[key]);
+
+                bool value = error is RaceError ? false : true;
+                IEnumerable<string> names = assignments.Where(x => x.Value == value).Select(x => x.Key);
+
+                IEnumerable<Barrier> barriers = ProgramMetadata.Barriers
+                    .Where(x => names.Contains(x.Key)).Select(x => x.Value)
+                    .Where(x => x.Implementation.Name == error.Implementation.Name);
+
                 PopulateRaceBarriers(barriers, error as RaceError);
             }
             else
@@ -149,12 +149,12 @@
                 DivergenceError divergence = error as DivergenceError;
                 List<Barrier> final_barriers = new List<Barrier>();
 
-                foreach (Barrier barrier in barriers)
+                foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
                 {
                     List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
                     foreach (Location location in locations)
                     {
-                        if (divergence.Location != null && location.Equals(divergence.Location))
+                        if (divergence.Location != null && location.SameLine(divergence.Location))
                             AddBarrier(final_barriers, barrier);
                     }
                 }
@@ -173,7 +173,6 @@
             bool inverse = false;
 
             List<Barrier> location_barriers;
-
             if (race.Start == null && race.End == null)
             {
                 location_barriers = barriers.ToList();
@@ -189,15 +188,7 @@
             }
 
             // get all the other barriers which are in the loop
-            List<Barrier> loop_barriers = new List<Barrier>();
-            foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
-            {
-                List<Barrier> temp = ProgramMetadata.LoopBarriers[edge];
-                if (location_barriers.Any(x => temp.Contains(x)))
-                    foreach (Barrier barrier in temp)
-                        loop_barriers.Add(barrier);
-            }
-
+            List<Barrier> loop_barriers = GetLoopBarriers(race.Start, race.End);
             if (inverse)
             {
                 List<Barrier> inverse_barriers = new List<Barrier>();
@@ -208,17 +199,22 @@
                 location_barriers = inverse_barriers;
             }
 
+            // check if all the locations are from the loop
+            // needed for cases for one location is inside and the other is outside the loop
+            // refer CUDASamples\6_Advanced_concurrentKernels_sum as an example
+            bool same_loop = !location_barriers.Any(x => !loop_barriers.Contains(x));
+
             List<Barrier> result = new List<Barrier>();
             foreach (Barrier barrier in location_barriers)
                 if (barriers.Contains(barrier))
                     AddBarrier(result, barrier);
 
             List<Barrier> overapproximated_result = new List<Barrier>();
-            foreach (Barrier barrier in loop_barriers)
+            foreach (Barrier barrier in loop_barriers.Union(location_barriers))
                 if (barriers.Contains(barrier))
                     AddBarrier(overapproximated_result, barrier);
 
-            race.Barriers = result;
+            race.Barriers = same_loop ? result : overapproximated_result;
             race.OverapproximatedBarriers = overapproximated_result;
         }
 
@@ -267,6 +263,34 @@
             }
 
             return location_barriers;
+        }
+
+        /// <summary>
+        /// Gets the loop barriers if any of the given locations are inside a loop.
+        /// </summary>
+        /// <param name="start">The starting location.</param>
+        /// <param name="end">The ending location.</param>
+        /// <returns>The loop barriers.</returns>
+        private List<Barrier> GetLoopBarriers(Location start, Location end)
+        {
+            List<Barrier> result = new List<Barrier>();
+            foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
+            {
+                List<Barrier> loop_barriers = ProgramMetadata.LoopBarriers[edge];
+                IEnumerable<Location> locations =
+                    loop_barriers.SelectMany(x => ProgramMetadata.Locations[x.SourceLocation]);
+
+                foreach (Location location in locations)
+                {
+                    if (location == start || location == end)
+                    {
+                        result.AddRange(loop_barriers);
+                        break;
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

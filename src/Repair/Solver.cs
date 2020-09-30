@@ -83,7 +83,10 @@
                     Dictionary<string, bool> assignments = optimizer.Solve(--total_weight, out status);
 
                     if (status == SolverStatus.Unsatisfiable)
+                    {
+                        ClauseLogger.Log(clauses, type, solution);
                         return solution;
+                    }
                     else
                         solution = assignments;
                 }
@@ -130,19 +133,31 @@
             foreach (RepairableError error in errors)
             {
                 RaceError race = error as RaceError;
-
-                IEnumerable<Barrier> barriers = error.Barriers;
-                if (race != null && race.Overapproximated && race.OverapproximatedBarriers.Any())
+                if (race != null)
                 {
-                    // consider the over-approximation barriers for the loop
-                    barriers = race.OverapproximatedBarriers;
+                    IEnumerable<Barrier> barriers = error.Barriers;
+                    if (race != null && race.Overapproximated && race.OverapproximatedBarriers.Any())
+                    {
+                        // consider the over-approximation barriers for the loop
+                        barriers = race.OverapproximatedBarriers;
+                    }
+
+                    Clause clause = new Clause();
+                    foreach (string variable in barriers.Select(x => x.Name))
+                        clause.Add(new Literal(variable, true));
+
+                    clauses.Add(clause);
                 }
+                else
+                {
+                    foreach (string variable in error.Barriers.Select(x => x.Name))
+                    {
+                        Clause clause = new Clause();
+                        clause.Add(new Literal(variable, false));
 
-                Clause clause = new Clause();
-                foreach (string variable in barriers.Select(x => x.Name))
-                    clause.Add(new Literal(variable, race != null));
-
-                clauses.Add(clause);
+                        clauses.Add(clause);
+                    }
+                }
             }
 
             return clauses.Distinct().ToList();
