@@ -75,7 +75,8 @@
                 return false;
 
             if (Line == location.Line)
-                return Column < location.Column;
+                // Boogies evaluates the right-side operation before the left-side
+                return Column > location.Column;
             return Line < location.Line;
         }
 
@@ -85,7 +86,7 @@
         /// <param name="first">The first location.</param>
         /// <param name="second">The second location.</param>
         /// <returns>true if the current location is between the given two locations; otherwise, false.</returns>
-        public bool? IsBetween(Location first, Location second)
+        public bool IsBetween(Location first, Location second)
         {
             if (Directory != first.Directory || File != first.File)
                 return false;
@@ -93,7 +94,8 @@
                 return false;
 
             if (Line == first.Line && Line == second.Line)
-                return null;
+                // Boogies evaluates the right-side operation before the left-side
+                return first.Column > Column && Column >= second.Column;
             return second.Line >= Line && Line > first.Line;
         }
     }

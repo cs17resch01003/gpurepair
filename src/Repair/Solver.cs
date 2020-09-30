@@ -9,7 +9,6 @@
     using GPURepair.Solvers;
     using GPURepair.Solvers.Optimizer;
     using GPURepair.Solvers.SAT;
-    using Microsoft.Boogie;
 
     public class Solver
     {
@@ -21,33 +20,36 @@
         /// <returns>The barrier assignments.</returns>
         public Dictionary<string, bool> Solve(List<RepairableError> errors, ref SolverType type)
         {
-            List<Clause> clauses = GenerateClauses(errors);
-
-            Dictionary<string, bool> solution;
-            SolverStatus status;
-
-            if (type == SolverType.SAT)
-                solution = SolveSAT(clauses, out status);
-            else if (type == SolverType.mhs)
+            SolverType original_type = type;
+            try
             {
-                solution = SolveMHS(clauses, out status);
-                if (status != SolverStatus.Satisfiable)
-                {
-                    // fall back to MaxSAT if MHS fails
-                    type = SolverType.MaxSAT;
-                    solution = SolveMaxSAT(clauses, out status);
-                }
+                List<Clause> clauses = GenerateClauses(errors);
+                return Solve(clauses, ref type);
             }
-            else if (type == SolverType.MaxSAT)
-                solution = SolveMaxSAT(clauses, out status);
-            else
-                throw new RepairException("Invalid solver type!");
 
-            ClauseLogger.Log(clauses, type, solution);
-            if (status == SolverStatus.Unsatisfiable)
-                throw new RepairException("The program could not be repaired because of unsatisfiable clauses!");
+            // the repair exception could be because of not considering all the barriers in the loop
+            // refer CUDA/transitiveclosure as an example
+            catch (RepairException)
+            {
+                bool overapproximated = false;
+                foreach (Error error in errors)
+                {
+                    RaceError race = error as RaceError;
+                    if (race != null && race.OverapproximatedBarriers.Any())
+                    {
+                        overapproximated = true;
+                        race.Overapproximated = true;
+                    }
+                }
 
-            return solution;
+                // if none of the clauses were overapproximated, return the original result
+                if (!overapproximated)
+                    throw;
+                type = original_type;
+
+                List<Clause> clauses = GenerateClauses(errors);
+                return Solve(clauses, ref type);
+            }
         }
 
         /// <summary>
@@ -88,6 +90,35 @@
             }
         }
 
+        private Dictionary<string, bool> Solve(List<Clause> clauses, ref SolverType type)
+        {
+            Dictionary<string, bool> solution;
+            SolverStatus status;
+
+            if (type == SolverType.SAT)
+                solution = SolveSAT(clauses, out status);
+            else if (type == SolverType.mhs)
+            {
+                solution = SolveMHS(clauses, out status);
+                if (status != SolverStatus.Satisfiable)
+                {
+                    // fall back to MaxSAT if MHS fails
+                    type = SolverType.MaxSAT;
+                    solution = SolveMaxSAT(clauses, out status);
+                }
+            }
+            else if (type == SolverType.MaxSAT)
+                solution = SolveMaxSAT(clauses, out status);
+            else
+                throw new RepairException("Invalid solver type!");
+
+            ClauseLogger.Log(clauses, type, solution);
+            if (status == SolverStatus.Unsatisfiable)
+                throw new RepairException("The program could not be repaired because of unsatisfiable clauses!");
+
+            return solution;
+        }
+
         /// <summary>
         /// Generates clauses based on the errors.
         /// </summary>
@@ -98,11 +129,18 @@
             List<Clause> clauses = new List<Clause>();
             foreach (RepairableError error in errors)
             {
-                bool value = error is RaceError;
+                RaceError race = error as RaceError;
+
+                IEnumerable<Barrier> barriers = error.Barriers;
+                if (race != null && race.Overapproximated && race.OverapproximatedBarriers.Any())
+                {
+                    // consider the over-approximation barriers for the loop
+                    barriers = race.OverapproximatedBarriers;
+                }
 
                 Clause clause = new Clause();
-                foreach (string variable in error.Variables.Select(x => x.Name).Distinct().OrderBy(x => x))
-                    clause.Add(new Literal(variable, value));
+                foreach (string variable in barriers.Select(x => x.Name))
+                    clause.Add(new Literal(variable, race != null));
 
                 clauses.Add(clause);
             }

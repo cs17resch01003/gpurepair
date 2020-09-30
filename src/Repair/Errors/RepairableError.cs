@@ -1,6 +1,7 @@
 ﻿namespace GPURepair.Repair.Errors
 {
     using System.Collections.Generic;
+    using GPURepair.Repair.Metadata;
     using Microsoft.Boogie;
 
     public abstract class RepairableError : Error
@@ -16,8 +17,8 @@
         }
 
         /// <summary>
-        /// The variables obtained from the trace.
+        /// The barriers obtained from the trace.
         /// </summary>
-        public IEnumerable<Variable> Variables { get; set; }
+        public IEnumerable<Barrier> Barriers { get; set; }
     }
 }

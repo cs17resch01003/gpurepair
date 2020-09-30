@@ -64,7 +64,7 @@
             gen.Close();
 
             // there are no repairable errors that have a variable assigned to them
-            if (!errors.Any(x => x is RepairableError && (x as RepairableError).Variables.Any()))
+            if (!errors.Any(x => x is RepairableError && (x as RepairableError).Barriers.Any()))
             {
                 if (errors.Any(x => x.CounterExample is AssertCounterexample))
                     throw new AssertionException("Assertions do not hold!");
@@ -74,7 +74,7 @@
                     throw new RepairException("Encountered a counterexample without any barrier assignments!");
             }
 
-            return errors.Where(x => x is RepairableError && (x as RepairableError).Variables.Any())
+            return errors.Where(x => x is RepairableError && (x as RepairableError).Barriers.Any())
                 .Select(x => x as RepairableError).ToList();
         }
 
@@ -140,71 +140,77 @@
                 .Where(x => x.Implementation.Name == error.Implementation.Name);
 
             // Filter the variables based on source locations
-            List<Variable> variables = new List<Variable>();
             if (error is RaceError)
             {
-                List<Barrier> filteredBarriers = FilterBarriers(barriers, error as RaceError);
-                variables = filteredBarriers.Select(x => x.Variable).ToList();
+                PopulateRaceBarriers(barriers, error as RaceError);
             }
             else
             {
                 DivergenceError divergence = error as DivergenceError;
+                List<Barrier> final_barriers = new List<Barrier>();
+
                 foreach (Barrier barrier in barriers)
                 {
                     List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
                     foreach (Location location in locations)
                     {
                         if (divergence.Location != null && location.Equals(divergence.Location))
-                            variables.Add(barrier.Variable);
+                            AddBarrier(final_barriers, barrier);
                     }
                 }
-            }
 
-            if (!variables.Any() && barriers.Any())
-                variables = barriers.Select(x => x.Variable).ToList();
-            error.Variables = variables;
+                divergence.Barriers = final_barriers;
+            }
         }
 
         /// <summary>
-        /// Filter the barriers based on the source information.
+        /// Populates the barriers based on the source information.
         /// </summary>
         /// <param name="barriers">The barriers involved in the trace.</param>
         /// <param name="race">The race error.</param>
-        /// <returns>The barriers to be considered.</returns>
-        private List<Barrier> FilterBarriers(IEnumerable<Barrier> barriers, RaceError race)
+        private void PopulateRaceBarriers(IEnumerable<Barrier> barriers, RaceError race)
         {
+            bool inverse = false;
+
             List<Barrier> location_barriers = FilterBarriers(barriers, race.Start, race.End);
             if (!location_barriers.Any())
             {
                 location_barriers = FilterBarriers(barriers, race.End, race.Start);
+                inverse = true;
+            }
 
-                // check if these source locations are inside a loop
-                List<Barrier> loop_barriers = new List<Barrier>();
-                foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
-                {
-                    List<Barrier> temp = ProgramMetadata.LoopBarriers[edge];
-                    if (location_barriers.Any(x => temp.Contains(x)))
-                        loop_barriers.AddRange(temp);
-                }
+            // get all the other barriers which are in the loop
+            List<Barrier> loop_barriers = new List<Barrier>();
+            foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
+            {
+                List<Barrier> temp = ProgramMetadata.LoopBarriers[edge];
+                if (location_barriers.Any(x => temp.Contains(x)))
+                    foreach (Barrier barrier in temp)
+                        loop_barriers.Add(barrier);
+            }
 
-                // the race is a inter-iteration race.
-                if (loop_barriers.Any())
-                {
-                    List<Barrier> inverse = new List<Barrier>();
-                    foreach (Barrier barrier in loop_barriers)
-                        if (!location_barriers.Contains(barrier))
-                            AddBarrier(inverse, barrier);
+            if (inverse)
+            {
+                List<Barrier> inverse_barriers = new List<Barrier>();
+                foreach (Barrier barrier in loop_barriers)
+                    if (!location_barriers.Contains(barrier))
+                        inverse_barriers.Add(barrier);
 
-                    location_barriers = inverse;
-                }
+                location_barriers = inverse_barriers;
             }
 
             List<Barrier> result = new List<Barrier>();
             foreach (Barrier barrier in location_barriers)
                 if (barriers.Contains(barrier))
-                    result.Add(barrier);
+                    AddBarrier(result, barrier);
 
-            return result;
+            List<Barrier> overapproximated_result = new List<Barrier>();
+            foreach (Barrier barrier in loop_barriers)
+                if (barriers.Contains(barrier))
+                    AddBarrier(overapproximated_result, barrier);
+
+            race.Barriers = result;
+            race.OverapproximatedBarriers = overapproximated_result;
         }
 
         /// <summary>
@@ -223,42 +229,12 @@
                 foreach (Location location in locations)
                 {
                     if (start != null && end != null)
-                    {
-                        bool? value = location.IsBetween(start, end);
-                        if (!value.HasValue)
-                        {
+                        if (location.IsBetween(start, end))
                             AddBarrier(location_barriers, barrier);
-
-                            List<Barrier> loop_barriers = GetLoopBarriers(barrier);
-                            foreach (Barrier loop_barrier in loop_barriers)
-                                AddBarrier(location_barriers, loop_barrier);
-                        }
-                        else if (value.Value)
-                            AddBarrier(location_barriers, barrier);
-                    }
                 }
             }
 
             return location_barriers;
-        }
-
-        /// <summary>
-        /// Returns all the loop barriers which are related to the given barrier.
-        /// </summary>
-        /// <param name="barrier">The given barrier.</param>
-        /// <returns></returns>
-        private List<Barrier> GetLoopBarriers(Barrier barrier)
-        {
-            // check if the given barrier is inside a loop
-            List<Barrier> loop_barriers = new List<Barrier>();
-            foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
-            {
-                List<Barrier> temp = ProgramMetadata.LoopBarriers[edge];
-                if (temp.Contains(barrier))
-                    loop_barriers.AddRange(temp);
-            }
-
-            return loop_barriers;
         }
 
         /// <summary>

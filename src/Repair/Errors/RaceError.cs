@@ -1,5 +1,6 @@
 ﻿namespace GPURepair.Repair.Errors
 {
+    using System.Collections.Generic;
     using GPURepair.Repair.Metadata;
     using Microsoft.Boogie;
 
@@ -39,5 +40,15 @@
         /// The ending line of code which caused the race.
         /// </summary>
         public Location End { get; set; }
+
+        /// <summary>
+        /// Determines if the error needs to be over-approximated or not.
+        /// </summary>
+        public bool Overapproximated { get; set; }
+
+        /// <summary>
+        /// The over-approximated barriers obtained from the trace when some of the barriers are in a loop.
+        /// </summary>
+        public IEnumerable<Barrier> OverapproximatedBarriers { get; set; }
     }
 }
