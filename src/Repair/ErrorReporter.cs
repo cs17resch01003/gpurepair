@@ -1,6 +1,7 @@
 ﻿namespace GPURepair.Repair
 {
     using System.Collections.Generic;
+    using System.Linq;
     using GPURepair.Repair.Errors;
     using GPUVerify;
     using Microsoft.Boogie;
@@ -36,6 +37,10 @@
             SourceLocationInfo sourceInfoForSecondAccess = new SourceLocationInfo(
                 GetAttributes(example.FailingCall), GetSourceFileName(), example.FailingCall.tok);
 
+            error.RaceType = raceName;
+            error.Access1 = access1;
+            error.Access2 = access2;
+
             List<RaceError> errors = new List<RaceError>();
             foreach (SourceLocationInfo possibleSourceForFirstAccess in possibleSourcesForFirstAccess)
             {
@@ -51,6 +56,8 @@
                 errors.Add(race);
             }
 
+            if (!errors.Any())
+                return new List<RaceError> { error };
             return errors;
         }
 

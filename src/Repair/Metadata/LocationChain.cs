@@ -16,6 +16,15 @@
                 return result;
             }
 
+            // handling the case where the verifier ignores header and we don't
+            // refer OpenCL/atomics/refined_atomic_abstraction/access_in_loop as an example
+            if (source.GetRecords().Count == 1)
+            {
+                SourceLocationInfo.Record record = source.GetRecords().First();
+                if (this.Count(x => x.File == record.GetFile()) == 1)
+                    return this.First(x => x.File == record.GetFile()).Equals(record);
+            }
+
             return false;
         }
 
