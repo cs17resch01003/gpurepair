@@ -172,11 +172,20 @@
         {
             bool inverse = false;
 
-            List<Barrier> location_barriers = FilterBarriers(barriers, race.Start, race.End);
-            if (!location_barriers.Any())
+            List<Barrier> location_barriers;
+
+            if (race.Start == null && race.End == null)
             {
-                location_barriers = FilterBarriers(race.End, race.Start);
-                inverse = true;
+                location_barriers = barriers.ToList();
+            }
+            else
+            {
+                location_barriers = FilterBarriers(barriers, race.Start, race.End);
+                if (!location_barriers.Any())
+                {
+                    location_barriers = FilterBarriers(race.End, race.Start);
+                    inverse = true;
+                }
             }
 
             // get all the other barriers which are in the loop
