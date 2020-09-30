@@ -1,17 +1,29 @@
 ﻿namespace GPURepair.Repair
 {
+    using System.Collections.Generic;
+    using System.Linq;
     using GPURepair.Repair.Metadata;
     using GPUVerify;
 
     public static class ExtensionMethods
     {
-        public static LocationChain GetLocationChain(this SourceLocationInfo source)
+        public static IEnumerable<LocationChain> GetLocationChain(this SourceLocationInfo source)
         {
+            List<LocationChain> chains = new List<LocationChain>();
             foreach (LocationChain chain in ProgramMetadata.Locations.Values)
+            {
                 if (chain.Equals(source))
-                    return chain;
+                {
+                    chains.Add(chain);
+                    return chains;
+                }
+            }
 
-            return null;
+            foreach (LocationChain chain in ProgramMetadata.Locations.Values)
+                if (chain.Last().Equals(source.GetRecords().Last()))
+                    chains.Add(chain);
+
+            return chains;
         }
     }
 }

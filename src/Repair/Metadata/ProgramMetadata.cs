@@ -76,13 +76,13 @@
                     string line = locations[i];
                     string[] chain = line.Split(new char[] { '\x1E' });
 
-                    Locations.Add(i, new LocationChain());
+                    LocationChain locationChain = new LocationChain();
                     foreach (string c in chain)
                     {
                         if (c != string.Empty)
                         {
                             string[] source = c.Split(new char[] { '\x1F' });
-                            Locations[i].Add(new Location
+                            locationChain.Add(new Location
                             {
                                 SourceLocation = i,
                                 Line = Convert.ToInt32(source[0]),
@@ -92,6 +92,9 @@
                             });
                         }
                     }
+
+                    if (locationChain.Any())
+                        Locations.Add(i, locationChain);
                 }
             }
         }

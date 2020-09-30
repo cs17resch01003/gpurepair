@@ -21,10 +21,15 @@
 
         public bool IsBetween(SourceLocationInfo start, SourceLocationInfo end)
         {
-            LocationChain start_chain = start.GetLocationChain();
-            LocationChain end_chain = end.GetLocationChain();
+            IEnumerable<LocationChain> start_chains = start.GetLocationChain();
+            IEnumerable<LocationChain> end_chains = end.GetLocationChain();
 
-            return IsBetween(start_chain, end_chain);
+            foreach (LocationChain start_chain in start_chains)
+                foreach (LocationChain end_chain in end_chains)
+                    if (IsBetween(start_chain, end_chain))
+                        return true;
+
+            return false;
         }
 
         public bool IsBetween(LocationChain start, LocationChain end)
