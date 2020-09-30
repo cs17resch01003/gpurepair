@@ -151,12 +151,9 @@
 
                 foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
                 {
-                    List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
-                    foreach (Location location in locations)
-                    {
-                        if (divergence.Location != null && location.SameLine(divergence.Location))
-                            AddBarrier(final_barriers, barrier);
-                    }
+                    Location location = ProgramMetadata.Locations[barrier.SourceLocation].First();
+                    if (divergence.Location != null && location.SameLine(divergence.Location))
+                        AddBarrier(final_barriers, barrier);
                 }
 
                 divergence.Barriers = final_barriers;

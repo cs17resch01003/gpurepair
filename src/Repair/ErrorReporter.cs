@@ -41,14 +41,14 @@
             error.Access1 = access1;
             error.Access2 = access2;
 
-            SourceLocationInfo.Record second = sourceInfoForSecondAccess.GetRecords().Last();
+            SourceLocationInfo.Record second = sourceInfoForSecondAccess.GetRecords().First();
             Location second_location = ProgramMetadata.GetLocation(
                 second.GetDirectory(), second.GetFile(), second.GetLine(), second.GetColumn());
 
             List<Location> possible_first_locations = new List<Location>();
             foreach (SourceLocationInfo source in possibleSourcesForFirstAccess)
             {
-                SourceLocationInfo.Record record = source.GetRecords().Last();
+                SourceLocationInfo.Record record = source.GetRecords().First();
                 if (record.GetDirectory() == second.GetDirectory() && record.GetFile() == second.GetFile())
                 {
                     Location location = ProgramMetadata.GetLocation(
@@ -80,7 +80,7 @@
             CallCmd call = example.FailingCall;
             SourceLocationInfo source = new SourceLocationInfo(GetAttributes(call), GetSourceFileName(), call.tok);
 
-            SourceLocationInfo.Record record = source.GetRecords().Last();
+            SourceLocationInfo.Record record = source.GetRecords().First();
             Location location = ProgramMetadata.GetLocation(
                 record.GetDirectory(), record.GetFile(), record.GetLine(), record.GetColumn());
 
