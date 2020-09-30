@@ -1,4 +1,4 @@
-//xfail:TIMEOUT
+//pass
 //--local_size=16 --num_groups=1 --no-inline
 
 

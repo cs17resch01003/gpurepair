@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//xfail:TIMEOUT
 //--blockDim=32 --gridDim=64 --no-inline
 
 #include "cuda.h"

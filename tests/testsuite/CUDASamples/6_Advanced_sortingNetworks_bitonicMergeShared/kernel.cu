@@ -1,4 +1,4 @@
-//pass
+//xfail:TIMEOUT
 //--gridDim=1024 --blockDim=512
 
 #include "common.h"

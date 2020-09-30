@@ -1,4 +1,4 @@
-//xfail:TIMEOUT
+//xfail:REPAIR_ERROR
 //--local_size=64 --num_groups=128
 
 #define N 64

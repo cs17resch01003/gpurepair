@@ -76,7 +76,8 @@
                         {
                             List<ProgramNode> intermediateNodes = GetIntermediateNodes(lca, node);
                             if (intermediateNodes.Any(x => nodesContainingBarriers.Contains(x)))
-                                list.Add(lca, MergeNodeType.IfElse);
+                                if (!list.ContainsKey(lca))
+                                    list.Add(lca, MergeNodeType.IfElse);
                         }
                     }
                 }
