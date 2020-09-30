@@ -57,7 +57,7 @@
                     ConditionGeneration.Outcome outcome = gen.VerifyImplementation(implementation, out examples);
                     if (outcome == ConditionGeneration.Outcome.Errors)
                         foreach (Counterexample example in examples)
-                            errors.Add(GenerateError(example, implementation));
+                            errors.AddRange(GenerateErrors(example, implementation));
                 }
             }
 
@@ -79,13 +79,14 @@
         }
 
         /// <summary>
-        /// Generates the error from the counter example.
+        /// Generates the errors from the counter example.
         /// </summary>
         /// <param name="example">The counter example.</param>
         /// <param name="implementation">The implementation.</param>
         /// <returns>The error.</returns>
-        private Error GenerateError(Counterexample example, Implementation implementation)
+        private IEnumerable<Error> GenerateErrors(Counterexample example, Implementation implementation)
         {
+            List<Error> errors = new List<Error>();
             if (example is CallCounterexample)
             {
                 CallCounterexample callCounterexample = example as CallCounterexample;
@@ -97,21 +98,25 @@
                     reporter.PopulateDivergenceInformation(callCounterexample, divergence);
                     IdentifyVariables(divergence);
 
-                    return divergence;
+                    errors.Add(divergence);
+                    return errors;
                 }
                 else if (QKeyValue.FindBoolAttribute(callCounterexample.FailingRequires.Attributes, "race"))
                 {
-                    RaceError race = new RaceError(example, implementation);
+                    RaceError template = new RaceError(example, implementation);
                     ErrorReporter reporter = new ErrorReporter(program, implementation.Name);
 
-                    reporter.PopulateRaceInformation(callCounterexample, race);
-                    IdentifyVariables(race);
+                    IEnumerable<RaceError> races = reporter.GetRaceInformation(callCounterexample, template);
+                    foreach (RaceError race in races)
+                        IdentifyVariables(race);
 
-                    return race;
+                    errors.AddRange(races);
+                    return errors;
                 }
             }
 
-            return new Error(example, implementation);
+            errors.Add(new Error(example, implementation));
+            return errors;
         }
 
         /// <summary>
@@ -151,8 +156,8 @@
 
                 foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
                 {
-                    Location location = ProgramMetadata.Locations[barrier.SourceLocation].First();
-                    if (divergence.Location != null && location.SameLine(divergence.Location))
+                    LocationChain chain = ProgramMetadata.Locations[barrier.SourceLocation];
+                    if (chain.Equals(divergence.Location))
                         AddBarrier(final_barriers, barrier);
                 }
 
@@ -222,17 +227,17 @@
         /// <param name="start">The start location.</param>
         /// <param name="end">The end location.</param>
         /// <returns>The barriers to be considered.</returns>
-        private List<Barrier> FilterBarriers(IEnumerable<Barrier> barriers, Location start, Location end)
+        private List<Barrier> FilterBarriers(
+            IEnumerable<Barrier> barriers, SourceLocationInfo start, SourceLocationInfo end)
         {
             List<Barrier> location_barriers = new List<Barrier>();
             foreach (Barrier barrier in barriers)
             {
-                List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
-                foreach (Location location in locations)
+                LocationChain chain = ProgramMetadata.Locations[barrier.SourceLocation];
+                if (start != null && end != null)
                 {
-                    if (start != null && end != null)
-                        if (location.IsBetween(start, end))
-                            AddBarrier(location_barriers, barrier);
+                    if (chain.IsBetween(start, end))
+                        AddBarrier(location_barriers, barrier);
                 }
             }
 
@@ -245,17 +250,16 @@
         /// <param name="start">The start location.</param>
         /// <param name="end">The end location.</param>
         /// <returns>The barriers to be considered.</returns>
-        private List<Barrier> FilterBarriers(Location start, Location end)
+        private List<Barrier> FilterBarriers(SourceLocationInfo start, SourceLocationInfo end)
         {
             List<Barrier> location_barriers = new List<Barrier>();
             foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
             {
-                List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
-                foreach (Location location in locations)
+                LocationChain chain = ProgramMetadata.Locations[barrier.SourceLocation];
+                if (start != null && end != null)
                 {
-                    if (start != null && end != null)
-                        if (location.IsBetween(start, end))
-                            AddBarrier(location_barriers, barrier);
+                    if (chain.IsBetween(start, end))
+                        AddBarrier(location_barriers, barrier);
                 }
             }
 
@@ -268,18 +272,18 @@
         /// <param name="start">The starting location.</param>
         /// <param name="end">The ending location.</param>
         /// <returns>The loop barriers.</returns>
-        private List<Barrier> GetLoopBarriers(Location start, Location end)
+        private List<Barrier> GetLoopBarriers(SourceLocationInfo start, SourceLocationInfo end)
         {
             List<Barrier> result = new List<Barrier>();
             foreach (BackEdge edge in ProgramMetadata.LoopBarriers.Keys)
             {
                 List<Barrier> loop_barriers = ProgramMetadata.LoopBarriers[edge];
-                IEnumerable<Location> locations =
-                    loop_barriers.SelectMany(x => ProgramMetadata.Locations[x.SourceLocation]);
+                IEnumerable<LocationChain> locations =
+                    loop_barriers.Select(x => ProgramMetadata.Locations[x.SourceLocation]);
 
-                foreach (Location location in locations)
+                foreach (LocationChain chain in locations)
                 {
-                    if (location == start || location == end)
+                    if (chain.Equals(start) || chain.Equals(end))
                     {
                         result.AddRange(loop_barriers);
                         break;

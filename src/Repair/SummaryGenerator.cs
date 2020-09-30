@@ -45,9 +45,9 @@
                 foreach (string barrierName in assignments.Keys)
                 {
                     Barrier barrier = ProgramMetadata.Barriers[barrierName];
-                    List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
+                    LocationChain chain = ProgramMetadata.Locations[barrier.SourceLocation];
 
-                    string location = ToString(locations);
+                    string location = chain.ToString();
                     if (!barrier.Generated && !assignments[barrierName])
                     {
                         string message = string.Format(
@@ -58,7 +58,7 @@
                         lines.Add(message);
                         changes.Add(location);
 
-                        if (locations.Count > 1)
+                        if (chain.Count > 1)
                             solutionCalls++;
                     }
                     else if (barrier.Generated && assignments[barrierName])
@@ -75,7 +75,7 @@
                         lines.Add(message);
                         changes.Add(location);
 
-                        solutionCalls += locations.Count > 1 ? 1 : 0;
+                        solutionCalls += chain.Count > 1 ? 1 : 0;
                         solutionGrid += barrier.GridLevel ? 1 : 0;
                         solutionLoop += barrier.LoopDepth > 0 ? 1 : 0;
                     }
@@ -90,16 +90,6 @@
                 File.AppendAllLines(filename, lines.Distinct());
 
             return changes.Distinct();
-        }
-
-        /// <summary>
-        /// Represents the location in a string format.
-        /// </summary>
-        /// <param name="locations"> The location stack.</param>
-        /// <returns>A string representation of the location.</returns>
-        private static string ToString(List<Location> locations)
-        {
-            return string.Join(" => ", locations.Select(x => x.ToString()));
         }
     }
 }

@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using GPURepair.Repair.Metadata;
+    using GPUVerify;
     using Microsoft.Boogie;
 
     public class RaceError : RepairableError
@@ -34,12 +35,12 @@
         /// <summary>
         /// The starting line of code which caused the race.
         /// </summary>
-        public Location Start { get; set; }
+        public SourceLocationInfo Start { get; set; }
 
         /// <summary>
         /// The ending line of code which caused the race.
         /// </summary>
-        public Location End { get; set; }
+        public SourceLocationInfo End { get; set; }
 
         /// <summary>
         /// Determines if the error needs to be over-approximated or not.

@@ -20,7 +20,7 @@
         /// <summary>
         /// The source locations in the program.
         /// </summary>
-        public static Dictionary<int, List<Location>> Locations { get; private set; }
+        public static Dictionary<int, LocationChain> Locations { get; private set; }
 
         /// <summary>
         /// The back edges in the program.
@@ -61,31 +61,12 @@
         }
 
         /// <summary>
-        /// Gets the location based on the file, line and column.
-        /// </summary>
-        /// <param name="directory">The directory.</param>
-        /// <param name="file">The file.</param>
-        /// <param name="line">The line.</param>
-        /// <param name="column">The column.</param>
-        /// <returns>The location.</returns>
-        public static Location GetLocation(string directory, string file, int line, int column)
-        {
-            foreach (List<Location> locations in Locations.Values)
-                foreach (Location location in locations)
-                    if (location.Directory == directory && location.File == file &&
-                            location.Line == line && location.Column == column)
-                        return location;
-
-            return null;
-        }
-
-        /// <summary>
         /// Populates the locations.
         /// </summary>
         /// <param name="filePath">The file path.</param>
         private static void PopulateLocations(string filePath)
         {
-            Locations = new Dictionary<int, List<Location>>();
+            Locations = new Dictionary<int, LocationChain>();
 
             using (StreamReader sr = new StreamReader(filePath))
             {
@@ -95,7 +76,7 @@
                     string line = locations[i];
                     string[] chain = line.Split(new char[] { '\x1E' });
 
-                    Locations.Add(i, new List<Location>());
+                    Locations.Add(i, new LocationChain());
                     foreach (string c in chain)
                     {
                         if (c != string.Empty)

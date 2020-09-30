@@ -1,6 +1,6 @@
 ﻿namespace GPURepair.Repair.Errors
 {
-    using GPURepair.Repair.Metadata;
+    using GPUVerify;
     using Microsoft.Boogie;
 
     public class DivergenceError : RepairableError
@@ -18,6 +18,6 @@
         /// <summary>
         /// The line of code which caused the barrier divergence.
         /// </summary>
-        public Location Location { get; set; }
+        public SourceLocationInfo Location { get; set; }
     }
 }

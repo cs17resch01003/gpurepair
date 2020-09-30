@@ -79,6 +79,7 @@
     <Compile Include="Errors\DivergenceError.cs" />
     <Compile Include="Errors\RaceError.cs" />
     <Compile Include="Errors\RepairableError.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Metadata\Barrier.cs" />
     <Compile Include="ConstraintGenerator.cs" />
     <Compile Include="Diagnostics\Measure.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="Exceptions\SummaryGeneratorException.cs" />
     <Compile Include="GRCommandLineOptions.cs" />
     <Compile Include="Metadata\Location.cs" />
+    <Compile Include="Metadata\LocationChain.cs" />
     <Compile Include="Metadata\ProgramMetadata.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
