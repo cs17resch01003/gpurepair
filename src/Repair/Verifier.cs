@@ -175,7 +175,7 @@
             List<Barrier> location_barriers = FilterBarriers(barriers, race.Start, race.End);
             if (!location_barriers.Any())
             {
-                location_barriers = FilterBarriers(barriers, race.End, race.Start);
+                location_barriers = FilterBarriers(race.End, race.Start);
                 inverse = true;
             }
 
@@ -224,6 +224,29 @@
         {
             List<Barrier> location_barriers = new List<Barrier>();
             foreach (Barrier barrier in barriers)
+            {
+                List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
+                foreach (Location location in locations)
+                {
+                    if (start != null && end != null)
+                        if (location.IsBetween(start, end))
+                            AddBarrier(location_barriers, barrier);
+                }
+            }
+
+            return location_barriers;
+        }
+
+        /// <summary>
+        /// Filter the barriers based on the source information.
+        /// </summary>
+        /// <param name="start">The start location.</param>
+        /// <param name="end">The end location.</param>
+        /// <returns>The barriers to be considered.</returns>
+        private List<Barrier> FilterBarriers(Location start, Location end)
+        {
+            List<Barrier> location_barriers = new List<Barrier>();
+            foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
             {
                 List<Location> locations = ProgramMetadata.Locations[barrier.SourceLocation];
                 foreach (Location location in locations)
