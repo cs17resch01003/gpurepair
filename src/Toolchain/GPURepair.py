@@ -489,6 +489,9 @@ class GPURepairInstance(object):
     if args.detailed_logging:
       options.append("/detailedLogging:true")
 
+    if args.disable_inspection:
+      options.append("/disableInspection:true")
+
     if args.log_clauses:
       options.append("/logClauses:true")
 
