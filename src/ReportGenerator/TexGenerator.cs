@@ -319,26 +319,23 @@
             string file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "figures" + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "time_repaired.dat";
 
-            IEnumerable<ToolComparisonRecord> repaired = DataAnalyzer.ToolComparisonRecords
-                .Where(x => x.AS_Status == "REPAIRED" && x.GR_Status == "PASS");
-            IEnumerable<ToolComparisonRecord> unchanged = DataAnalyzer.ToolComparisonRecords
-                .Where(x => x.AS_Status == "UNCHANGED" && x.GR_Status == "PASS" && x.GR_Changes == 0);
-
-            string content = File.ReadAllText(file);
-            content = content.Replace("@@data@@", string.Join("\r\n",
-                repaired.Union(unchanged).Select(x => string.Join("\t", new string[]
+            IEnumerable<string> data = DataAnalyzer.ToolComparisonRecords
+                .Where(x => x.GV_Status == "FAIL(6)")
+                .Select(x => string.Join("\t", new string[]
                 {
                     Math.Round(x.GR_Time, 2).ToString(),
                     Math.Round(x.AS_Time, 2).ToString(),
                     "a"
-                }))));
+                }));
 
+            string content = File.ReadAllText(file);
+            content = content.Replace("@@data@@", string.Join("\r\n", data));
             File.WriteAllText(file, content);
 
             file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "figures" + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "time_scatter.dat";
 
-            IEnumerable<string> data = DataAnalyzer.ToolComparisonRecords
+            data = DataAnalyzer.ToolComparisonRecords
                 .Where(x => x.AS_Time > 0 && x.GR_Time > 0)
                 .Select(x => string.Join("\t", new string[]
                 {
