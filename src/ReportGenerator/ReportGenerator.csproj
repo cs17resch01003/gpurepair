@@ -151,6 +151,12 @@
     <None Include="template\tables\configuration_comparison.tex">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="template\tables\configuration_comparison_autosync.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="template\tables\configuration_comparison_autosync_repaired.tex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="template\tables\configuration_comparison_same.tex">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

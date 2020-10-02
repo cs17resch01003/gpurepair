@@ -151,12 +151,6 @@
                 summary.Add(GetGPUVerifyRecord(matches));
             }
 
-            // adding the entries which fail with a command-line error
-            summary.Add(new GPUVerifyRecord() { Kernel = "OpenCL/fail_equality_and_adversarial", Result = "FAIL(1)" });
-            summary.Add(new GPUVerifyRecord() { Kernel = "OpenCL/global_size/local_size_fail_divide_global_size", Result = "FAIL(1)" });
-            summary.Add(new GPUVerifyRecord() { Kernel = "OpenCL/global_size/mismatch_dims", Result = "FAIL(1)" });
-            summary.Add(new GPUVerifyRecord() { Kernel = "OpenCL/global_size/num_groups_and_global_size", Result = "FAIL(1)" });
-
             return summary.OrderBy(x => x.Kernel);
         }
 
@@ -215,12 +209,6 @@
                 IEnumerable<GPURepairRecord> matches = records.Where(x => x.Kernel == record.Kernel);
                 summary.Add(GetGPURepairRecord(matches));
             }
-
-            // adding the entries which fail with a command-line error
-            summary.Add(new GPURepairRecord() { Kernel = "OpenCL/fail_equality_and_adversarial", Result = "FAIL(1)" });
-            summary.Add(new GPURepairRecord() { Kernel = "OpenCL/global_size/local_size_fail_divide_global_size", Result = "FAIL(1)" });
-            summary.Add(new GPURepairRecord() { Kernel = "OpenCL/global_size/mismatch_dims", Result = "FAIL(1)" });
-            summary.Add(new GPURepairRecord() { Kernel = "OpenCL/global_size/num_groups_and_global_size", Result = "FAIL(1)" });
 
             return summary.OrderBy(x => x.Kernel);
         }

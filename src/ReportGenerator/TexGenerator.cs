@@ -618,20 +618,34 @@
         private static void PrepareConfigurationComparison(string directory)
         {
             int kernel_count = DataAnalyzer.ConfigurationComparisonRecords.Count();
+            int same_count = DataAnalyzer.ConfigurationComparisonSameRecords.Count();
 
-            IEnumerable<ConfigurationComparisonRecord> same = DataAnalyzer.ConfigurationComparisonRecords
-                .Where(x => x.Default_Status == x.DG_Status && x.Default_Status == x.DI_Status && x.Default_Status == x.DG_DI_Status);
-            IEnumerable<ConfigurationComparisonRecord> same_cuda = same.Where(x => !x.Kernel.Contains("OpenCL"));
-            IEnumerable<ConfigurationComparisonRecord> same_opencl = same.Where(x => x.Kernel.Contains("OpenCL"));
+            IEnumerable<ConfigurationComparisonRecord> same_cuda =
+                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x => !x.Kernel.Contains("OpenCL"));
+            IEnumerable<ConfigurationComparisonRecord> same_opencl =
+                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x => x.Kernel.Contains("OpenCL"));
+            IEnumerable<ConfigurationComparisonRecord> autosync_same =
+                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x =>
+                {
+                    bool unchanged = x.AutoSync_Status == "UNCHANGED" && (x.Default_Status == "PASS" && x.Default_Changes == 0);
+                    bool repaired = x.GV_Status == "FAIL(6)" && x.AutoSync_Status == "REPAIRED" && x.Default_Status == "PASS";
+
+                    return unchanged || repaired;
+                });
+            IEnumerable<ConfigurationComparisonRecord> autosync_repaired_same =
+                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x =>
+                x.GV_Status == "FAIL(6)" && x.AutoSync_Status == "REPAIRED" && x.Default_Status == "PASS");
 
             string file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "experiments" + Path.DirectorySeparatorChar + "configuration_comparison.tex";
 
             string content = File.ReadAllText(file);
             content = content.Replace("@@kernel_count@@", kernel_count.ToString());
-            content = content.Replace("@@same@@", same.Count().ToString());
+            content = content.Replace("@@same@@", same_count.ToString());
             content = content.Replace("@@same_cuda@@", same_cuda.Count().ToString());
             content = content.Replace("@@same_opencl@@", same_opencl.Count().ToString());
+            content = content.Replace("@@autosync_same@@", autosync_same.Count().ToString());
+            content = content.Replace("@@autosync_repaired_same@@", autosync_repaired_same.Count().ToString());
             File.WriteAllText(file, content);
 
             PrepareConfigurationTables(directory);
@@ -639,15 +653,30 @@
 
         private static void PrepareConfigurationTables(string directory)
         {
-            IEnumerable<ConfigurationComparisonRecord> same = DataAnalyzer.ConfigurationComparisonRecords
-                .Where(x => x.Default_Status == x.DG_Status && x.Default_Status == x.DI_Status && x.Default_Status == x.DG_DI_Status);
+            IEnumerable<ConfigurationComparisonRecord> autosync_same =
+                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x =>
+                {
+                    bool unchanged = x.AutoSync_Status == "UNCHANGED" && (x.Default_Status == "PASS" && x.Default_Changes == 0);
+                    bool repaired = x.GV_Status == "FAIL(6)" && x.AutoSync_Status == "REPAIRED" && x.Default_Status == "PASS";
+
+                    return unchanged || repaired;
+                });
+            IEnumerable<ConfigurationComparisonRecord> autosync_repaired_same =
+                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x =>
+                x.GV_Status == "FAIL(6)" && x.AutoSync_Status == "REPAIRED" && x.Default_Status == "PASS");
 
             PrepareConfigurationTables(DataAnalyzer.ConfigurationComparisonRecords, directory, "configuration_comparison.tex");
-            PrepareConfigurationTables(same, directory, "configuration_comparison_same.tex");
+            PrepareConfigurationTables(DataAnalyzer.ConfigurationComparisonSameRecords, directory, "configuration_comparison_same.tex");
+            PrepareConfigurationTables(autosync_same, directory, "configuration_comparison_autosync.tex");
+            PrepareConfigurationTables(autosync_repaired_same, directory, "configuration_comparison_autosync_repaired.tex");
         }
 
         private static void PrepareConfigurationTables(IEnumerable<ConfigurationComparisonRecord> records, string directory, string filename)
         {
+            double autosync_time = records.Sum(x => x.AutoSync_Time);
+            double autosync_median = Median(records.Select(x => x.AutoSync_Time));
+            int autosync_verifier = Convert.ToInt32(Math.Round(records.Sum(x => x.AutoSync_VerCount)));
+
             double default_time = records.Sum(x => x.Default_Time);
             double default_median = Median(records.Select(x => x.Default_Time));
             int default_solver = Convert.ToInt32(Math.Round(records.Sum(x => x.Default_SolverCount)));
@@ -672,6 +701,10 @@
                 Path.DirectorySeparatorChar + "tables" + Path.DirectorySeparatorChar + filename;
 
             string content = File.ReadAllText(file);
+            content = content.Replace("@@autosync_time@@", Math.Round(autosync_time, 2).ToString());
+            content = content.Replace("@@autosync_median@@", Math.Round(autosync_median, 2).ToString());
+            content = content.Replace("@@autosync_verifier@@", autosync_verifier.ToString());
+
             content = content.Replace("@@default_time@@", Math.Round(default_time, 2).ToString());
             content = content.Replace("@@default_median@@", Math.Round(default_median, 2).ToString());
             content = content.Replace("@@default_solver@@", default_solver.ToString());

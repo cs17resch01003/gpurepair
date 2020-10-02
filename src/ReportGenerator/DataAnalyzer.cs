@@ -138,6 +138,14 @@
                 });
             }
 
+            foreach (AutoSyncOutRecord _autosync in FileParser.Autosync)
+            {
+                ConfigurationComparisonRecord record = records.First(x => x.Kernel == _autosync.Kernel);
+                record.AutoSync_Status = _autosync.Status;
+                record.AutoSync_Time = _autosync.Time;
+                record.AutoSync_VerCount = _autosync.VerCount;
+            }
+
             foreach (GPURepairRecord _gpurepair in FileParser.GPURepair)
             {
                 ConfigurationComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
@@ -145,6 +153,7 @@
                 record.Default_Time = _gpurepair.Total;
                 record.Default_SolverCount = _gpurepair.SolverCount;
                 record.Default_VerCount = _gpurepair.VerCount;
+                record.Default_Changes = _gpurepair.Changes;
             }
 
             foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Grid)
@@ -154,6 +163,7 @@
                 record.DG_Time = _gpurepair.Total;
                 record.DG_SolverCount = _gpurepair.SolverCount;
                 record.DG_VerCount = _gpurepair.VerCount;
+                record.DG_Changes = _gpurepair.Changes;
             }
 
             foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Inspection)
@@ -163,6 +173,7 @@
                 record.DI_Time = _gpurepair.Total;
                 record.DI_SolverCount = _gpurepair.SolverCount;
                 record.DI_VerCount = _gpurepair.VerCount;
+                record.DI_Changes = _gpurepair.Changes;
             }
 
             foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Grid_Inspection)
@@ -172,6 +183,7 @@
                 record.DG_DI_Time = _gpurepair.Total;
                 record.DG_DI_SolverCount = _gpurepair.SolverCount;
                 record.DG_DI_VerCount = _gpurepair.VerCount;
+                record.DG_DI_Changes = _gpurepair.Changes;
             }
 
             return records.OrderBy(x => x.Kernel);
@@ -180,8 +192,22 @@
         private static IEnumerable<ConfigurationComparisonRecord> GetConfigurationComparisonSameRecords()
         {
             IEnumerable<ConfigurationComparisonRecord> records = GetConfigurationComparisonRecords();
-            IEnumerable<ConfigurationComparisonRecord> same = records.Where(
-                x => x.Default_Status == x.DG_Status && x.Default_Status == x.DI_Status && x.Default_Status == x.DG_DI_Status);
+            IEnumerable<ConfigurationComparisonRecord> same = records.Where(x =>
+            {
+                bool dg = x.Default_Status == x.DG_Status;
+                if (dg == true && x.Default_Status == "PASS" && x.Default_Changes == 0)
+                    dg = x.DG_Changes == 0;
+
+                bool di = x.Default_Status == x.DI_Status;
+                if (di == true && x.Default_Status == "PASS" && x.Default_Changes == 0)
+                    di = x.DI_Changes == 0;
+
+                bool dg_di = x.Default_Status == x.DG_DI_Status;
+                if (dg_di == true && x.Default_Status == "PASS" && x.Default_Changes == 0)
+                    dg_di = x.DG_DI_Changes == 0;
+
+                return dg && di && dg_di;
+            });
 
             return same;
         }

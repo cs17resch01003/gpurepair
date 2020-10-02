@@ -4,7 +4,7 @@
 
 \input{figures/lines_commands}
 
-It should be noted that the instrumentation step of \tool happens on the Boogie code and not on the source code. A line of code in the source file could result in no Boogie commands (e.g., code comments) or more than one Boogie command (e.g., multiple assignments on a single line). \figref{boogie_commands} shows the size of the kernels in terms of Boogie commands. The average number of Boogie commands for the $kernel_count$ kernels for which Boogie code was generated was $@@average_commands@@$, and the median was $@@median_commands@@$. The kernel with the highest number of Boogie commands had $@@max_commands@@$ commands.
+It should be noted that the instrumentation step of \tool happens on the Boogie code and not on the source code. A line of code in the source file could result in no Boogie commands (e.g., code comments) or more than one Boogie command (e.g., multiple assignments on a single line). \figref{boogie_commands} shows the size of the kernels in terms of Boogie commands. The average number of Boogie commands for the $@@kernel_count@@$ kernels for which Boogie code was generated was $@@average_commands@@$, and the median was $@@median_commands@@$. The kernel with the highest number of Boogie commands had $@@max_commands@@$ commands.
 
 \input{figures/instrumentation}
 

@@ -7,3 +7,8 @@
 All four implementations give the same result for $@@same@@$ kernels ($@@same_cuda@@$ CUDA and $@@same_opencl@@$ OpenCL). \tableref{configuration_comparison_same} summarizes the metrics of these four configurations for these kernels.
 
 \input{tables/configuration_comparison_same}
+
+\tableref{configuration_comparison_autosync} compares these configurations with \autosync for the kernels that were unchanged or repaired by both \tool and \autosync. There were $@@autosync_same@@$ kernels like this. \tableref{configuration_comparison_autosync_repaired} shows the data only for the $@@autosync_repaired_same@@$ repaired kernels.
+
+\input{tables/configuration_comparison_autosync}
+\input{tables/configuration_comparison_autosync_repaired}
