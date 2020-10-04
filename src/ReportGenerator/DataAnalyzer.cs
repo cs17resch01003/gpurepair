@@ -20,6 +20,8 @@
 
         public static IEnumerable<ConfigurationComparisonRecord> ConfigurationComparisonSameRecords { get; set; }
 
+        public static IEnumerable<CompleteComparisonRecord> CompleteComparisonRecords { get; set; }
+
         public static async Task AnalyzeData(string directory)
         {
             ToolComparisonRecords = await AnalyzeData(directory, "tool_comparison.csv", GetToolComparisonRecords);
@@ -27,6 +29,7 @@
             SolverComparisonRecords = await AnalyzeData(directory, "solver_comparison.csv", GetSolverComparisonRecords);
             ConfigurationComparisonRecords = await AnalyzeData(directory, "configuration_comparison.csv", GetConfigurationComparisonRecords);
             ConfigurationComparisonSameRecords = await AnalyzeData(directory, "configuration_comparison_same.csv", GetConfigurationComparisonSameRecords);
+            CompleteComparisonRecords = await AnalyzeData(directory, "complete_comparison.csv", GetCompleteComparisonRecords);
         }
 
         private static async Task<IEnumerable<T>> AnalyzeData<T>(
@@ -103,6 +106,7 @@
                 record.mhs_Time = _gpurepair.Total;
                 record.mhs_SolverCount = _gpurepair.SolverCount;
                 record.mhs_VerCount = _gpurepair.VerCount;
+                record.mhs_Changes = _gpurepair.Changes;
             }
 
             foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_MaxSAT)
@@ -112,6 +116,7 @@
                 record.MaxSAT_Time = _gpurepair.Total;
                 record.MaxSAT_SolverCount = _gpurepair.SolverCount;
                 record.MaxSAT_VerCount = _gpurepair.VerCount;
+                record.MaxSAT_Changes = _gpurepair.Changes;
             }
 
             foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_SAT)
@@ -121,6 +126,7 @@
                 record.SAT_Time = _gpurepair.Total;
                 record.SAT_SolverCount = _gpurepair.SolverCount;
                 record.SAT_VerCount = _gpurepair.VerCount;
+                record.SAT_Changes = _gpurepair.Changes;
             }
 
             return records.OrderBy(x => x.Kernel);
@@ -210,6 +216,77 @@
             });
 
             return same;
+        }
+
+        private static IEnumerable<CompleteComparisonRecord> GetCompleteComparisonRecords()
+        {
+            List<CompleteComparisonRecord> records = new List<CompleteComparisonRecord>();
+            foreach (GPUVerifyRecord _gpuverify in FileParser.GPUVerify)
+            {
+                records.Add(new CompleteComparisonRecord
+                {
+                    Kernel = _gpuverify.Kernel,
+                    GV_Status = _gpuverify.Result
+                });
+            }
+
+            foreach (AutoSyncOutRecord _autosync in FileParser.Autosync)
+            {
+                CompleteComparisonRecord record = records.First(x => x.Kernel == _autosync.Kernel);
+                record.AutoSync_Status = _autosync.Status;
+                record.AutoSync_Time = _autosync.Time;
+                record.AutoSync_VerCount = _autosync.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair)
+            {
+                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.mhs_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
+                record.mhs_Time = _gpurepair.Total;
+                record.mhs_VerCount = _gpurepair.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_MaxSAT)
+            {
+                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.MaxSAT_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
+                record.MaxSAT_Time = _gpurepair.Total;
+                record.MaxSAT_VerCount = _gpurepair.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_SAT)
+            {
+                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.SAT_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
+                record.SAT_Time = _gpurepair.Total;
+                record.SAT_VerCount = _gpurepair.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Grid)
+            {
+                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.DG_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
+                record.DG_Time = _gpurepair.Total;
+                record.DG_VerCount = _gpurepair.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Inspection)
+            {
+                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.DI_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
+                record.DI_Time = _gpurepair.Total;
+                record.DI_VerCount = _gpurepair.VerCount;
+            }
+
+            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Grid_Inspection)
+            {
+                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
+                record.DG_DI_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
+                record.DG_DI_Time = _gpurepair.Total;
+                record.DG_DI_VerCount = _gpurepair.VerCount;
+            }
+
+            return records.OrderBy(x => x.Kernel);
         }
     }
 }

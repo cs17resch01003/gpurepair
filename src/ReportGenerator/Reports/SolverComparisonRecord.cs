@@ -28,36 +28,48 @@
         [Index(5)]
         public double mhs_VerCount { get; set; }
 
-        [Name("maxsat-status")]
+        [Name("mhs-changes")]
         [Index(6)]
+        public double mhs_Changes { get; set; }
+
+        [Name("maxsat-status")]
+        [Index(7)]
         public string MaxSAT_Status { get; set; }
 
         [Name("maxsat-time")]
-        [Index(7)]
+        [Index(8)]
         public double MaxSAT_Time { get; set; }
 
         [Name("maxsat-solver-count")]
-        [Index(8)]
+        [Index(9)]
         public double MaxSAT_SolverCount { get; set; }
 
         [Name("maxsat-ver-count")]
-        [Index(9)]
+        [Index(10)]
         public double MaxSAT_VerCount { get; set; }
 
+        [Name("maxsat-changes")]
+        [Index(11)]
+        public double MaxSAT_Changes { get; set; }
+
         [Name("sat-status")]
-        [Index(10)]
+        [Index(12)]
         public string SAT_Status { get; set; }
 
         [Name("sat-time")]
-        [Index(11)]
+        [Index(13)]
         public double SAT_Time { get; set; }
 
         [Name("sat-solver-count")]
-        [Index(12)]
+        [Index(14)]
         public double SAT_SolverCount { get; set; }
 
         [Name("sat-ver-count")]
-        [Index(13)]
+        [Index(15)]
         public double SAT_VerCount { get; set; }
+
+        [Name("sat-changes")]
+        [Index(16)]
+        public double SAT_Changes { get; set; }
     }
 }

@@ -321,6 +321,7 @@
 
             IEnumerable<string> data = DataAnalyzer.ToolComparisonRecords
                 .Where(x => x.GV_Status == "FAIL(6)")
+                .Where(x => x.AS_Time > 0 && x.GR_Time > 0)
                 .Select(x => string.Join("\t", new string[]
                 {
                     Math.Round(x.GR_Time, 2).ToString(),
@@ -336,6 +337,7 @@
                 Path.DirectorySeparatorChar + "figures" + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "time_scatter.dat";
 
             data = DataAnalyzer.ToolComparisonRecords
+                .Where(x => x.GV_Status == "FAIL(6)" || x.GV_Status == "PASS")
                 .Where(x => x.AS_Time > 0 && x.GR_Time > 0)
                 .Select(x => string.Join("\t", new string[]
                 {

@@ -40,60 +40,68 @@
         [Index(8)]
         public double Default_VerCount { get; set; }
 
+        [Name("def-changes")]
+        [Index(9)]
         public double Default_Changes { get; set; }
 
         [Name("disgrid-status")]
-        [Index(9)]
+        [Index(10)]
         public string DG_Status { get; set; }
 
         [Name("disgrid-time")]
-        [Index(10)]
+        [Index(11)]
         public double DG_Time { get; set; }
 
         [Name("disgrid-solver-count")]
-        [Index(11)]
+        [Index(12)]
         public double DG_SolverCount { get; set; }
 
         [Name("disgrid-ver-count")]
-        [Index(12)]
+        [Index(13)]
         public double DG_VerCount { get; set; }
 
+        [Name("disgrid-changes")]
+        [Index(14)]
         public double DG_Changes { get; set; }
 
         [Name("disinspect-status")]
-        [Index(13)]
+        [Index(15)]
         public string DI_Status { get; set; }
 
         [Name("disinspect-time")]
-        [Index(14)]
+        [Index(16)]
         public double DI_Time { get; set; }
 
         [Name("disinspect-solver-count")]
-        [Index(15)]
+        [Index(17)]
         public double DI_SolverCount { get; set; }
 
         [Name("disinspect-ver-count")]
-        [Index(16)]
+        [Index(18)]
         public double DI_VerCount { get; set; }
 
+        [Name("disinspect-changes")]
+        [Index(19)]
         public double DI_Changes { get; set; }
 
         [Name("disgrid-disinspect-status")]
-        [Index(17)]
+        [Index(20)]
         public string DG_DI_Status { get; set; }
 
         [Name("disgrid-disinspect-time")]
-        [Index(18)]
+        [Index(21)]
         public double DG_DI_Time { get; set; }
 
         [Name("disgrid-disinspect-solver-count")]
-        [Index(19)]
+        [Index(22)]
         public double DG_DI_SolverCount { get; set; }
 
         [Name("disgrid-disinspect-ver-count")]
-        [Index(20)]
+        [Index(23)]
         public double DG_DI_VerCount { get; set; }
 
+        [Name("disgrid-disinspect-changes")]
+        [Index(24)]
         public double DG_DI_Changes { get; set; }
     }
 }

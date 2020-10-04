@@ -20,35 +20,18 @@
         /// <returns>The barrier assignments.</returns>
         public Dictionary<string, bool> Solve(List<RepairableError> errors, ref SolverType type)
         {
-            SolverType original_type = type;
             try
             {
-                List<Clause> clauses = GenerateClauses(errors);
-                return Solve(clauses, ref type);
+                return Solve(errors, type);
             }
-
-            // the repair exception could be because of not considering all the barriers in the loop
-            // refer CUDA/transitiveclosure as an example
             catch (RepairException)
             {
-                bool overapproximated = false;
-                foreach (Error error in errors)
-                {
-                    RaceError race = error as RaceError;
-                    if (race != null && race.OverapproximatedBarriers.Any())
-                    {
-                        overapproximated = true;
-                        race.Overapproximated = true;
-                    }
-                }
-
-                // if none of the clauses were overapproximated, return the original result
-                if (!overapproximated)
+                // fall back to MaxSAT if MHS fails
+                if (type != SolverType.mhs)
                     throw;
-                type = original_type;
 
-                List<Clause> clauses = GenerateClauses(errors);
-                return Solve(clauses, ref type);
+                type = SolverType.MaxSAT;
+                return Solve(errors, type);
             }
         }
 
@@ -93,7 +76,39 @@
             }
         }
 
-        private Dictionary<string, bool> Solve(List<Clause> clauses, ref SolverType type)
+        private Dictionary<string, bool> Solve(List<RepairableError> errors, SolverType type)
+        {
+            try
+            {
+                List<Clause> clauses = GenerateClauses(errors);
+                return Solve(clauses, type);
+            }
+
+            // the repair exception could be because of not considering all the barriers in the loop
+            // refer CUDA/transitiveclosure as an example
+            catch (RepairException)
+            {
+                bool overapproximated = false;
+                foreach (Error error in errors)
+                {
+                    RaceError race = error as RaceError;
+                    if (race != null && race.OverapproximatedBarriers.Any())
+                    {
+                        overapproximated = true;
+                        race.Overapproximated = true;
+                    }
+                }
+
+                // if none of the clauses were overapproximated, return the original result
+                if (!overapproximated)
+                    throw;
+
+                List<Clause> clauses = GenerateClauses(errors);
+                return Solve(clauses, type);
+            }
+        }
+
+        private Dictionary<string, bool> Solve(List<Clause> clauses, SolverType type)
         {
             Dictionary<string, bool> solution;
             SolverStatus status;
@@ -101,15 +116,7 @@
             if (type == SolverType.SAT)
                 solution = SolveSAT(clauses, out status);
             else if (type == SolverType.mhs)
-            {
                 solution = SolveMHS(clauses, out status);
-                if (status != SolverStatus.Satisfiable)
-                {
-                    // fall back to MaxSAT if MHS fails
-                    type = SolverType.MaxSAT;
-                    solution = SolveMaxSAT(clauses, out status);
-                }
-            }
             else if (type == SolverType.MaxSAT)
                 solution = SolveMaxSAT(clauses, out status);
             else
