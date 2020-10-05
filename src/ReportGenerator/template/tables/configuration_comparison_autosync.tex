@@ -1,7 +1,7 @@
 \begin{table}[htp]
-\caption{Configuration Comparison (\autosync vs \tool)}
+\caption{Comparison of \autosync and the various configurations of \tool}
 \label{Ta:configuration_comparison_autosync}
-\begin{center}
+\centering
 
 \def\arraystretch{1.1}
 \setlength\tabcolsep{7pt}
@@ -9,12 +9,18 @@
 \begin{tabular}{|l|r|r|r|r|r|}
 \hline
 
-\multicolumn{1}{|c|}{} & \multicolumn{1}{|c|}{\textbf{AutoSync}} & \multicolumn{1}{|c|}{\textbf{default}} & \multicolumn{1}{|c|}{\textbf{dis-grid}} & \multicolumn{1}{|c|}{\textbf{dis-inspect}} & \multicolumn{1}{|c|}{\textbf{dis-both}} \\ \hline \hline
-Total Time Taken & $@@autosync_time@@$ & $@@default_time@@$ & $@@dg_time@@$ & $@@di_time@@$ & $@@dg_di_time@@$\\ \hline
-Median Time Taken & $@@autosync_median@@$ & $@@default_median@@$ & $@@dg_median@@$ & $@@di_median@@$ & $@@dg_di_median@@$\\ \hline
-Verifier Calls & $@@autosync_verifier@@$ & $@@default_verifier@@$ & $@@dg_verifier@@$ & $@@di_verifier@@$ & $@@dg_di_verifier@@$\\ \hline
+\multicolumn{1}{|c|}{} & \multicolumn{2}{|c|}{\textbf{All Kernels}} & \multicolumn{3}{|c|}{\textbf{Repaired $+$ Unchanged}} \\
+\multicolumn{1}{|c|}{} & \multicolumn{2}{|c|}{($@@kernel_count@@$)} & \multicolumn{3}{|c|}{\textbf{($@@repaired@@+@@unchanged@@=@@total@@$)}} \\ \hline
+\multicolumn{1}{|c|}{\textbf{Tool}} & \multicolumn{1}{|c|}{\textbf{Total}} & \multicolumn{1}{|c|}{\textbf{Median}} & \multicolumn{1}{|c|}{\textbf{Total}} & \multicolumn{1}{|c|}{\textbf{Median}} & \multicolumn{1}{|c|}{\textbf{Verifier}} \\
+\multicolumn{1}{|c|}{\textbf{(Configuration)}} & \multicolumn{1}{|c|}{\textbf{Time}} & \multicolumn{1}{|c|}{\textbf{Time}} & \multicolumn{1}{|c|}{\textbf{Time}} & \multicolumn{1}{|c|}{\textbf{Time}} & \multicolumn{1}{|c|}{\textbf{Calls}} \\ \hline \hline
+\autosync & $@@as_time@@$ & $@@as_median@@$ & $@@as_ru_time@@$ & $@@as_ru_median@@$ & $@@as_ru_verifier@@$ \\ \hline
+\tool & $@@default_time@@$ & $@@default_median@@$ & $@@default_ru_time@@$ & $@@default_ru_median@@$ & $@@default_ru_verifier@@$ \\ \hline
+\tool (maxsat) & $@@maxsat_time@@$ & $@@maxsat_median@@$ & $@@maxsat_ru_time@@$ & $@@maxsat_ru_median@@$ & $@@maxsat_ru_verifier@@$ \\ \hline
+\tool (sat) & $@@sat_time@@$ & $@@sat_median@@$ & $@@sat_ru_time@@$ & $@@sat_ru_median@@$ & $@@sat_ru_verifier@@$ \\ \hline
+\tool (dis-grid) & $@@grid_time@@$ & $@@grid_median@@$ & $@@grid_ru_time@@$ & $@@grid_ru_median@@$ & $@@grid_ru_verifier@@$ \\ \hline
+\tool (dis-inspect) & $@@inspection_time@@$ & $@@inspection_median@@$ & $@@inspection_ru_time@@$ & $@@inspection_ru_median@@$ & $@@inspection_ru_verifier@@$ \\ \hline
+\tool & \multirow{2}{*}{$@@grid_inspection_time@@$} & \multirow{2}{*}{$@@grid_inspection_median@@$} & \multirow{2}{*}{$@@grid_inspection_ru_time@@$} & \multirow{2}{*}{$@@grid_inspection_ru_median@@$} & \multirow{2}{*}{$@@grid_inspection_ru_verifier@@$} \\
+\quad (dis-grid dis-inspect) & & & & & \\ \hline
 
 \end{tabular}
-
-\end{center}
 \end{table}

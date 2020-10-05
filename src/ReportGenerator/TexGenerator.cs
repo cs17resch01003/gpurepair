@@ -87,6 +87,7 @@
 
             int sdk_count = FileParser.GPUVerify.Where(x => x.Kernel.Contains("CUDASamples")).Count();
             int micro_count = FileParser.GPUVerify.Where(x => x.Kernel.Contains("MicroBenchmarks")).Count();
+            int cooperative_count = FileParser.GPUVerify.Where(x => x.Kernel.Contains("Bugged_Cooperative")).Count();
             int gpurepair_count = FileParser.GPUVerify.Where(x => x.Kernel.Contains("Bugged")).Count();
             int gpuverify_count = kernel_count - (sdk_count + micro_count + gpurepair_count);
 
@@ -94,90 +95,95 @@
                 Path.DirectorySeparatorChar + "tables" + Path.DirectorySeparatorChar + "benchmark_summary.tex";
 
             content = File.ReadAllText(file);
-            content = content.Replace("@@opencl_count@@", opencl_count.ToString());
-            content = content.Replace("@@gpuverify_count@@", gpuverify_count.ToString());
-            content = content.Replace("@@sdk_count@@", sdk_count.ToString());
-            content = content.Replace("@@micro_count@@", micro_count.ToString());
-            content = content.Replace("@@gpurepair_count@@", gpurepair_count.ToString());
+            content = content.Replace("@@opencl_count@@", opencl_count);
+            content = content.Replace("@@gpuverify_count@@", gpuverify_count);
+            content = content.Replace("@@sdk_count@@", sdk_count);
+            content = content.Replace("@@micro_count@@", micro_count);
+            content = content.Replace("@@cooperative_count@@", cooperative_count);
+            content = content.Replace("@@gpurepair_count@@", gpurepair_count);
             File.WriteAllText(file, content);
         }
 
         private static void PrepareToolComparison(string directory)
         {
-            int autosync_repair_error = DataAnalyzer.ToolComparisonRecords.Where(x => x.AS_Status == "REPAIR_ERROR").Count();
-            int autosync_gr_repaired = DataAnalyzer.ToolComparisonRecords.Where(x => x.AS_Status == "REPAIR_ERROR")
-                .Where(x => x.GR_Status == "PASS").Count();
-            int autosync_gr_timeout = DataAnalyzer.ToolComparisonRecords.Where(x => x.AS_Status == "REPAIR_ERROR")
-                .Where(x => x.GR_Status == "FAIL(7)").Count();
+            int autosync_repair_error =
+                DataAnalyzer.ToolComparisonRecords.Count(x => x.AutoSync_Status == "REPAIR_ERROR");
+            int autosync_gr_repaired =
+                DataAnalyzer.ToolComparisonRecords.Where(x => x.AutoSync_Status == "REPAIR_ERROR")
+                .Count(x => x.GPURepair_Status == "PASS");
+            int autosync_gr_timeout =
+                DataAnalyzer.ToolComparisonRecords.Where(x => x.AutoSync_Status == "REPAIR_ERROR")
+                .Count(x => x.GPURepair_Status == "FAIL(7)");
             int autosync_gr_others = autosync_repair_error - (autosync_gr_repaired + autosync_gr_timeout);
 
             IEnumerable<ToolComparisonRecord> cuda =
                 DataAnalyzer.ToolComparisonRecords.Where(x => !x.Kernel.Contains("OpenCL"));
             IEnumerable<ToolComparisonRecord> valid =
-                cuda.Where(x => x.GV_Status == "PASS" || x.GV_Status == "FAIL(6)");
+                cuda.Where(x => x.GPUVerify_Status == "PASS" || x.GPUVerify_Status == "FAIL(6)");
 
             int cuda_count = cuda.Count();
             int valid_count = valid.Count();
             int unrepairable_errors = cuda_count - valid_count;
 
-            int autosync_faster = valid.Where(x => x.AS_Time < x.GR_Time).Count();
+            int autosync_faster = valid.Count(x => x.AutoSync_Time < x.GPURepair_Time);
             int gpurepair_faster = valid_count - autosync_faster;
-            int autosync_noeffort = valid.Where(x => x.GV_Status == "PASS").Count();
+            int autosync_noeffort = valid.Count(x => x.GPUVerify_Status == "PASS");
             int repairable_errors = valid_count - autosync_noeffort;
-            int autosync_repairable_faster = valid.Where(x => x.GV_Status != "PASS" && x.AS_Time < x.GR_Time).Count();
+            int autosync_repairable_faster =
+                valid.Count(x => x.GPUVerify_Status != "PASS" && x.AutoSync_Time < x.GPURepair_Time);
             int gpurepair_repairable_faster = repairable_errors - autosync_repairable_faster;
 
-            double autosync_time = valid.Sum(x => x.AS_Time);
-            double gpurepair_time = valid.Sum(x => x.GR_Time);
-            double autosync_median = Median(valid.Select(x => x.AS_Time));
-            double gpurepair_median = Median(valid.Select(x => x.GR_Time));
+            double autosync_time = valid.Sum(x => x.AutoSync_Time);
+            double gpurepair_time = valid.Sum(x => x.GPURepair_Time);
+            double autosync_median = Median(valid.Select(x => x.AutoSync_Time));
+            double gpurepair_median = Median(valid.Select(x => x.GPURepair_Time));
 
-            IEnumerable<ToolComparisonRecord> repaired =
-                valid.Where(x => x.GV_Status == "FAIL(6)" && x.AS_Status == "REPAIRED" && x.GR_Status == "PASS");
-            IEnumerable<ToolComparisonRecord> unchanged =
-                valid.Where(x => x.GV_Status == "PASS" && x.AS_Status == "UNCHANGED" && x.GR_Status == "PASS" && x.GR_Changes == 0);
+            IEnumerable<ToolComparisonRecord> repaired = valid.Where(x => x.GPUVerify_Status == "FAIL(6)")
+                .Where(x => x.AutoSync_Status == "REPAIRED" && x.GPURepair_Status == "PASS");
+            IEnumerable<ToolComparisonRecord> unchanged = valid.Where(x => x.GPUVerify_Status == "PASS")
+                .Where(x => x.AutoSync_Status == "UNCHANGED" && x.GPURepair_Status == "UNCHANGED");
 
             int repaired_count = repaired.Count();
             int unchanged_count = unchanged.Count();
             int repaired_unchanged = repaired_count + unchanged_count;
 
-            double autosync_both_vercalls = repaired.Union(unchanged).Sum(x => x.AS_VerCount);
-            double gpurepair_both_vercalls = repaired.Union(unchanged).Sum(x => x.GR_VerCount);
-            double autosync_repaired_vercalls = repaired.Sum(x => x.AS_VerCount);
-            double gpurepair_repaired_vercalls = repaired.Sum(x => x.GR_VerCount);
+            double autosync_both_vercalls = repaired.Union(unchanged).Sum(x => x.AutoSync_VerCount);
+            double gpurepair_both_vercalls = repaired.Union(unchanged).Sum(x => x.GPURepair_VerCount);
+            double autosync_repaired_vercalls = repaired.Sum(x => x.AutoSync_VerCount);
+            double gpurepair_repaired_vercalls = repaired.Sum(x => x.GPURepair_VerCount);
 
             string file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "experiments" + Path.DirectorySeparatorChar + "tool_comparison.tex";
 
             string content = File.ReadAllText(file);
-            content = content.Replace("@@autosync_repair_error@@", autosync_repair_error.ToString());
-            content = content.Replace("@@autosync_gr_repaired@@", autosync_gr_repaired.ToString());
-            content = content.Replace("@@autosync_gr_timeout@@", autosync_gr_timeout.ToString());
-            content = content.Replace("@@autosync_gr_others@@", autosync_gr_others.ToString());
+            content = content.Replace("@@autosync_repair_error@@", autosync_repair_error);
+            content = content.Replace("@@autosync_gr_repaired@@", autosync_gr_repaired);
+            content = content.Replace("@@autosync_gr_timeout@@", autosync_gr_timeout);
+            content = content.Replace("@@autosync_gr_others@@", autosync_gr_others);
 
-            content = content.Replace("@@unrepairable_errors@@", unrepairable_errors.ToString());
-            content = content.Replace("@@valid_count@@", valid_count.ToString());
+            content = content.Replace("@@unrepairable_errors@@", unrepairable_errors);
+            content = content.Replace("@@valid_count@@", valid_count);
 
-            content = content.Replace("@@autosync_faster@@", autosync_faster.ToString());
-            content = content.Replace("@@gpurepair_faster@@", gpurepair_faster.ToString());
-            content = content.Replace("@@autosync_noeffort@@", autosync_noeffort.ToString());
-            content = content.Replace("@@repairable_errors@@", repairable_errors.ToString());
-            content = content.Replace("@@autosync_repairable_faster@@", autosync_repairable_faster.ToString());
-            content = content.Replace("@@gpurepair_repairable_faster@@", gpurepair_repairable_faster.ToString());
+            content = content.Replace("@@autosync_faster@@", autosync_faster);
+            content = content.Replace("@@gpurepair_faster@@", gpurepair_faster);
+            content = content.Replace("@@autosync_noeffort@@", autosync_noeffort);
+            content = content.Replace("@@repairable_errors@@", repairable_errors);
+            content = content.Replace("@@autosync_repairable_faster@@", autosync_repairable_faster);
+            content = content.Replace("@@gpurepair_repairable_faster@@", gpurepair_repairable_faster);
 
-            content = content.Replace("@@autosync_time@@", Convert.ToInt32(Math.Round(autosync_time)).ToString());
-            content = content.Replace("@@gpurepair_time@@", Convert.ToInt32(Math.Round(gpurepair_time)).ToString());
-            content = content.Replace("@@autosync_median@@", Math.Round(autosync_median, 2).ToString());
-            content = content.Replace("@@gpurepair_median@@", Math.Round(gpurepair_median, 2).ToString());
+            content = content.Replace("@@autosync_time@@", autosync_time);
+            content = content.Replace("@@gpurepair_time@@", gpurepair_time);
+            content = content.Replace("@@autosync_median@@", autosync_median, 2);
+            content = content.Replace("@@gpurepair_median@@", gpurepair_median, 2);
 
-            content = content.Replace("@@repaired_count@@", repaired_count.ToString());
-            content = content.Replace("@@unchanged_count@@", unchanged_count.ToString());
-            content = content.Replace("@@repaired_unchanged@@", repaired_unchanged.ToString());
+            content = content.Replace("@@repaired_count@@", repaired_count);
+            content = content.Replace("@@unchanged_count@@", unchanged_count);
+            content = content.Replace("@@repaired_unchanged@@", repaired_unchanged);
 
-            content = content.Replace("@@autosync_both_vercalls@@", Convert.ToInt32(Math.Round(autosync_both_vercalls)).ToString());
-            content = content.Replace("@@gpurepair_both_vercalls@@", Convert.ToInt32(Math.Round(gpurepair_both_vercalls)).ToString());
-            content = content.Replace("@@autosync_repaired_vercalls@@", Convert.ToInt32(Math.Round(autosync_repaired_vercalls)).ToString());
-            content = content.Replace("@@gpurepair_repaired_vercalls@@", Convert.ToInt32(Math.Round(gpurepair_repaired_vercalls)).ToString());
+            content = content.Replace("@@autosync_both_vercalls@@", autosync_both_vercalls);
+            content = content.Replace("@@gpurepair_both_vercalls@@", gpurepair_both_vercalls);
+            content = content.Replace("@@autosync_repaired_vercalls@@", autosync_repaired_vercalls);
+            content = content.Replace("@@gpurepair_repaired_vercalls@@", gpurepair_repaired_vercalls);
             File.WriteAllText(file, content);
 
             PrepareResults(directory);
@@ -192,27 +198,29 @@
             IEnumerable<ToolComparisonRecord> opencl =
                 DataAnalyzer.ToolComparisonRecords.Where(x => x.Kernel.Contains("OpenCL"));
 
-            IEnumerable<ToolComparisonRecord> cuda_verified = cuda.Where(x => x.GV_Status == "PASS");
-            IEnumerable<ToolComparisonRecord> opencl_verified = opencl.Where(x => x.GV_Status == "PASS");
+            IEnumerable<ToolComparisonRecord> cuda_verified =
+                cuda.Where(x => x.GPUVerify_Status == "PASS");
+            IEnumerable<ToolComparisonRecord> opencl_verified =
+                opencl.Where(x => x.GPUVerify_Status == "PASS");
 
             IEnumerable<ToolComparisonRecord> cuda_verified_as_unchanged =
-                cuda_verified.Where(x => x.AS_Status == "UNCHANGED");
+                cuda_verified.Where(x => x.AutoSync_Status == "UNCHANGED");
             IEnumerable<ToolComparisonRecord> cuda_verified_gr_unchanged =
-                cuda_verified.Where(x => x.GR_Status == "PASS" && x.GR_Changes == 0);
+                cuda_verified.Where(x => x.GPURepair_Status == "UNCHANGED");
             IEnumerable<ToolComparisonRecord> opencl_verified_gr_unchanged =
-                opencl_verified.Where(x => x.GR_Status == "PASS" && x.GR_Changes == 0);
+                opencl_verified.Where(x => x.GPURepair_Status == "UNCHANGED");
 
             IEnumerable<ToolComparisonRecord> cuda_verified_gr_changed =
-                cuda_verified.Where(x => x.GR_Status == "PASS" && x.GR_Changes != 0);
+                cuda_verified.Where(x => x.GPURepair_Status == "PASS");
             IEnumerable<ToolComparisonRecord> opencl_verified_gr_changed =
-                opencl_verified.Where(x => x.GR_Status == "PASS" && x.GR_Changes != 0);
+                opencl_verified.Where(x => x.GPURepair_Status == "PASS");
 
             IEnumerable<ToolComparisonRecord> cuda_verified_as_timeout =
-                cuda_verified.Where(x => x.AS_Status == "TIMEOUT");
+                cuda_verified.Where(x => x.AutoSync_Status == "TIMEOUT");
             IEnumerable<ToolComparisonRecord> cuda_verified_gr_timeout =
-                cuda_verified.Where(x => x.GR_Status == "FAIL(7)");
+                cuda_verified.Where(x => x.GPURepair_Status == "FAIL(7)");
             IEnumerable<ToolComparisonRecord> opencl_verified_gr_timeout =
-                opencl_verified.Where(x => x.GR_Status == "FAIL(7)");
+                opencl_verified.Where(x => x.GPURepair_Status == "FAIL(7)");
 
             int cuda_verified_as_errors = cuda_verified.Count() -
                 (cuda_verified_as_unchanged.Count() + cuda_verified_as_timeout.Count());
@@ -221,29 +229,31 @@
             int opencl_verified_gr_errors = opencl_verified.Count() -
                 (opencl_verified_gr_unchanged.Count() + opencl_verified_gr_changed.Count() + opencl_verified_gr_timeout.Count());
 
-            IEnumerable<ToolComparisonRecord> cuda_repairable = cuda.Where(x => x.GV_Status == "FAIL(6)");
-            IEnumerable<ToolComparisonRecord> opencl_repairable = opencl.Where(x => x.GV_Status == "FAIL(6)");
+            IEnumerable<ToolComparisonRecord> cuda_repairable =
+                cuda.Where(x => x.GPUVerify_Status == "FAIL(6)");
+            IEnumerable<ToolComparisonRecord> opencl_repairable =
+                opencl.Where(x => x.GPUVerify_Status == "FAIL(6)");
 
             IEnumerable<ToolComparisonRecord> cuda_repairable_as_repaired =
-                cuda_repairable.Where(x => x.AS_Status == "REPAIRED");
+                cuda_repairable.Where(x => x.AutoSync_Status == "REPAIRED");
             IEnumerable<ToolComparisonRecord> cuda_repairable_gr_repaired =
-                cuda_repairable.Where(x => x.GR_Status == "PASS");
+                cuda_repairable.Where(x => x.GPURepair_Status == "PASS");
             IEnumerable<ToolComparisonRecord> opencl_repairable_gr_repaired =
-                opencl_repairable.Where(x => x.GR_Status == "PASS");
+                opencl_repairable.Where(x => x.GPURepair_Status == "PASS");
 
             IEnumerable<ToolComparisonRecord> cuda_repairable_as_repairerror =
-                cuda_repairable.Where(x => x.AS_Status == "REPAIR_ERROR");
+                cuda_repairable.Where(x => x.AutoSync_Status == "REPAIR_ERROR");
             IEnumerable<ToolComparisonRecord> cuda_repairable_gr_repairerror =
-                cuda_repairable.Where(x => x.GR_Status == "FAIL(202)");
+                cuda_repairable.Where(x => x.GPURepair_Status == "FAIL(202)");
             IEnumerable<ToolComparisonRecord> opencl_repairable_gr_repairerror =
-                opencl_repairable.Where(x => x.GR_Status == "FAIL(202)");
+                opencl_repairable.Where(x => x.GPURepair_Status == "FAIL(202)");
 
             IEnumerable<ToolComparisonRecord> cuda_repairable_as_timeout =
-                cuda_repairable.Where(x => x.AS_Status == "TIMEOUT");
+                cuda_repairable.Where(x => x.AutoSync_Status == "TIMEOUT");
             IEnumerable<ToolComparisonRecord> cuda_repairable_gr_timeout =
-                cuda_repairable.Where(x => x.GR_Status == "FAIL(7)");
+                cuda_repairable.Where(x => x.GPURepair_Status == "FAIL(7)");
             IEnumerable<ToolComparisonRecord> opencl_repairable_gr_timeout =
-                opencl_repairable.Where(x => x.GR_Status == "FAIL(7)");
+                opencl_repairable.Where(x => x.GPURepair_Status == "FAIL(7)");
 
             int cuda_repairable_as_errors = cuda_repairable.Count() -
                 (cuda_repairable_as_repaired.Count() + cuda_repairable_as_repairerror.Count() + cuda_repairable_as_timeout.Count());
@@ -252,65 +262,78 @@
             int opencl_repairable_gr_errors = opencl_repairable.Count() -
                 (opencl_repairable_gr_repaired.Count() + opencl_repairable_gr_repairerror.Count() + opencl_repairable_gr_timeout.Count());
 
+            List<ToolComparisonRecord> cuda_repairable_gr_repaired_grid = new List<ToolComparisonRecord>();
+            foreach (ToolComparisonRecord record in cuda_repairable_gr_repaired)
+            {
+                GPURepairRecord repair_record = FileParser.GPURepair.FirstOrDefault(x => x.Kernel == record.Kernel);
+                if (repair_record != null && repair_record.SolutionGrid != 0)
+                    cuda_repairable_gr_repaired_grid.Add(record);
+            }
+
+            int cuda_repairable_gr_repaired_count =
+                cuda_repairable_gr_repaired.Count() - cuda_repairable_gr_repaired_grid.Count;
+
             IEnumerable<ToolComparisonRecord> cuda_unrepairable =
-                cuda.Where(x => x.GV_Status != "PASS" && x.GV_Status != "FAIL(6)");
+                cuda.Where(x => x.GPUVerify_Status != "PASS" && x.GPUVerify_Status != "FAIL(6)");
             IEnumerable<ToolComparisonRecord> opencl_unrepairable =
-                opencl.Where(x => x.GV_Status != "PASS" && x.GV_Status != "FAIL(6)");
+                opencl.Where(x => x.GPUVerify_Status != "PASS" && x.GPUVerify_Status != "FAIL(6)");
 
             IEnumerable<ToolComparisonRecord> cuda_unrepairable_as_errors =
-                cuda_unrepairable.Where(x => x.AS_Status == "ERROR");
+                cuda_unrepairable.Where(x => x.AutoSync_Status == "ERROR");
             IEnumerable<ToolComparisonRecord> cuda_unrepairable_as_falsepositives =
-                cuda_unrepairable.Where(x => x.AS_Status == "FALSE_POSITIVE");
+                cuda_unrepairable.Where(x => x.AutoSync_Status == "FALSE_POSITIVE");
 
             string file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "tables" + Path.DirectorySeparatorChar + "results.tex";
 
             string content = File.ReadAllText(file);
-            content = content.Replace("@@cuda@@", cuda.Count().ToString());
-            content = content.Replace("@@opencl@@", opencl.Count().ToString());
+            content = content.Replace("@@cuda@@", cuda);
+            content = content.Replace("@@opencl@@", opencl);
 
-            content = content.Replace("@@cuda_verified@@", cuda_verified.Count().ToString());
-            content = content.Replace("@@opencl_verified@@", opencl_verified.Count().ToString());
+            content = content.Replace("@@cuda_verified@@", cuda_verified);
+            content = content.Replace("@@opencl_verified@@", opencl_verified);
 
-            content = content.Replace("@@cuda_verified_as_unchanged@@", cuda_verified_as_unchanged.Count().ToString());
-            content = content.Replace("@@cuda_verified_gr_unchanged@@", cuda_verified_gr_unchanged.Count().ToString());
-            content = content.Replace("@@opencl_verified_gr_unchanged@@", opencl_verified_gr_unchanged.Count().ToString());
+            content = content.Replace("@@cuda_verified_as_unchanged@@", cuda_verified_as_unchanged);
+            content = content.Replace("@@cuda_verified_gr_unchanged@@", cuda_verified_gr_unchanged);
+            content = content.Replace("@@opencl_verified_gr_unchanged@@", opencl_verified_gr_unchanged);
 
-            content = content.Replace("@@cuda_verified_gr_changed@@", cuda_verified_gr_changed.Count().ToString());
-            content = content.Replace("@@opencl_verified_gr_changed@@", opencl_verified_gr_changed.Count().ToString());
+            content = content.Replace("@@cuda_verified_gr_changed@@", cuda_verified_gr_changed);
+            content = content.Replace("@@opencl_verified_gr_changed@@", opencl_verified_gr_changed);
 
-            content = content.Replace("@@cuda_verified_as_timeout@@", cuda_verified_as_timeout.Count().ToString());
-            content = content.Replace("@@cuda_verified_gr_timeout@@", cuda_verified_gr_timeout.Count().ToString());
-            content = content.Replace("@@opencl_verified_gr_timeout@@", opencl_verified_gr_timeout.Count().ToString());
+            content = content.Replace("@@cuda_verified_as_timeout@@", cuda_verified_as_timeout);
+            content = content.Replace("@@cuda_verified_gr_timeout@@", cuda_verified_gr_timeout);
+            content = content.Replace("@@opencl_verified_gr_timeout@@", opencl_verified_gr_timeout);
 
-            content = content.Replace("@@cuda_verified_as_errors@@", cuda_verified_as_errors.ToString());
-            content = content.Replace("@@cuda_verified_gr_errors@@", cuda_verified_gr_errors.ToString());
-            content = content.Replace("@@opencl_verified_gr_errors@@", opencl_verified_gr_errors.ToString());
+            content = content.Replace("@@cuda_verified_as_errors@@", cuda_verified_as_errors);
+            content = content.Replace("@@cuda_verified_gr_errors@@", cuda_verified_gr_errors);
+            content = content.Replace("@@opencl_verified_gr_errors@@", opencl_verified_gr_errors);
 
-            content = content.Replace("@@cuda_repairable@@", cuda_repairable.Count().ToString());
-            content = content.Replace("@@opencl_repairable@@", opencl_repairable.Count().ToString());
+            content = content.Replace("@@cuda_repairable@@", cuda_repairable);
+            content = content.Replace("@@opencl_repairable@@", opencl_repairable);
 
-            content = content.Replace("@@cuda_repairable_as_repaired@@", cuda_repairable_as_repaired.Count().ToString());
-            content = content.Replace("@@cuda_repairable_gr_repaired@@", cuda_repairable_gr_repaired.Count().ToString());
-            content = content.Replace("@@opencl_repairable_gr_repaired@@", opencl_repairable_gr_repaired.Count().ToString());
+            content = content.Replace("@@cuda_repairable_as_repaired@@", cuda_repairable_as_repaired);
+            content = content.Replace("@@cuda_repairable_gr_repaired@@", cuda_repairable_gr_repaired_count);
+            content = content.Replace("@@opencl_repairable_gr_repaired@@", opencl_repairable_gr_repaired);
 
-            content = content.Replace("@@cuda_repairable_as_repairerror@@", cuda_repairable_as_repairerror.Count().ToString());
-            content = content.Replace("@@cuda_repairable_gr_repairerror@@", cuda_repairable_gr_repairerror.Count().ToString());
-            content = content.Replace("@@opencl_repairable_gr_repairerror@@", opencl_repairable_gr_repairerror.Count().ToString());
+            content = content.Replace("@@cuda_repairable_gr_repaired_grid@@", cuda_repairable_gr_repaired_grid);
 
-            content = content.Replace("@@cuda_repairable_as_timeout@@", cuda_repairable_as_timeout.Count().ToString());
-            content = content.Replace("@@cuda_repairable_gr_timeout@@", cuda_repairable_gr_timeout.Count().ToString());
-            content = content.Replace("@@opencl_repairable_gr_timeout@@", opencl_repairable_gr_timeout.Count().ToString());
+            content = content.Replace("@@cuda_repairable_as_repairerror@@", cuda_repairable_as_repairerror);
+            content = content.Replace("@@cuda_repairable_gr_repairerror@@", cuda_repairable_gr_repairerror);
+            content = content.Replace("@@opencl_repairable_gr_repairerror@@", opencl_repairable_gr_repairerror);
 
-            content = content.Replace("@@cuda_repairable_as_errors@@", cuda_repairable_as_errors.ToString());
-            content = content.Replace("@@cuda_repairable_gr_errors@@", cuda_repairable_gr_errors.ToString());
-            content = content.Replace("@@opencl_repairable_gr_errors@@", opencl_repairable_gr_errors.ToString());
+            content = content.Replace("@@cuda_repairable_as_timeout@@", cuda_repairable_as_timeout);
+            content = content.Replace("@@cuda_repairable_gr_timeout@@", cuda_repairable_gr_timeout);
+            content = content.Replace("@@opencl_repairable_gr_timeout@@", opencl_repairable_gr_timeout);
 
-            content = content.Replace("@@cuda_unrepairable@@", cuda_unrepairable.Count().ToString());
-            content = content.Replace("@@opencl_unrepairable@@", opencl_unrepairable.Count().ToString());
+            content = content.Replace("@@cuda_repairable_as_errors@@", cuda_repairable_as_errors);
+            content = content.Replace("@@cuda_repairable_gr_errors@@", cuda_repairable_gr_errors);
+            content = content.Replace("@@opencl_repairable_gr_errors@@", opencl_repairable_gr_errors);
 
-            content = content.Replace("@@cuda_unrepairable_as_errors@@", cuda_unrepairable_as_errors.Count().ToString());
-            content = content.Replace("@@cuda_unrepairable_as_falsepositives@@", cuda_unrepairable_as_falsepositives.Count().ToString());
+            content = content.Replace("@@cuda_unrepairable@@", cuda_unrepairable);
+            content = content.Replace("@@opencl_unrepairable@@", opencl_unrepairable);
+
+            content = content.Replace("@@cuda_unrepairable_as_errors@@", cuda_unrepairable_as_errors);
+            content = content.Replace("@@cuda_unrepairable_as_falsepositives@@", cuda_unrepairable_as_falsepositives);
             File.WriteAllText(file, content);
         }
 
@@ -320,12 +343,12 @@
                 Path.DirectorySeparatorChar + "figures" + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "time_repaired.dat";
 
             IEnumerable<string> data = DataAnalyzer.ToolComparisonRecords
-                .Where(x => x.GV_Status == "FAIL(6)")
-                .Where(x => x.AS_Time > 0 && x.GR_Time > 0)
+                .Where(x => x.GPUVerify_Status == "FAIL(6)")
+                .Where(x => x.AutoSync_Time > 0 && x.GPURepair_Time > 0)
                 .Select(x => string.Join("\t", new string[]
                 {
-                    Math.Round(x.GR_Time, 2).ToString(),
-                    Math.Round(x.AS_Time, 2).ToString(),
+                    Math.Round(x.GPURepair_Time, 2).ToString(),
+                    Math.Round(x.AutoSync_Time, 2).ToString(),
                     "a"
                 }));
 
@@ -337,12 +360,12 @@
                 Path.DirectorySeparatorChar + "figures" + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "time_scatter.dat";
 
             data = DataAnalyzer.ToolComparisonRecords
-                .Where(x => x.GV_Status == "FAIL(6)" || x.GV_Status == "PASS")
-                .Where(x => x.AS_Time > 0 && x.GR_Time > 0)
+                .Where(x => x.GPUVerify_Status == "FAIL(6)" || x.GPUVerify_Status == "PASS")
+                .Where(x => x.AutoSync_Time > 0 && x.GPURepair_Time > 0)
                 .Select(x => string.Join("\t", new string[]
                 {
-                    Math.Round(x.GR_Time, 2).ToString(),
-                    Math.Round(x.AS_Time, 2).ToString(),
+                    Math.Round(x.GPURepair_Time, 2).ToString(),
+                    Math.Round(x.AutoSync_Time, 2).ToString(),
                     "a"
                 }));
 
@@ -357,12 +380,12 @@
                 Path.DirectorySeparatorChar + "figures" + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "verifier_calls_all.dat";
 
             IEnumerable<ToolComparisonRecord> repaired = DataAnalyzer.ToolComparisonRecords
-                .Where(x => x.AS_Status == "REPAIRED" && x.GR_Status == "PASS")
-                .Where(x => x.AS_VerCount > 0 && x.GR_VerCount > 0);
+                .Where(x => x.AutoSync_Status == "REPAIRED" && x.GPURepair_Status == "PASS")
+                .Where(x => x.AutoSync_VerCount > 0 && x.GPURepair_VerCount > 0);
 
             IEnumerable<ToolComparisonRecord> unchanged = DataAnalyzer.ToolComparisonRecords
-                .Where(x => x.AS_Status == "UNCHANGED" && x.GR_Status == "PASS" && x.GR_Changes == 0)
-                .Where(x => x.AS_VerCount > 0 && x.GR_VerCount > 0);
+                .Where(x => x.AutoSync_Status == "UNCHANGED" && x.GPURepair_Status == "UNCHANGED")
+                .Where(x => x.AutoSync_VerCount > 0 && x.GPURepair_VerCount > 0);
 
             List<string> data = new List<string>();
             for (int i = 0; i < 6; i++)
@@ -370,8 +393,8 @@
                 {
                     // calls more than 6 are considered as 6
                     int count = repaired.Union(unchanged).Count(x =>
-                        (Convert.ToInt32(Math.Round(x.GR_VerCount > 6 ? 6 : x.GR_VerCount)) == (i + 1)) &&
-                        (Convert.ToInt32(Math.Round(x.AS_VerCount > 6 ? 6 : x.AS_VerCount)) == (j + 1))
+                        (Convert.ToInt32(Math.Round(x.GPURepair_VerCount > 6 ? 6 : x.GPURepair_VerCount)) == (i + 1)) &&
+                        (Convert.ToInt32(Math.Round(x.AutoSync_VerCount > 6 ? 6 : x.AutoSync_VerCount)) == (j + 1))
                     );
 
                     if (count != 0)
@@ -392,8 +415,8 @@
                 {
                     // calls more than 6 are considered as 6
                     int count = repaired.Count(x =>
-                        (Convert.ToInt32(Math.Round(x.GR_VerCount > 6 ? 6 : x.GR_VerCount)) == (i + 1)) &&
-                        (Convert.ToInt32(Math.Round(x.AS_VerCount > 6 ? 6 : x.AS_VerCount)) == (j + 1))
+                        (Convert.ToInt32(Math.Round(x.GPURepair_VerCount > 6 ? 6 : x.GPURepair_VerCount)) == (i + 1)) &&
+                        (Convert.ToInt32(Math.Round(x.AutoSync_VerCount > 6 ? 6 : x.AutoSync_VerCount)) == (j + 1))
                     );
 
                     if (count != 0)
@@ -430,21 +453,21 @@
                 Path.DirectorySeparatorChar + "experiments" + Path.DirectorySeparatorChar + "source_information.tex";
 
             string content = File.ReadAllText(file);
-            content = content.Replace("@@kernel_count@@", kernel_count.ToString());
-            content = content.Replace("@@average_lines@@", Math.Round(average_lines, 2).ToString());
-            content = content.Replace("@@median_lines@@", Math.Round(median_lines, 2).ToString());
-            content = content.Replace("@@above_hundred@@", above_hundred.ToString());
-            content = content.Replace("@@above_fifty@@", above_fifty.ToString());
-            content = content.Replace("@@max_lines@@", max_lines.ToString());
+            content = content.Replace("@@kernel_count@@", kernel_count);
+            content = content.Replace("@@average_lines@@", average_lines, 2);
+            content = content.Replace("@@median_lines@@", median_lines, 2);
+            content = content.Replace("@@above_hundred@@", above_hundred);
+            content = content.Replace("@@above_fifty@@", above_fifty);
+            content = content.Replace("@@max_lines@@", max_lines);
 
-            content = content.Replace("@@average_commands@@", Math.Round(average_commands, 2).ToString());
-            content = content.Replace("@@median_commands@@", Math.Round(median_commands, 2).ToString());
-            content = content.Replace("@@max_commands@@", max_commands.ToString());
+            content = content.Replace("@@average_commands@@", average_commands);
+            content = content.Replace("@@median_commands@@", median_commands);
+            content = content.Replace("@@max_commands@@", max_commands);
 
-            content = content.Replace("@@instrumentation_count@@", instrumentation_count.ToString());
-            content = content.Replace("@@below_three@@", Math.Round(below_three, 2).ToString());
-            content = content.Replace("@@above_hundred_barriers@@", above_hundred_barriers.ToString());
-            content = content.Replace("@@time_second@@", Math.Round(time_second, 2).ToString());
+            content = content.Replace("@@instrumentation_count@@", instrumentation_count);
+            content = content.Replace("@@below_three@@", below_three, 2);
+            content = content.Replace("@@above_hundred_barriers@@", above_hundred_barriers);
+            content = content.Replace("@@time_second@@", time_second, 2);
             File.WriteAllText(file, content);
 
             PrepareSourceGraph(directory);
@@ -482,105 +505,47 @@
                 Path.DirectorySeparatorChar + "figures" + Path.DirectorySeparatorChar + "lines_commands.tex";
 
             string content = File.ReadAllText(file);
-            content = content.Replace("@@lines_10@@", lines_10.ToString());
-            content = content.Replace("@@lines_25@@", lines_25.ToString());
-            content = content.Replace("@@lines_50@@", lines_50.ToString());
-            content = content.Replace("@@lines_75@@", lines_75.ToString());
-            content = content.Replace("@@lines_100@@", lines_100.ToString());
-            content = content.Replace("@@lines_inf@@", lines_inf.ToString());
+            content = content.Replace("@@lines_10@@", lines_10);
+            content = content.Replace("@@lines_25@@", lines_25);
+            content = content.Replace("@@lines_50@@", lines_50);
+            content = content.Replace("@@lines_75@@", lines_75);
+            content = content.Replace("@@lines_100@@", lines_100);
+            content = content.Replace("@@lines_inf@@", lines_inf);
 
-            content = content.Replace("@@commands_10@@", commands_10.ToString());
-            content = content.Replace("@@commands_25@@", commands_25.ToString());
-            content = content.Replace("@@commands_50@@", commands_50.ToString());
-            content = content.Replace("@@commands_75@@", commands_75.ToString());
-            content = content.Replace("@@commands_100@@", commands_100.ToString());
-            content = content.Replace("@@commands_inf@@", commands_inf.ToString());
+            content = content.Replace("@@commands_10@@", commands_10);
+            content = content.Replace("@@commands_25@@", commands_25);
+            content = content.Replace("@@commands_50@@", commands_50);
+            content = content.Replace("@@commands_75@@", commands_75);
+            content = content.Replace("@@commands_100@@", commands_100);
+            content = content.Replace("@@commands_inf@@", commands_inf);
             File.WriteAllText(file, content);
 
             file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "figures" + Path.DirectorySeparatorChar + "instrumentation.tex";
 
             content = File.ReadAllText(file);
-            content = content.Replace("@@barriers_0@@", barriers_0.ToString());
-            content = content.Replace("@@barriers_1@@", barriers_1.ToString());
-            content = content.Replace("@@barriers_2@@", barriers_2.ToString());
-            content = content.Replace("@@barriers_3@@", barriers_3.ToString());
-            content = content.Replace("@@barriers_5@@", barriers_5.ToString());
-            content = content.Replace("@@barriers_10@@", barriers_10.ToString());
-            content = content.Replace("@@barriers_20@@", barriers_20.ToString());
-            content = content.Replace("@@barriers_100@@", barriers_100.ToString());
-            content = content.Replace("@@barriers_inf@@", barriers_inf.ToString());
+            content = content.Replace("@@barriers_0@@", barriers_0);
+            content = content.Replace("@@barriers_1@@", barriers_1);
+            content = content.Replace("@@barriers_2@@", barriers_2);
+            content = content.Replace("@@barriers_3@@", barriers_3);
+            content = content.Replace("@@barriers_5@@", barriers_5);
+            content = content.Replace("@@barriers_10@@", barriers_10);
+            content = content.Replace("@@barriers_20@@", barriers_20);
+            content = content.Replace("@@barriers_100@@", barriers_100);
+            content = content.Replace("@@barriers_inf@@", barriers_inf);
             File.WriteAllText(file, content);
         }
 
         private static void PrepareSolverComparison(string directory)
         {
-            int kernel_count = DataAnalyzer.SolverComparisonRecords.Count();
-
-            IEnumerable<SolverComparisonRecord> repaired = DataAnalyzer.SolverComparisonRecords
-                .Where(x => x.GV_Status == "FAIL(6)" && x.mhs_Status == "PASS" && x.MaxSAT_Status == "PASS" && x.SAT_Status == "PASS");
-            IEnumerable<SolverComparisonRecord> repaired_cuda = repaired.Where(x => !x.Kernel.Contains("OpenCL"));
-            IEnumerable<SolverComparisonRecord> repaired_opencl = repaired.Where(x => x.Kernel.Contains("OpenCL"));
-
             string file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "experiments" + Path.DirectorySeparatorChar + "solver_comparison.tex";
 
             string content = File.ReadAllText(file);
-            content = content.Replace("@@kernel_count@@", kernel_count.ToString());
-            content = content.Replace("@@repaired@@", repaired.Count().ToString());
-            content = content.Replace("@@repaired_cuda@@", repaired_cuda.Count().ToString());
-            content = content.Replace("@@repaired_opencl@@", repaired_opencl.Count().ToString());
+            content = content.Replace("@@kernel_count@@", DataAnalyzer.SolverComparisonRecords);
             File.WriteAllText(file, content);
 
-            PrepareSolverTables(directory);
             PrepareSolverGraphs(directory);
-        }
-
-        private static void PrepareSolverTables(string directory)
-        {
-            IEnumerable<SolverComparisonRecord> repaired = DataAnalyzer.SolverComparisonRecords
-                .Where(x => x.GV_Status == "FAIL(6)" && x.mhs_Status == "PASS" && x.MaxSAT_Status == "PASS" && x.SAT_Status == "PASS");
-
-            PrepareSolverTables(DataAnalyzer.SolverComparisonRecords, directory, "solver_comparison.tex");
-            PrepareSolverTables(repaired, directory, "solver_comparison_repaired.tex");
-        }
-
-        private static void PrepareSolverTables(IEnumerable<SolverComparisonRecord> records, string directory, string filename)
-        {
-            double mhs_total = records.Sum(x => x.mhs_Time);
-            double mhs_median = Median(records.Select(x => x.mhs_Time));
-            int mhs_solver = Convert.ToInt32(Math.Round(records.Sum(x => x.mhs_SolverCount)));
-            int mhs_verifier = Convert.ToInt32(Math.Round(records.Sum(x => x.mhs_VerCount)));
-
-            double MaxSAT_total = records.Sum(x => x.MaxSAT_Time);
-            double MaxSAT_median = Median(records.Select(x => x.MaxSAT_Time));
-            int MaxSAT_solver = Convert.ToInt32(Math.Round(records.Sum(x => x.MaxSAT_SolverCount)));
-            int MaxSAT_verifier = Convert.ToInt32(Math.Round(records.Sum(x => x.MaxSAT_VerCount)));
-
-            double SAT_total = records.Sum(x => x.SAT_Time);
-            double SAT_median = Median(records.Select(x => x.SAT_Time));
-            int SAT_solver = Convert.ToInt32(Math.Round(records.Sum(x => x.SAT_SolverCount)));
-            int SAT_verifier = Convert.ToInt32(Math.Round(records.Sum(x => x.SAT_VerCount)));
-
-            string file = directory + Path.DirectorySeparatorChar + "report" +
-                Path.DirectorySeparatorChar + "tables" + Path.DirectorySeparatorChar + filename;
-
-            string content = File.ReadAllText(file);
-            content = content.Replace("@@mhs_total@@", Math.Round(mhs_total, 2).ToString());
-            content = content.Replace("@@mhs_median@@", Math.Round(mhs_median, 2).ToString());
-            content = content.Replace("@@mhs_solver@@", mhs_solver.ToString());
-            content = content.Replace("@@mhs_verifier@@", mhs_verifier.ToString());
-
-            content = content.Replace("@@MaxSAT_total@@", Math.Round(MaxSAT_total, 2).ToString());
-            content = content.Replace("@@MaxSAT_median@@", Math.Round(MaxSAT_median, 2).ToString());
-            content = content.Replace("@@MaxSAT_solver@@", MaxSAT_solver.ToString());
-            content = content.Replace("@@MaxSAT_verifier@@", MaxSAT_verifier.ToString());
-
-            content = content.Replace("@@SAT_total@@", Math.Round(SAT_total, 2).ToString());
-            content = content.Replace("@@SAT_median@@", Math.Round(SAT_median, 2).ToString());
-            content = content.Replace("@@SAT_solver@@", SAT_solver.ToString());
-            content = content.Replace("@@SAT_verifier@@", SAT_verifier.ToString());
-            File.WriteAllText(file, content);
         }
 
         private static void PrepareSolverGraphs(string directory)
@@ -616,113 +581,243 @@
 
         private static void PrepareConfigurationComparison(string directory)
         {
-            int kernel_count = DataAnalyzer.ConfigurationComparisonRecords.Count();
-            int same_count = DataAnalyzer.ConfigurationComparisonSameRecords.Count();
-
-            IEnumerable<ConfigurationComparisonRecord> same_cuda =
-                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x => !x.Kernel.Contains("OpenCL"));
-            IEnumerable<ConfigurationComparisonRecord> same_opencl =
-                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x => x.Kernel.Contains("OpenCL"));
-            IEnumerable<ConfigurationComparisonRecord> autosync_same =
-                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x =>
-                {
-                    bool unchanged = x.AutoSync_Status == "UNCHANGED" && (x.Default_Status == "PASS" && x.Default_Changes == 0);
-                    bool repaired = x.GV_Status == "FAIL(6)" && x.AutoSync_Status == "REPAIRED" && x.Default_Status == "PASS";
-
-                    return unchanged || repaired;
-                });
-            IEnumerable<ConfigurationComparisonRecord> autosync_repaired_same =
-                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x =>
-                x.GV_Status == "FAIL(6)" && x.AutoSync_Status == "REPAIRED" && x.Default_Status == "PASS");
-
             string file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "experiments" + Path.DirectorySeparatorChar + "configuration_comparison.tex";
 
             string content = File.ReadAllText(file);
-            content = content.Replace("@@kernel_count@@", kernel_count.ToString());
-            content = content.Replace("@@same@@", same_count.ToString());
-            content = content.Replace("@@same_cuda@@", same_cuda.Count().ToString());
-            content = content.Replace("@@same_opencl@@", same_opencl.Count().ToString());
-            content = content.Replace("@@autosync_same@@", autosync_same.Count().ToString());
-            content = content.Replace("@@autosync_repaired_same@@", autosync_repaired_same.Count().ToString());
+            content = content.Replace("@@kernel_count@@", DataAnalyzer.ConfigurationComparisonRecords);
             File.WriteAllText(file, content);
 
             PrepareConfigurationTables(directory);
+            PrepareConfigurationAutoSyncTables(directory);
         }
 
         private static void PrepareConfigurationTables(string directory)
         {
-            IEnumerable<ConfigurationComparisonRecord> autosync_same =
-                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x =>
-                {
-                    bool unchanged = x.AutoSync_Status == "UNCHANGED" && (x.Default_Status == "PASS" && x.Default_Changes == 0);
-                    bool repaired = x.GV_Status == "FAIL(6)" && x.AutoSync_Status == "REPAIRED" && x.Default_Status == "PASS";
+            int default_repaired =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.GPURepair_Status == "PASS");
+            int default_optimized =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "PASS" && x.GPURepair_Status == "PASS");
+            int default_total = default_repaired + default_optimized;
+            double default_time = DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.GPURepair_Time);
+            double default_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.GPURepair_Time));
+            int default_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.GPURepair_SolverCount)));
+            int default_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.GPURepair_VerCount)));
 
-                    return unchanged || repaired;
-                });
-            IEnumerable<ConfigurationComparisonRecord> autosync_repaired_same =
-                DataAnalyzer.ConfigurationComparisonSameRecords.Where(x =>
-                x.GV_Status == "FAIL(6)" && x.AutoSync_Status == "REPAIRED" && x.Default_Status == "PASS");
+            int maxsat_repaired =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.MaxSAT_Status == "PASS");
+            int maxsat_optimized =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "PASS" && x.MaxSAT_Status == "PASS");
+            int maxsat_total = maxsat_repaired + maxsat_optimized;
+            double maxsat_time = DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.MaxSAT_Time);
+            double maxsat_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.MaxSAT_Time));
+            int maxsat_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.MaxSAT_SolverCount)));
+            int maxsat_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.MaxSAT_VerCount)));
 
-            PrepareConfigurationTables(DataAnalyzer.ConfigurationComparisonRecords, directory, "configuration_comparison.tex");
-            PrepareConfigurationTables(DataAnalyzer.ConfigurationComparisonSameRecords, directory, "configuration_comparison_same.tex");
-            PrepareConfigurationTables(autosync_same, directory, "configuration_comparison_autosync.tex");
-            PrepareConfigurationTables(autosync_repaired_same, directory, "configuration_comparison_autosync_repaired.tex");
-        }
+            int sat_repaired =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.SAT_Status == "PASS");
+            int sat_optimized =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "PASS" && x.SAT_Status == "PASS");
+            int sat_total = sat_repaired + sat_optimized;
+            double sat_time = DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.SAT_Time);
+            double sat_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.SAT_Time));
+            int sat_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.SAT_SolverCount)));
+            int sat_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.SAT_VerCount)));
 
-        private static void PrepareConfigurationTables(IEnumerable<ConfigurationComparisonRecord> records, string directory, string filename)
-        {
-            double autosync_time = records.Sum(x => x.AutoSync_Time);
-            double autosync_median = Median(records.Select(x => x.AutoSync_Time));
-            int autosync_verifier = Convert.ToInt32(Math.Round(records.Sum(x => x.AutoSync_VerCount)));
+            int dg_repaired =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.Grid_Status == "PASS");
+            int dg_optimized =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "PASS" && x.Grid_Status == "PASS");
+            int dg_total = dg_repaired + dg_optimized;
+            double dg_time = DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_Time);
+            double dg_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.Grid_Time));
+            int dg_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_SolverCount)));
+            int dg_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_VerCount)));
 
-            double default_time = records.Sum(x => x.Default_Time);
-            double default_median = Median(records.Select(x => x.Default_Time));
-            int default_solver = Convert.ToInt32(Math.Round(records.Sum(x => x.Default_SolverCount)));
-            int default_verifier = Convert.ToInt32(Math.Round(records.Sum(x => x.Default_VerCount)));
+            int di_repaired =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.Inspection_Status == "PASS");
+            int di_optimized =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "PASS" && x.Inspection_Status == "PASS");
+            int di_total = di_repaired + di_optimized;
+            double di_time = DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Inspection_Time);
+            double di_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.Inspection_Time));
+            int di_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Inspection_SolverCount)));
+            int di_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Inspection_VerCount)));
 
-            double dg_time = records.Sum(x => x.DG_Time);
-            double dg_median = Median(records.Select(x => x.DG_Time));
-            int dg_solver = Convert.ToInt32(Math.Round(records.Sum(x => x.DG_SolverCount)));
-            int dg_verifier = Convert.ToInt32(Math.Round(records.Sum(x => x.DG_VerCount)));
-
-            double di_time = records.Sum(x => x.DI_Time);
-            double di_median = Median(records.Select(x => x.DI_Time));
-            int di_solver = Convert.ToInt32(Math.Round(records.Sum(x => x.DI_SolverCount)));
-            int di_verifier = Convert.ToInt32(Math.Round(records.Sum(x => x.DI_VerCount)));
-
-            double dg_di_time = records.Sum(x => x.DG_DI_Time);
-            double dg_di_median = Median(records.Select(x => x.DG_DI_Time));
-            int dg_di_solver = Convert.ToInt32(Math.Round(records.Sum(x => x.DG_DI_SolverCount)));
-            int dg_di_verifier = Convert.ToInt32(Math.Round(records.Sum(x => x.DG_DI_VerCount)));
+            int dg_di_repaired =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.Grid_Inspection_Status == "PASS");
+            int dg_di_optimized =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "PASS" && x.Grid_Inspection_Status == "PASS");
+            int dg_di_total = dg_di_repaired + dg_di_optimized;
+            double dg_di_time = DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_Inspection_Time);
+            double dg_di_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.Grid_Inspection_Time));
+            int dg_di_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_Inspection_SolverCount)));
+            int dg_di_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_Inspection_VerCount)));
 
             string file = directory + Path.DirectorySeparatorChar + "report" +
-                Path.DirectorySeparatorChar + "tables" + Path.DirectorySeparatorChar + filename;
+                Path.DirectorySeparatorChar + "tables" + Path.DirectorySeparatorChar + "configuration_comparison.tex";
 
             string content = File.ReadAllText(file);
-            content = content.Replace("@@autosync_time@@", Math.Round(autosync_time, 2).ToString());
-            content = content.Replace("@@autosync_median@@", Math.Round(autosync_median, 2).ToString());
-            content = content.Replace("@@autosync_verifier@@", autosync_verifier.ToString());
+            content = content.Replace("@@default_repaired@@", default_repaired);
+            content = content.Replace("@@default_optimized@@", default_optimized);
+            content = content.Replace("@@default_total@@", default_total);
+            content = content.Replace("@@default_time@@", default_time);
+            content = content.Replace("@@default_median@@", default_median, 2);
+            content = content.Replace("@@default_solver@@", default_solver);
+            content = content.Replace("@@default_verifier@@", default_verifier);
 
-            content = content.Replace("@@default_time@@", Math.Round(default_time, 2).ToString());
-            content = content.Replace("@@default_median@@", Math.Round(default_median, 2).ToString());
-            content = content.Replace("@@default_solver@@", default_solver.ToString());
-            content = content.Replace("@@default_verifier@@", default_verifier.ToString());
+            content = content.Replace("@@maxsat_repaired@@", maxsat_repaired);
+            content = content.Replace("@@maxsat_optimized@@", maxsat_optimized);
+            content = content.Replace("@@maxsat_total@@", maxsat_total);
+            content = content.Replace("@@maxsat_time@@", maxsat_time);
+            content = content.Replace("@@maxsat_median@@", maxsat_median, 2);
+            content = content.Replace("@@maxsat_solver@@", maxsat_solver);
+            content = content.Replace("@@maxsat_verifier@@", maxsat_verifier);
 
-            content = content.Replace("@@dg_time@@", Math.Round(dg_time, 2).ToString());
-            content = content.Replace("@@dg_median@@", Math.Round(dg_median, 2).ToString());
-            content = content.Replace("@@dg_solver@@", dg_solver.ToString());
-            content = content.Replace("@@dg_verifier@@", dg_verifier.ToString());
+            content = content.Replace("@@sat_repaired@@", sat_repaired);
+            content = content.Replace("@@sat_optimized@@", sat_optimized);
+            content = content.Replace("@@sat_total@@", sat_total);
+            content = content.Replace("@@sat_time@@", sat_time);
+            content = content.Replace("@@sat_median@@", sat_median, 2);
+            content = content.Replace("@@sat_solver@@", sat_solver);
+            content = content.Replace("@@sat_verifier@@", sat_verifier);
 
-            content = content.Replace("@@di_time@@", Math.Round(di_time, 2).ToString());
-            content = content.Replace("@@di_median@@", Math.Round(di_median, 2).ToString());
-            content = content.Replace("@@di_solver@@", di_solver.ToString());
-            content = content.Replace("@@di_verifier@@", di_verifier.ToString());
+            content = content.Replace("@@dg_repaired@@", dg_repaired);
+            content = content.Replace("@@dg_optimized@@", dg_optimized);
+            content = content.Replace("@@dg_total@@", dg_total);
+            content = content.Replace("@@dg_time@@", dg_time);
+            content = content.Replace("@@dg_median@@", dg_median, 2);
+            content = content.Replace("@@dg_solver@@", dg_solver);
+            content = content.Replace("@@dg_verifier@@", dg_verifier);
 
-            content = content.Replace("@@dg_di_time@@", Math.Round(dg_di_time, 2).ToString());
-            content = content.Replace("@@dg_di_median@@", Math.Round(dg_di_median, 2).ToString());
-            content = content.Replace("@@dg_di_solver@@", dg_di_solver.ToString());
-            content = content.Replace("@@dg_di_verifier@@", dg_di_verifier.ToString());
+            content = content.Replace("@@di_repaired@@", di_repaired);
+            content = content.Replace("@@di_optimized@@", di_optimized);
+            content = content.Replace("@@di_total@@", di_total);
+            content = content.Replace("@@di_time@@", di_time);
+            content = content.Replace("@@di_median@@", di_median, 2);
+            content = content.Replace("@@di_solver@@", di_solver);
+            content = content.Replace("@@di_verifier@@", di_verifier);
+
+            content = content.Replace("@@dg_di_repaired@@", dg_di_repaired);
+            content = content.Replace("@@dg_di_optimized@@", dg_di_optimized);
+            content = content.Replace("@@dg_di_total@@", dg_di_total);
+            content = content.Replace("@@dg_di_time@@", dg_di_time);
+            content = content.Replace("@@dg_di_median@@", dg_di_median, 2);
+            content = content.Replace("@@dg_di_solver@@", dg_di_solver);
+            content = content.Replace("@@dg_di_verifier@@", dg_di_verifier);
+            File.WriteAllText(file, content);
+        }
+
+        private static void PrepareConfigurationAutoSyncTables(string directory)
+        {
+            IEnumerable<ConfigurationComparisonRecord> cuda_valid =
+                DataAnalyzer.ConfigurationComparisonRecords.Where(x => !x.Kernel.Contains("OpenCL"))
+                .Where(x => x.GPUVerify_Status == "PASS" || x.GPUVerify_Status == "FAIL(6)");
+            IEnumerable<ConfigurationComparisonRecord> cuda_valid_same =
+                cuda_valid.Where(x => x.GPURepair_Status == x.MaxSAT_Status &&
+                    x.GPURepair_Status == x.SAT_Status &&
+                    x.GPURepair_Status == x.Grid_Status &&
+                    x.GPURepair_Status == x.Inspection_Status &&
+                    x.GPURepair_Status == x.Grid_Inspection_Status);
+
+            IEnumerable<ConfigurationComparisonRecord> cuda_repaired =
+                cuda_valid_same.Where(x => x.GPUVerify_Status == "FAIL(6)" && x.AutoSync_Status == "REPAIRED" && x.GPURepair_Status == "PASS");
+            IEnumerable<ConfigurationComparisonRecord> cuda_unchanged =
+                cuda_valid_same.Where(x => x.GPUVerify_Status == "PASS" && x.AutoSync_Status == "UNCHANGED" && x.GPURepair_Status == "UNCHANGED");
+            IEnumerable<ConfigurationComparisonRecord> cuda_repaired_unchanged = cuda_repaired.Union(cuda_unchanged);
+
+            double as_time = cuda_valid.Sum(x => x.AutoSync_Time);
+            double as_median = Median(cuda_valid.Select(x => x.AutoSync_Time));
+            double as_ru_time = cuda_repaired_unchanged.Sum(x => x.AutoSync_Time);
+            double as_ru_median = Median(cuda_repaired_unchanged.Select(x => x.AutoSync_Time));
+            int as_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.AutoSync_VerCount)));
+
+            double default_time = cuda_valid.Sum(x => x.GPURepair_Time);
+            double default_median = Median(cuda_valid.Select(x => x.GPURepair_Time));
+            double default_ru_time = cuda_repaired_unchanged.Sum(x => x.GPURepair_Time);
+            double default_ru_median = Median(cuda_repaired_unchanged.Select(x => x.GPURepair_Time));
+            int default_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.GPURepair_VerCount)));
+
+            double maxsat_time = cuda_valid.Sum(x => x.MaxSAT_Time);
+            double maxsat_median = Median(cuda_valid.Select(x => x.MaxSAT_Time));
+            double maxsat_ru_time = cuda_repaired_unchanged.Sum(x => x.MaxSAT_Time);
+            double maxsat_ru_median = Median(cuda_repaired_unchanged.Select(x => x.MaxSAT_Time));
+            int maxsat_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.MaxSAT_VerCount)));
+
+            double sat_time = cuda_valid.Sum(x => x.SAT_Time);
+            double sat_median = Median(cuda_valid.Select(x => x.SAT_Time));
+            double sat_ru_time = cuda_repaired_unchanged.Sum(x => x.SAT_Time);
+            double sat_ru_median = Median(cuda_repaired_unchanged.Select(x => x.SAT_Time));
+            int sat_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.SAT_VerCount)));
+
+            double grid_time = cuda_valid.Sum(x => x.Grid_Time);
+            double grid_median = Median(cuda_valid.Select(x => x.Grid_Time));
+            double grid_ru_time = cuda_repaired_unchanged.Sum(x => x.Grid_Time);
+            double grid_ru_median = Median(cuda_repaired_unchanged.Select(x => x.Grid_Time));
+            int grid_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.Grid_VerCount)));
+
+            double inspection_time = cuda_valid.Sum(x => x.Inspection_Time);
+            double inspection_median = Median(cuda_valid.Select(x => x.Inspection_Time));
+            double inspection_ru_time = cuda_repaired_unchanged.Sum(x => x.Inspection_Time);
+            double inspection_ru_median = Median(cuda_repaired_unchanged.Select(x => x.Inspection_Time));
+            int inspection_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.Inspection_VerCount)));
+
+            double grid_inspection_time = cuda_valid.Sum(x => x.Grid_Inspection_Time);
+            double grid_inspection_median = Median(cuda_valid.Select(x => x.Grid_Inspection_Time));
+            double grid_inspection_ru_time = cuda_repaired_unchanged.Sum(x => x.Grid_Inspection_Time);
+            double grid_inspection_ru_median = Median(cuda_repaired_unchanged.Select(x => x.Grid_Inspection_Time));
+            int grid_inspection_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.Grid_Inspection_VerCount)));
+
+            string file = directory + Path.DirectorySeparatorChar + "report" +
+                Path.DirectorySeparatorChar + "tables" + Path.DirectorySeparatorChar + "configuration_comparison_autosync.tex";
+
+            string content = File.ReadAllText(file);
+            content = content.Replace("@@kernel_count@@", cuda_valid);
+            content = content.Replace("@@repaired@@", cuda_repaired);
+            content = content.Replace("@@unchanged@@", cuda_unchanged);
+            content = content.Replace("@@total@@", cuda_repaired.Count() + cuda_unchanged.Count());
+
+            content = content.Replace("@@as_time@@", as_time);
+            content = content.Replace("@@as_median@@", as_median, 2);
+            content = content.Replace("@@as_ru_time@@", as_ru_time);
+            content = content.Replace("@@as_ru_median@@", as_ru_median, 2);
+            content = content.Replace("@@as_ru_verifier@@", as_ru_verifier);
+
+            content = content.Replace("@@default_time@@", default_time);
+            content = content.Replace("@@default_median@@", default_median, 2);
+            content = content.Replace("@@default_ru_time@@", default_ru_time);
+            content = content.Replace("@@default_ru_median@@", default_ru_median, 2);
+            content = content.Replace("@@default_ru_verifier@@", default_ru_verifier);
+
+            content = content.Replace("@@maxsat_time@@", maxsat_time);
+            content = content.Replace("@@maxsat_median@@", maxsat_median, 2);
+            content = content.Replace("@@maxsat_ru_time@@", maxsat_ru_time);
+            content = content.Replace("@@maxsat_ru_median@@", maxsat_ru_median, 2);
+            content = content.Replace("@@maxsat_ru_verifier@@", maxsat_ru_verifier);
+
+            content = content.Replace("@@sat_time@@", sat_time);
+            content = content.Replace("@@sat_median@@", sat_median, 2);
+            content = content.Replace("@@sat_ru_time@@", sat_ru_time);
+            content = content.Replace("@@sat_ru_median@@", sat_ru_median, 2);
+            content = content.Replace("@@sat_ru_verifier@@", sat_ru_verifier);
+
+            content = content.Replace("@@grid_time@@", grid_time);
+            content = content.Replace("@@grid_median@@", grid_median, 2);
+            content = content.Replace("@@grid_ru_time@@", grid_ru_time);
+            content = content.Replace("@@grid_ru_median@@", grid_ru_median, 2);
+            content = content.Replace("@@grid_ru_verifier@@", grid_ru_verifier);
+
+            content = content.Replace("@@inspection_time@@", inspection_time);
+            content = content.Replace("@@inspection_median@@", inspection_median, 2);
+            content = content.Replace("@@inspection_ru_time@@", inspection_ru_time);
+            content = content.Replace("@@inspection_ru_median@@", inspection_ru_median, 2);
+            content = content.Replace("@@inspection_ru_verifier@@", inspection_ru_verifier);
+
+            content = content.Replace("@@grid_inspection_time@@", grid_inspection_time);
+            content = content.Replace("@@grid_inspection_median@@", grid_inspection_median, 2);
+            content = content.Replace("@@grid_inspection_ru_time@@", grid_inspection_ru_time);
+            content = content.Replace("@@grid_inspection_ru_median@@", grid_inspection_ru_median, 2);
+            content = content.Replace("@@grid_inspection_ru_verifier@@", grid_inspection_ru_verifier);
             File.WriteAllText(file, content);
         }
 

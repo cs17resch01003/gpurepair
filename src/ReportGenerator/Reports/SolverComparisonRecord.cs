@@ -1,75 +1,68 @@
 ﻿namespace GPURepair.ReportGenerator.Reports
 {
     using CsvHelper.Configuration.Attributes;
+    using GPURepair.ReportGenerator;
 
-    public class SolverComparisonRecord
+    public class SolverComparisonRecord : BaseReportRecord
     {
+        public SolverComparisonRecord(BaseReportRecord record) : base(record)
+        {
+        }
+
         [Name("kernel")]
         [Index(0)]
-        public string Kernel { get; set; }
+        public string Kernel => GPUVerify.Kernel;
 
         [Name("gv-status")]
         [Index(1)]
-        public string GV_Status { get; set; }
+        public string GPUVerify_Status => GPUVerify.Result;
 
         [Name("mhs-status")]
         [Index(2)]
-        public string mhs_Status { get; set; }
+        public string mhs_Status => GPURepair.Result(this);
 
         [Name("mhs-time")]
         [Index(3)]
-        public double mhs_Time { get; set; }
+        public double mhs_Time => GPURepair.Total;
 
-        [Name("mhs-solver-count")]
+        [Name("mhs-solver")]
         [Index(4)]
-        public double mhs_SolverCount { get; set; }
+        public double mhs_SolverCount => GPURepair.SolverCount;
 
-        [Name("mhs-ver-count")]
+        [Name("mhs-verifier")]
         [Index(5)]
-        public double mhs_VerCount { get; set; }
-
-        [Name("mhs-changes")]
-        [Index(6)]
-        public double mhs_Changes { get; set; }
+        public double mhs_VerCount => GPURepair.VerCount;
 
         [Name("maxsat-status")]
-        [Index(7)]
-        public string MaxSAT_Status { get; set; }
+        [Index(6)]
+        public string MaxSAT_Status => GPURepair_MaxSAT.Result(this);
 
         [Name("maxsat-time")]
+        [Index(7)]
+        public double MaxSAT_Time => GPURepair_MaxSAT.Total;
+
+        [Name("maxsat-solver")]
         [Index(8)]
-        public double MaxSAT_Time { get; set; }
+        public double MaxSAT_SolverCount => GPURepair_MaxSAT.SolverCount;
 
-        [Name("maxsat-solver-count")]
+        [Name("maxsat-verifier")]
         [Index(9)]
-        public double MaxSAT_SolverCount { get; set; }
-
-        [Name("maxsat-ver-count")]
-        [Index(10)]
-        public double MaxSAT_VerCount { get; set; }
-
-        [Name("maxsat-changes")]
-        [Index(11)]
-        public double MaxSAT_Changes { get; set; }
+        public double MaxSAT_VerCount => GPURepair_MaxSAT.VerCount;
 
         [Name("sat-status")]
-        [Index(12)]
-        public string SAT_Status { get; set; }
+        [Index(10)]
+        public string SAT_Status => GPURepair_SAT.Result(this);
 
         [Name("sat-time")]
+        [Index(11)]
+        public double SAT_Time => GPURepair_SAT.Total;
+
+        [Name("sat-solver")]
+        [Index(12)]
+        public double SAT_SolverCount => GPURepair_SAT.SolverCount;
+
+        [Name("sat-verifier")]
         [Index(13)]
-        public double SAT_Time { get; set; }
-
-        [Name("sat-solver-count")]
-        [Index(14)]
-        public double SAT_SolverCount { get; set; }
-
-        [Name("sat-ver-count")]
-        [Index(15)]
-        public double SAT_VerCount { get; set; }
-
-        [Name("sat-changes")]
-        [Index(16)]
-        public double SAT_Changes { get; set; }
+        public double SAT_VerCount => GPURepair_SAT.VerCount;
     }
 }

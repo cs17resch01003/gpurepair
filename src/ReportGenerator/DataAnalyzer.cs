@@ -1,6 +1,5 @@
 ﻿namespace GPURepair.ReportGenerator
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -12,281 +11,67 @@
     {
         public static IEnumerable<ToolComparisonRecord> ToolComparisonRecords { get; set; }
 
-        public static IEnumerable<ToolComparisonRecord> ToolComparisonSameRecords { get; set; }
-
         public static IEnumerable<SolverComparisonRecord> SolverComparisonRecords { get; set; }
 
         public static IEnumerable<ConfigurationComparisonRecord> ConfigurationComparisonRecords { get; set; }
 
-        public static IEnumerable<ConfigurationComparisonRecord> ConfigurationComparisonSameRecords { get; set; }
-
-        public static IEnumerable<CompleteComparisonRecord> CompleteComparisonRecords { get; set; }
-
         public static async Task AnalyzeData(string directory)
         {
-            ToolComparisonRecords = await AnalyzeData(directory, "tool_comparison.csv", GetToolComparisonRecords);
-            ToolComparisonSameRecords = await AnalyzeData(directory, "tool_comparison_same.csv", GetToolComparisonSameRecords);
-            SolverComparisonRecords = await AnalyzeData(directory, "solver_comparison.csv", GetSolverComparisonRecords);
-            ConfigurationComparisonRecords = await AnalyzeData(directory, "configuration_comparison.csv", GetConfigurationComparisonRecords);
-            ConfigurationComparisonSameRecords = await AnalyzeData(directory, "configuration_comparison_same.csv", GetConfigurationComparisonSameRecords);
-            CompleteComparisonRecords = await AnalyzeData(directory, "complete_comparison.csv", GetCompleteComparisonRecords);
+            PopulateRecords();
+
+            await StoreDate(directory, "tool_comparison.csv", ToolComparisonRecords);
+            await StoreDate(directory, "solver_comparison.csv", SolverComparisonRecords);
+            await StoreDate(directory, "configuration_comparison.csv", ConfigurationComparisonRecords);
         }
 
-        private static async Task<IEnumerable<T>> AnalyzeData<T>(
-            string directory, string filename, Func<IEnumerable<T>> method)
+        private static async Task<IEnumerable<T>> StoreDate<T>(string directory,
+            string filename, IEnumerable<T> records)
         {
             string generated = directory + Path.DirectorySeparatorChar + "analysis" + Path.DirectorySeparatorChar + filename;
-
-            IEnumerable<T> records = method();
             await CsvWrapper.Write(records, generated);
 
             return records;
         }
 
-        private static IEnumerable<ToolComparisonRecord> GetToolComparisonRecords()
+        private static void PopulateRecords()
         {
-            List<ToolComparisonRecord> records = new List<ToolComparisonRecord>();
+            IEnumerable<BaseReportRecord> records = GetBaseRecords();
+
+            List<ToolComparisonRecord> toolComparisonRecords = new List<ToolComparisonRecord>();
+            foreach (BaseReportRecord record in records)
+                toolComparisonRecords.Add(new ToolComparisonRecord(record));
+            ToolComparisonRecords = toolComparisonRecords;
+
+            List<SolverComparisonRecord> solverComparisonRecords = new List<SolverComparisonRecord>();
+            foreach (BaseReportRecord record in records)
+                solverComparisonRecords.Add(new SolverComparisonRecord(record));
+            SolverComparisonRecords = solverComparisonRecords;
+
+            List<ConfigurationComparisonRecord> configurationComparisonRecords = new List<ConfigurationComparisonRecord>();
+            foreach (BaseReportRecord record in records)
+                configurationComparisonRecords.Add(new ConfigurationComparisonRecord(record));
+            ConfigurationComparisonRecords = configurationComparisonRecords;
+        }
+
+        private static IEnumerable<BaseReportRecord> GetBaseRecords()
+        {
+            List<BaseReportRecord> records = new List<BaseReportRecord>();
             foreach (GPUVerifyRecord _gpuverify in FileParser.GPUVerify)
             {
-                records.Add(new ToolComparisonRecord
-                {
-                    Kernel = _gpuverify.Kernel,
-                    GV_Status = _gpuverify.Result
-                });
+                BaseReportRecord record = new BaseReportRecord();
+                record.GPUVerify = _gpuverify;
+                record.AutoSync = FileParser.Autosync.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
+                record.GPURepair = FileParser.GPURepair.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
+                record.GPURepair_MaxSAT = FileParser.GPURepair_MaxSAT.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
+                record.GPURepair_SAT = FileParser.GPURepair_SAT.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
+                record.GPURepair_Grid = FileParser.GPURepair_Grid.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
+                record.GPURepair_Inspection = FileParser.GPURepair_Inspection.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
+                record.GPURepair_Grid_Inspection = FileParser.GPURepair_Grid_Inspection.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
+
+                records.Add(record);
             }
 
-            foreach (AutoSyncOutRecord _autoSync in FileParser.Autosync)
-            {
-                ToolComparisonRecord record = records.First(x => x.Kernel == _autoSync.Kernel);
-                record.AS_Status = _autoSync.Status;
-                record.AS_Time = _autoSync.Time;
-                record.AS_VerCount = _autoSync.VerCount;
-                record.AS_Changes = _autoSync.Changes;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair)
-            {
-                ToolComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.GR_Status = _gpurepair.Result;
-                record.GR_Time = _gpurepair.Total;
-                record.GR_VerCount = _gpurepair.VerCount;
-                record.GR_Changes = _gpurepair.Changes;
-            }
-
-            return records.OrderBy(x => x.Kernel);
-        }
-
-        private static IEnumerable<ToolComparisonRecord> GetToolComparisonSameRecords()
-        {
-            IEnumerable<ToolComparisonRecord> records = GetToolComparisonRecords();
-            IEnumerable<ToolComparisonRecord> unchanged = records.Where(
-                x => x.AS_Status == "UNCHANGED" && x.GR_Status == "PASS" && x.GR_Changes == 0);
-            IEnumerable<ToolComparisonRecord> repaired = records.Where(
-                x => x.AS_Status == "REPAIRED" && x.GR_Status == "PASS");
-
-            return unchanged.Union(repaired).OrderBy(x => x.Kernel);
-        }
-
-        private static IEnumerable<SolverComparisonRecord> GetSolverComparisonRecords()
-        {
-            List<SolverComparisonRecord> records = new List<SolverComparisonRecord>();
-            foreach (GPUVerifyRecord _gpuverify in FileParser.GPUVerify)
-            {
-                records.Add(new SolverComparisonRecord
-                {
-                    Kernel = _gpuverify.Kernel,
-                    GV_Status = _gpuverify.Result
-                });
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair)
-            {
-                SolverComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.mhs_Status = _gpurepair.Result;
-                record.mhs_Time = _gpurepair.Total;
-                record.mhs_SolverCount = _gpurepair.SolverCount;
-                record.mhs_VerCount = _gpurepair.VerCount;
-                record.mhs_Changes = _gpurepair.Changes;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_MaxSAT)
-            {
-                SolverComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.MaxSAT_Status = _gpurepair.Result;
-                record.MaxSAT_Time = _gpurepair.Total;
-                record.MaxSAT_SolverCount = _gpurepair.SolverCount;
-                record.MaxSAT_VerCount = _gpurepair.VerCount;
-                record.MaxSAT_Changes = _gpurepair.Changes;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_SAT)
-            {
-                SolverComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.SAT_Status = _gpurepair.Result;
-                record.SAT_Time = _gpurepair.Total;
-                record.SAT_SolverCount = _gpurepair.SolverCount;
-                record.SAT_VerCount = _gpurepair.VerCount;
-                record.SAT_Changes = _gpurepair.Changes;
-            }
-
-            return records.OrderBy(x => x.Kernel);
-        }
-
-        private static IEnumerable<ConfigurationComparisonRecord> GetConfigurationComparisonRecords()
-        {
-            List<ConfigurationComparisonRecord> records = new List<ConfigurationComparisonRecord>();
-            foreach (GPUVerifyRecord _gpuverify in FileParser.GPUVerify)
-            {
-                records.Add(new ConfigurationComparisonRecord
-                {
-                    Kernel = _gpuverify.Kernel,
-                    GV_Status = _gpuverify.Result
-                });
-            }
-
-            foreach (AutoSyncOutRecord _autosync in FileParser.Autosync)
-            {
-                ConfigurationComparisonRecord record = records.First(x => x.Kernel == _autosync.Kernel);
-                record.AutoSync_Status = _autosync.Status;
-                record.AutoSync_Time = _autosync.Time;
-                record.AutoSync_VerCount = _autosync.VerCount;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair)
-            {
-                ConfigurationComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.Default_Status = _gpurepair.Result;
-                record.Default_Time = _gpurepair.Total;
-                record.Default_SolverCount = _gpurepair.SolverCount;
-                record.Default_VerCount = _gpurepair.VerCount;
-                record.Default_Changes = _gpurepair.Changes;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Grid)
-            {
-                ConfigurationComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.DG_Status = _gpurepair.Result;
-                record.DG_Time = _gpurepair.Total;
-                record.DG_SolverCount = _gpurepair.SolverCount;
-                record.DG_VerCount = _gpurepair.VerCount;
-                record.DG_Changes = _gpurepair.Changes;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Inspection)
-            {
-                ConfigurationComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.DI_Status = _gpurepair.Result;
-                record.DI_Time = _gpurepair.Total;
-                record.DI_SolverCount = _gpurepair.SolverCount;
-                record.DI_VerCount = _gpurepair.VerCount;
-                record.DI_Changes = _gpurepair.Changes;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Grid_Inspection)
-            {
-                ConfigurationComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.DG_DI_Status = _gpurepair.Result;
-                record.DG_DI_Time = _gpurepair.Total;
-                record.DG_DI_SolverCount = _gpurepair.SolverCount;
-                record.DG_DI_VerCount = _gpurepair.VerCount;
-                record.DG_DI_Changes = _gpurepair.Changes;
-            }
-
-            return records.OrderBy(x => x.Kernel);
-        }
-
-        private static IEnumerable<ConfigurationComparisonRecord> GetConfigurationComparisonSameRecords()
-        {
-            IEnumerable<ConfigurationComparisonRecord> records = GetConfigurationComparisonRecords();
-            IEnumerable<ConfigurationComparisonRecord> same = records.Where(x =>
-            {
-                bool dg = x.Default_Status == x.DG_Status;
-                if (dg == true && x.Default_Status == "PASS" && x.Default_Changes == 0)
-                    dg = x.DG_Changes == 0;
-
-                bool di = x.Default_Status == x.DI_Status;
-                if (di == true && x.Default_Status == "PASS" && x.Default_Changes == 0)
-                    di = x.DI_Changes == 0;
-
-                bool dg_di = x.Default_Status == x.DG_DI_Status;
-                if (dg_di == true && x.Default_Status == "PASS" && x.Default_Changes == 0)
-                    dg_di = x.DG_DI_Changes == 0;
-
-                return dg && di && dg_di;
-            });
-
-            return same;
-        }
-
-        private static IEnumerable<CompleteComparisonRecord> GetCompleteComparisonRecords()
-        {
-            List<CompleteComparisonRecord> records = new List<CompleteComparisonRecord>();
-            foreach (GPUVerifyRecord _gpuverify in FileParser.GPUVerify)
-            {
-                records.Add(new CompleteComparisonRecord
-                {
-                    Kernel = _gpuverify.Kernel,
-                    GV_Status = _gpuverify.Result
-                });
-            }
-
-            foreach (AutoSyncOutRecord _autosync in FileParser.Autosync)
-            {
-                CompleteComparisonRecord record = records.First(x => x.Kernel == _autosync.Kernel);
-                record.AutoSync_Status = _autosync.Status;
-                record.AutoSync_Time = _autosync.Time;
-                record.AutoSync_VerCount = _autosync.VerCount;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair)
-            {
-                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.mhs_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
-                record.mhs_Time = _gpurepair.Total;
-                record.mhs_VerCount = _gpurepair.VerCount;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_MaxSAT)
-            {
-                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.MaxSAT_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
-                record.MaxSAT_Time = _gpurepair.Total;
-                record.MaxSAT_VerCount = _gpurepair.VerCount;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_SAT)
-            {
-                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.SAT_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
-                record.SAT_Time = _gpurepair.Total;
-                record.SAT_VerCount = _gpurepair.VerCount;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Grid)
-            {
-                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.DG_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
-                record.DG_Time = _gpurepair.Total;
-                record.DG_VerCount = _gpurepair.VerCount;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Inspection)
-            {
-                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.DI_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
-                record.DI_Time = _gpurepair.Total;
-                record.DI_VerCount = _gpurepair.VerCount;
-            }
-
-            foreach (GPURepairRecord _gpurepair in FileParser.GPURepair_Grid_Inspection)
-            {
-                CompleteComparisonRecord record = records.First(x => x.Kernel == _gpurepair.Kernel);
-                record.DG_DI_Status = _gpurepair.Result == "PASS" && _gpurepair.Changes == 0 ? "UNCHANGED" : _gpurepair.Result;
-                record.DG_DI_Time = _gpurepair.Total;
-                record.DG_DI_VerCount = _gpurepair.VerCount;
-            }
-
-            return records.OrderBy(x => x.Kernel);
+            return records;
         }
     }
 }

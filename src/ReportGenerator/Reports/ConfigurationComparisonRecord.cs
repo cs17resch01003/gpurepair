@@ -1,107 +1,128 @@
 ﻿namespace GPURepair.ReportGenerator.Reports
 {
     using CsvHelper.Configuration.Attributes;
+    using GPURepair.ReportGenerator;
 
-    public class ConfigurationComparisonRecord
+    public class ConfigurationComparisonRecord : BaseReportRecord
     {
+        public ConfigurationComparisonRecord(BaseReportRecord record) : base(record)
+        {
+        }
+
         [Name("kernel")]
         [Index(0)]
-        public string Kernel { get; set; }
+        public string Kernel => GPUVerify.Kernel;
 
         [Name("gv-status")]
         [Index(1)]
-        public string GV_Status { get; set; }
+        public string GPUVerify_Status => GPUVerify.Result;
 
         [Name("as-status")]
         [Index(2)]
-        public string AutoSync_Status { get; set; }
+        public string AutoSync_Status => AutoSync.Status;
 
         [Name("as-time")]
         [Index(3)]
-        public double AutoSync_Time { get; set; }
+        public double AutoSync_Time => AutoSync.Time;
 
-        [Name("as-ver-count")]
+        [Name("as-verifier")]
         [Index(4)]
-        public double AutoSync_VerCount { get; set; }
+        public double AutoSync_VerCount => AutoSync.VerCount;
 
-        [Name("def-status")]
+        [Name("gr-status")]
         [Index(5)]
-        public string Default_Status { get; set; }
+        public string GPURepair_Status => GPURepair.Result(this);
 
-        [Name("def-time")]
+        [Name("gr-time")]
         [Index(6)]
-        public double Default_Time { get; set; }
+        public double GPURepair_Time => GPURepair.Total;
 
-        [Name("def-solver-count")]
+        [Name("gr-solver")]
         [Index(7)]
-        public double Default_SolverCount { get; set; }
+        public double GPURepair_SolverCount => GPURepair.SolverCount;
 
-        [Name("def-ver-count")]
+        [Name("gr-verifier")]
         [Index(8)]
-        public double Default_VerCount { get; set; }
+        public double GPURepair_VerCount => GPURepair.VerCount;
 
-        [Name("def-changes")]
+        [Name("maxsat-status")]
         [Index(9)]
-        public double Default_Changes { get; set; }
+        public string MaxSAT_Status => GPURepair_MaxSAT.Result(this);
 
-        [Name("disgrid-status")]
+        [Name("maxsat-time")]
         [Index(10)]
-        public string DG_Status { get; set; }
+        public double MaxSAT_Time => GPURepair_MaxSAT.Total;
 
-        [Name("disgrid-time")]
+        [Name("maxsat-solver")]
         [Index(11)]
-        public double DG_Time { get; set; }
+        public double MaxSAT_SolverCount => GPURepair_MaxSAT.SolverCount;
 
-        [Name("disgrid-solver-count")]
+        [Name("maxsat-verifier")]
         [Index(12)]
-        public double DG_SolverCount { get; set; }
+        public double MaxSAT_VerCount => GPURepair_MaxSAT.VerCount;
 
-        [Name("disgrid-ver-count")]
+        [Name("sat-status")]
         [Index(13)]
-        public double DG_VerCount { get; set; }
+        public string SAT_Status => GPURepair_SAT.Result(this);
 
-        [Name("disgrid-changes")]
+        [Name("sat-time")]
         [Index(14)]
-        public double DG_Changes { get; set; }
+        public double SAT_Time => GPURepair_SAT.Total;
 
-        [Name("disinspect-status")]
+        [Name("sat-solver")]
         [Index(15)]
-        public string DI_Status { get; set; }
+        public double SAT_SolverCount => GPURepair_SAT.SolverCount;
 
-        [Name("disinspect-time")]
+        [Name("sat-verifier")]
         [Index(16)]
-        public double DI_Time { get; set; }
+        public double SAT_VerCount => GPURepair_SAT.VerCount;
 
-        [Name("disinspect-solver-count")]
+        [Name("grid-status")]
         [Index(17)]
-        public double DI_SolverCount { get; set; }
+        public string Grid_Status => GPURepair_Grid.Result(this);
 
-        [Name("disinspect-ver-count")]
+        [Name("grid-time")]
         [Index(18)]
-        public double DI_VerCount { get; set; }
+        public double Grid_Time => GPURepair_Grid.Total;
 
-        [Name("disinspect-changes")]
+        [Name("grid-solver")]
         [Index(19)]
-        public double DI_Changes { get; set; }
+        public double Grid_SolverCount => GPURepair_Grid.SolverCount;
 
-        [Name("disgrid-disinspect-status")]
+        [Name("grid-verifier")]
         [Index(20)]
-        public string DG_DI_Status { get; set; }
+        public double Grid_VerCount => GPURepair_Grid.VerCount;
 
-        [Name("disgrid-disinspect-time")]
+        [Name("ins-status")]
         [Index(21)]
-        public double DG_DI_Time { get; set; }
+        public string Inspection_Status => GPURepair_Inspection.Result(this);
 
-        [Name("disgrid-disinspect-solver-count")]
+        [Name("ins-time")]
         [Index(22)]
-        public double DG_DI_SolverCount { get; set; }
+        public double Inspection_Time => GPURepair_Inspection.Total;
 
-        [Name("disgrid-disinspect-ver-count")]
+        [Name("ins-solver")]
         [Index(23)]
-        public double DG_DI_VerCount { get; set; }
+        public double Inspection_SolverCount => GPURepair_Inspection.SolverCount;
 
-        [Name("disgrid-disinspect-changes")]
+        [Name("ins-verifier")]
         [Index(24)]
-        public double DG_DI_Changes { get; set; }
+        public double Inspection_VerCount => GPURepair_Inspection.VerCount;
+
+        [Name("grid-ins-status")]
+        [Index(25)]
+        public string Grid_Inspection_Status => GPURepair_Grid_Inspection.Result(this);
+
+        [Name("grid-ins-time")]
+        [Index(26)]
+        public double Grid_Inspection_Time => GPURepair_Grid_Inspection.Total;
+
+        [Name("grid-ins-solver")]
+        [Index(27)]
+        public double Grid_Inspection_SolverCount => GPURepair_Grid_Inspection.SolverCount;
+
+        [Name("grid-ins-verifier")]
+        [Index(28)]
+        public double Grid_Inspection_VerCount => GPURepair_Grid_Inspection.VerCount;
     }
 }

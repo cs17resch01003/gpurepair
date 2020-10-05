@@ -1,47 +1,44 @@
 ﻿namespace GPURepair.ReportGenerator.Reports
 {
     using CsvHelper.Configuration.Attributes;
+    using GPURepair.ReportGenerator;
 
-    public class ToolComparisonRecord
+    public class ToolComparisonRecord : BaseReportRecord
     {
+        public ToolComparisonRecord(BaseReportRecord record) : base(record)
+        {
+        }
+
         [Name("kernel")]
         [Index(0)]
-        public string Kernel { get; set; }
+        public string Kernel => GPUVerify.Kernel;
 
         [Name("gv-status")]
         [Index(1)]
-        public string GV_Status { get; set; }
+        public string GPUVerify_Status => GPUVerify.Result;
 
         [Name("as-status")]
         [Index(2)]
-        public string AS_Status { get; set; }
+        public string AutoSync_Status => AutoSync.Status;
 
         [Name("as-time")]
         [Index(3)]
-        public double AS_Time { get; set; }
+        public double AutoSync_Time => AutoSync.Time;
 
-        [Name("as-ver-count")]
+        [Name("as-verifier")]
         [Index(4)]
-        public double AS_VerCount { get; set; }
-
-        [Name("as-changes")]
-        [Index(5)]
-        public double AS_Changes { get; set; }
+        public double AutoSync_VerCount => AutoSync.VerCount;
 
         [Name("gr-status")]
-        [Index(6)]
-        public string GR_Status { get; set; }
+        [Index(5)]
+        public string GPURepair_Status => GPURepair.Result(this);
 
         [Name("gr-time")]
+        [Index(6)]
+        public double GPURepair_Time => GPURepair.Total;
+
+        [Name("gr-verifier")]
         [Index(7)]
-        public double GR_Time { get; set; }
-
-        [Name("gr-ver-count")]
-        [Index(8)]
-        public double GR_VerCount { get; set; }
-
-        [Name("gr-changes")]
-        [Index(9)]
-        public double GR_Changes { get; set; }
+        public double GPURepair_VerCount => GPURepair.VerCount;
     }
 }

@@ -1,14 +1,9 @@
 \section{Configuration Comparison}
 
-\tool provides the option of disabling instrumentation of grid-level barriers and disabling inspection of programmer inserted barriers. Disabling these configuration have a significant performance impact. By default both these options are enabled. These configuration options are used to repair all the $@@kernel_count@@$ kernels from \tableref{benchmark_summary}. \tableref{configuration_comparison} summarizes the metrics of these four configurations.
+\tool provides the option of disabling instrumentation of grid-level barriers and disabling inspection of programmer inserted barriers. Disabling these configuration have a significant performance impact. By default both these options are enabled. These configuration options are used to repair all the $@@kernel_count@@$ kernels from \tableref{benchmark_summary}. \tableref{configuration_comparison} summarizes the metrics of the various configurations.
 
 \input{tables/configuration_comparison}
 
-All four implementations give the same result for $@@same@@$ kernels ($@@same_cuda@@$ CUDA and $@@same_opencl@@$ OpenCL). \tableref{configuration_comparison_same} summarizes the metrics of these four configurations for these kernels.
-
-\input{tables/configuration_comparison_same}
-
-\tableref{configuration_comparison_autosync} compares these configurations with \autosync for the kernels that were unchanged or repaired by both \tool and \autosync. There were $@@autosync_same@@$ kernels like this. \tableref{configuration_comparison_autosync_repaired} shows the data only for the $@@autosync_repaired_same@@$ repaired kernels.
+\tableref{configuration_comparison_autosync} summarizes the metrics of these configurations along with \autosync for the valid kernels.
 
 \input{tables/configuration_comparison_autosync}
-\input{tables/configuration_comparison_autosync_repaired}

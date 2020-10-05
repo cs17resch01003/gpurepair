@@ -16,14 +16,15 @@ Verified by \verifiername & $@@cuda_verified@@$ & $@@cuda_verified@@$ & $@@openc
 \quad No changes made by the tool & $@@cuda_verified_as_unchanged@@$ & $@@cuda_verified_gr_unchanged@@$ & $@@opencl_verified_gr_unchanged@@$ \\
 \quad Changes recommended by the tool & $0$ & $@@cuda_verified_gr_changed@@$ & $@@opencl_verified_gr_changed@@$ \\
 \quad Errors  & $@@cuda_verified_as_errors@@$ & $@@cuda_verified_gr_errors@@$ & $@@opencl_verified_gr_errors@@$ \\
-\quad Timeouts & $@@cuda_verified_as_timeout@@$ & $@@cuda_verified_gr_timeout@@$ & $@@opencl_verified_gr_timeout@@$ \\ \hline \hline
+\quad Timeouts ($300$ seconds) & $@@cuda_verified_as_timeout@@$ & $@@cuda_verified_gr_timeout@@$ & $@@opencl_verified_gr_timeout@@$ \\ \hline \hline
 
 Data Race/Barrier Divergence Errors & \multirow{2}{*}{$@@cuda_repairable@@$} & \multirow{2}{*}{$@@cuda_repairable@@$} & \multirow{2}{*}{$@@opencl_repairable@@$} \\
 identified by \verifiername & & & \\ \hline
 \quad Repaired by the tool & $@@cuda_repairable_as_repaired@@$ & $@@cuda_repairable_gr_repaired@@$ & $@@opencl_repairable_gr_repaired@@$ \\
+\quad Repaired using grid-level barriers & $0$ & $@@cuda_repairable_gr_repaired_grid@@$ & $0$ \\
 \quad Could not be repaired by the tool & $@@cuda_repairable_as_repairerror@@$ & $@@cuda_repairable_gr_repairerror@@$ & $@@opencl_repairable_gr_repairerror@@$ \\
 \quad Errors  & $@@cuda_repairable_as_errors@@$ & $@@cuda_repairable_gr_errors@@$ & $@@opencl_repairable_gr_errors@@$ \\
-\quad Timeouts & $@@cuda_repairable_as_timeout@@$ & $@@cuda_repairable_gr_timeout@@$ & $@@opencl_repairable_gr_timeout@@$ \\ \hline \hline
+\quad Timeouts ($300$ seconds) & $@@cuda_repairable_as_timeout@@$ & $@@cuda_repairable_gr_timeout@@$ & $@@opencl_repairable_gr_timeout@@$ \\ \hline \hline
 
 Unrepairable errors identified by & \multirow{2}{*}{$@@cuda_unrepairable@@$} & \multirow{2}{*}{$@@cuda_unrepairable@@$} & \multirow{2}{*}{$@@opencl_unrepairable@@$} \\
 \verifiername & & & \\ \hline

@@ -65,7 +65,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Records\AutoSyncRecord.cs" />
-    <Compile Include="Reports\CompleteComparisonRecord.cs" />
+    <Compile Include="Reports\BaseReportRecord.cs" />
     <Compile Include="Reports\ConfigurationComparisonRecord.cs" />
     <Compile Include="Reports\SolverComparisonRecord.cs" />
     <Compile Include="Reports\ToolComparisonRecord.cs" />
@@ -155,19 +155,7 @@
     <None Include="template\tables\configuration_comparison_autosync.tex">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="template\tables\configuration_comparison_autosync_repaired.tex">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="template\tables\configuration_comparison_same.tex">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="template\tables\results.tex">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="template\tables\solver_comparison.tex">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="template\tables\solver_comparison_repaired.tex">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

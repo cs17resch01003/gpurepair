@@ -1,21 +1,23 @@
 \begin{table}[htp]
-\caption{Configuration Comparison}
+\caption{Comparison of the various configurations of \tool}
 \label{Ta:configuration_comparison}
-\begin{center}
+\centering
 
 \def\arraystretch{1.1}
 \setlength\tabcolsep{7pt}
 
-\begin{tabular}{|l|r|r|r|r|}
+\begin{tabular}{|l|r|r|r|r|r|}
 \hline
 
-\multicolumn{1}{|c|}{} & \multicolumn{1}{|c|}{\textbf{default}} & \multicolumn{1}{|c|}{\textbf{dis-grid}} & \multicolumn{1}{|c|}{\textbf{dis-inspect}} & \multicolumn{1}{|c|}{\textbf{dis-both}} \\ \hline \hline
-Total Time Taken & $@@default_time@@$ & $@@dg_time@@$ & $@@di_time@@$ & $@@dg_di_time@@$\\ \hline
-Median Time Taken & $@@default_median@@$ & $@@dg_median@@$ & $@@di_median@@$ & $@@dg_di_median@@$\\ \hline
-Solver Calls & $@@default_solver@@$ & $@@dg_solver@@$ & $@@di_solver@@$ & $@@dg_di_solver@@$\\ \hline
-Verifier Calls & $@@default_verifier@@$ & $@@dg_verifier@@$ & $@@di_verifier@@$ & $@@dg_di_verifier@@$\\ \hline
+\multicolumn{1}{|c|}{\textbf{Configuration}} & \multicolumn{1}{|c|}{\textbf{Repaired +}} & \multicolumn{1}{|c|}{\textbf{Total}} & \multicolumn{1}{|c|}{\textbf{Median}} & \multicolumn{1}{|c|}{\textbf{Solver}} & \multicolumn{1}{|c|}{\textbf{Verifier}} \\
+\multicolumn{1}{|c|}{} & \multicolumn{1}{|c|}{\textbf{Optimized}} & \multicolumn{1}{|c|}{\textbf{Time}} & \multicolumn{1}{|c|}{\textbf{Time}} & \multicolumn{1}{|c|}{\textbf{Calls}} & \multicolumn{1}{|c|}{\textbf{Calls}} \\
+\multicolumn{1}{|c|}{} & \multicolumn{1}{|c|}{\textbf{Kernels}} & \multicolumn{1}{|c|}{} & \multicolumn{1}{|c|}{} & \multicolumn{1}{|c|}{} & \multicolumn{1}{|c|}{} \\ \hline \hline
+default & $@@default_repaired@@+@@default_optimized@@=@@default_total@@$ & $@@default_time@@$ & $@@default_median@@$ & $@@default_solver@@$ & $@@default_verifier@@$ \\ \hline
+maxsat & $@@maxsat_repaired@@+@@maxsat_optimized@@=@@maxsat_total@@$ & $@@maxsat_time@@$ & $@@maxsat_median@@$ & $@@maxsat_solver@@$ & $@@maxsat_verifier@@$ \\ \hline
+sat & $@@sat_repaired@@+@@sat_optimized@@=@@sat_total@@$ & $@@sat_time@@$ & $@@sat_median@@$ & $@@sat_solver@@$ & $@@sat_verifier@@$ \\ \hline
+dis-grid & $@@dg_repaired@@+@@dg_optimized@@=@@dg_total@@$ & $@@dg_time@@$ & $@@dg_median@@$ & $@@dg_solver@@$ & $@@dg_verifier@@$ \\ \hline
+dis-inspect & $@@di_repaired@@+@@di_optimized@@=@@di_total@@$ & $@@di_time@@$ & $@@di_median@@$ & $@@di_solver@@$ & $@@di_verifier@@$ \\ \hline
+dis-grid dis-inspect & $@@dg_di_repaired@@+@@dg_di_optimized@@=@@dg_di_total@@$ & $@@dg_di_time@@$ & $@@dg_di_median@@$ & $@@dg_di_solver@@$ & $@@dg_di_verifier@@$ \\ \hline
 
 \end{tabular}
-
-\end{center}
 \end{table}
