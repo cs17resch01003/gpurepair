@@ -31,6 +31,7 @@ do
 	./gvtester.py /datadrive/autosync/tests/solutions --threads=1 --time-as-csv --csv-file=gpuverify-$i.csv 2>&1 | tee gpuverify-run-$i.log
 
 	mkdir -p /datadrive/reports
+	mkdir -p /datadrive/reports/gpuverify
 	mv /datadrive/autosync/src/AutoSync/autosync-run-$i.csv /datadrive/reports/autosync-run-$i.csv
 	mv /datadrive/autosync/tests/autosync-snapshot-$i.zip /datadrive/reports/autosync-snapshot-$i.zip
 	mv /datadrive/gpuverify/gpuverify-$i.csv /datadrive/reports/gpuverify/gpuverify-$i.csv
