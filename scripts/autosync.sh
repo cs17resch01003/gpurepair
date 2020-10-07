@@ -33,6 +33,6 @@ do
 	mkdir -p /datadrive/reports
 	mv /datadrive/autosync/src/AutoSync/autosync-run-$i.csv /datadrive/reports/autosync-run-$i.csv
 	mv /datadrive/autosync/tests/autosync-snapshot-$i.zip /datadrive/reports/autosync-snapshot-$i.zip
-	mv /datadrive/gpuverify/gpuverify-$i.csv /datadrive/reports/gpuverify-$i.csv
-	mv /datadrive/gpuverify/gpuverify-run-$i.log /datadrive/reports/gpuverify-run-$i.log
+	mv /datadrive/gpuverify/gpuverify-$i.csv /datadrive/reports/gpuverify/gpuverify-$i.csv
+	mv /datadrive/gpuverify/gpuverify-run-$i.log /datadrive/reports/gpuverify/gpuverify-run-$i.log
 done
