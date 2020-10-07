@@ -28,11 +28,11 @@ do
 	mv ../gvfindtools.py ./gvfindtools.py
 	clear
 	cd /datadrive/gpuverify
-	./gvtester.py /datadrive/autosync/tests/testsuite/solutions --threads=1 --time-as-csv --csv-file=gpuverify-$i.csv 2>&1 | tee gpuverify-run-$i.log
+	./gvtester.py /datadrive/autosync/tests/solutions --threads=1 --time-as-csv --csv-file=gpuverify-$i.csv 2>&1 | tee gpuverify-run-$i.log
 
 	mkdir -p /datadrive/reports
 	mv /datadrive/autosync/src/AutoSync/autosync-run-$i.csv /datadrive/reports/autosync-run-$i.csv
-	mv /datadrive/autosync/tests/testsuite/autosync-snapshot-$i.zip /datadrive/reports/autosync-snapshot-$i.zip
+	mv /datadrive/autosync/tests/autosync-snapshot-$i.zip /datadrive/reports/autosync-snapshot-$i.zip
 	mv /datadrive/gpuverify/gpuverify-$i.csv /datadrive/reports/gpuverify-$i.csv
 	mv /datadrive/gpuverify/gpuverify-run-$i.log /datadrive/reports/gpuverify-run-$i.log
 done
