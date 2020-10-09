@@ -49,7 +49,7 @@
                     lines.Add(@"\input{experiments/source_information}");
                     PrepareSourceInformation(directory);
 
-                    if (FileParser.GPURepair_MaxSAT.Any() && FileParser.GPURepair_SAT.Any())
+                    if (FileParser.GPURepair_MaxSAT.Any())
                     {
                         lines.Add(@"\input{experiments/solver_comparison}");
                         PrepareSolverComparison(directory);
@@ -563,20 +563,6 @@
                 }))));
 
             File.WriteAllText(file, content);
-
-            file = directory + Path.DirectorySeparatorChar + "report" +
-                Path.DirectorySeparatorChar + "figures" + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "time_mhs_sat.dat";
-
-            content = File.ReadAllText(file);
-            content = content.Replace("@@data@@", string.Join("\r\n",
-                DataAnalyzer.SolverComparisonRecords.Select(x => string.Join("\t", new string[]
-                {
-                    Math.Round(x.mhs_Time, 2).ToString(),
-                    Math.Round(x.SAT_Time, 2).ToString(),
-                    "a"
-                }))));
-
-            File.WriteAllText(file, content);
         }
 
         private static void PrepareConfigurationComparison(string directory)
@@ -613,16 +599,6 @@
             double maxsat_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.MaxSAT_Time));
             int maxsat_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.MaxSAT_SolverCount)));
             int maxsat_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.MaxSAT_VerCount)));
-
-            int sat_repaired =
-                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.SAT_Status == "PASS");
-            int sat_optimized =
-                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "PASS" && x.SAT_Status == "PASS");
-            int sat_total = sat_repaired + sat_optimized;
-            double sat_time = DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.SAT_Time);
-            double sat_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.SAT_Time));
-            int sat_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.SAT_SolverCount)));
-            int sat_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.SAT_VerCount)));
 
             int dg_repaired =
                 DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.Grid_Status == "PASS");
@@ -674,14 +650,6 @@
             content = content.Replace("@@maxsat_solver@@", maxsat_solver);
             content = content.Replace("@@maxsat_verifier@@", maxsat_verifier);
 
-            content = content.Replace("@@sat_repaired@@", sat_repaired);
-            content = content.Replace("@@sat_optimized@@", sat_optimized);
-            content = content.Replace("@@sat_total@@", sat_total);
-            content = content.Replace("@@sat_time@@", sat_time);
-            content = content.Replace("@@sat_median@@", sat_median, 2);
-            content = content.Replace("@@sat_solver@@", sat_solver);
-            content = content.Replace("@@sat_verifier@@", sat_verifier);
-
             content = content.Replace("@@dg_repaired@@", dg_repaired);
             content = content.Replace("@@dg_optimized@@", dg_optimized);
             content = content.Replace("@@dg_total@@", dg_total);
@@ -715,7 +683,6 @@
                 .Where(x => x.GPUVerify_Status == "PASS" || x.GPUVerify_Status == "FAIL(6)");
             IEnumerable<ConfigurationComparisonRecord> cuda_valid_same =
                 cuda_valid.Where(x => x.GPURepair_Status == x.MaxSAT_Status &&
-                    x.GPURepair_Status == x.SAT_Status &&
                     x.GPURepair_Status == x.Grid_Status &&
                     x.GPURepair_Status == x.Inspection_Status &&
                     x.GPURepair_Status == x.Grid_Inspection_Status);
@@ -743,12 +710,6 @@
             double maxsat_ru_time = cuda_repaired_unchanged.Sum(x => x.MaxSAT_Time);
             double maxsat_ru_median = Median(cuda_repaired_unchanged.Select(x => x.MaxSAT_Time));
             int maxsat_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.MaxSAT_VerCount)));
-
-            double sat_time = cuda_valid.Sum(x => x.SAT_Time);
-            double sat_median = Median(cuda_valid.Select(x => x.SAT_Time));
-            double sat_ru_time = cuda_repaired_unchanged.Sum(x => x.SAT_Time);
-            double sat_ru_median = Median(cuda_repaired_unchanged.Select(x => x.SAT_Time));
-            int sat_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.SAT_VerCount)));
 
             double grid_time = cuda_valid.Sum(x => x.Grid_Time);
             double grid_median = Median(cuda_valid.Select(x => x.Grid_Time));
@@ -794,12 +755,6 @@
             content = content.Replace("@@maxsat_ru_time@@", maxsat_ru_time);
             content = content.Replace("@@maxsat_ru_median@@", maxsat_ru_median, 2);
             content = content.Replace("@@maxsat_ru_verifier@@", maxsat_ru_verifier);
-
-            content = content.Replace("@@sat_time@@", sat_time);
-            content = content.Replace("@@sat_median@@", sat_median, 2);
-            content = content.Replace("@@sat_ru_time@@", sat_ru_time);
-            content = content.Replace("@@sat_ru_median@@", sat_ru_median, 2);
-            content = content.Replace("@@sat_ru_verifier@@", sat_ru_verifier);
 
             content = content.Replace("@@grid_time@@", grid_time);
             content = content.Replace("@@grid_median@@", grid_median, 2);

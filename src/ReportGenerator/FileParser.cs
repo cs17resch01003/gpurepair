@@ -17,8 +17,6 @@
 
         public static IEnumerable<GPURepairRecord> GPURepair_MaxSAT { get; set; }
 
-        public static IEnumerable<GPURepairRecord> GPURepair_SAT { get; set; }
-
         public static IEnumerable<GPURepairRecord> GPURepair_Grid { get; set; }
 
         public static IEnumerable<GPURepairRecord> GPURepair_Inspection { get; set; }
@@ -31,7 +29,6 @@
             Autosync = await ParseSource(directory, "autosync", "autosync.csv", GetAutoSyncRecords);
             GPURepair = await ParseSource(directory, "gpurepair", "gpurepair.csv", GetGPURepairRecords);
             GPURepair_MaxSAT = await ParseSource(directory, "gpurepair_maxsat", "gpurepair_maxsat.csv", GetGPURepairRecords);
-            GPURepair_SAT = await ParseSource(directory, "gpurepair_sat", "gpurepair_sat.csv", GetGPURepairRecords);
             GPURepair_Grid = await ParseSource(directory, "gpurepair_grid", "gpurepair_grid.csv", GetGPURepairRecords);
             GPURepair_Inspection = await ParseSource(directory, "gpurepair_inspection", "gpurepair_inspection.csv", GetGPURepairRecords);
             GPURepair_Grid_Inspection = await ParseSource(directory, "gpurepair_grid_inspection", "gpurepair_grid_inspection.csv", GetGPURepairRecords);

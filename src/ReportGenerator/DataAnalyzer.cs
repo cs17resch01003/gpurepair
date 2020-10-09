@@ -63,7 +63,6 @@
                 record.AutoSync = FileParser.Autosync.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
                 record.GPURepair = FileParser.GPURepair.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
                 record.GPURepair_MaxSAT = FileParser.GPURepair_MaxSAT.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
-                record.GPURepair_SAT = FileParser.GPURepair_SAT.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
                 record.GPURepair_Grid = FileParser.GPURepair_Grid.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
                 record.GPURepair_Inspection = FileParser.GPURepair_Inspection.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
                 record.GPURepair_Grid_Inspection = FileParser.GPURepair_Grid_Inspection.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);

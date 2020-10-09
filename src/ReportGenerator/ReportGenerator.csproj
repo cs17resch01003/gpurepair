@@ -79,9 +79,6 @@
     <None Include="manual\assertionerrors.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="manual\falsepositives.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
     <None Include="template\experiments\benchmark_summary.tex">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -99,9 +96,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="template\figures\data\time_mhs_maxsat.dat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="template\figures\data\time_mhs_sat.dat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="template\figures\data\time_repaired.dat">

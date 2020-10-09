@@ -61,68 +61,52 @@
         [Index(12)]
         public double MaxSAT_VerCount => GPURepair_MaxSAT.VerCount;
 
-        [Name("sat-status")]
-        [Index(13)]
-        public string SAT_Status => GPURepair_SAT.Result(this);
-
-        [Name("sat-time")]
-        [Index(14)]
-        public double SAT_Time => GPURepair_SAT.Total;
-
-        [Name("sat-solver")]
-        [Index(15)]
-        public double SAT_SolverCount => GPURepair_SAT.SolverCount;
-
-        [Name("sat-verifier")]
-        [Index(16)]
-        public double SAT_VerCount => GPURepair_SAT.VerCount;
-
         [Name("grid-status")]
-        [Index(17)]
+        [Index(13)]
         public string Grid_Status => GPURepair_Grid.Result(this);
 
         [Name("grid-time")]
-        [Index(18)]
+        [Index(14)]
         public double Grid_Time => GPURepair_Grid.Total;
 
         [Name("grid-solver")]
-        [Index(19)]
+        [Index(15)]
         public double Grid_SolverCount => GPURepair_Grid.SolverCount;
 
         [Name("grid-verifier")]
-        [Index(20)]
+        [Index(16)]
         public double Grid_VerCount => GPURepair_Grid.VerCount;
 
         [Name("ins-status")]
-        [Index(21)]
+        [Index(17)]
         public string Inspection_Status => GPURepair_Inspection.Result(this);
 
         [Name("ins-time")]
-        [Index(22)]
+        [Index(18)]
         public double Inspection_Time => GPURepair_Inspection.Total;
 
         [Name("ins-solver")]
-        [Index(23)]
+        [Index(19)]
         public double Inspection_SolverCount => GPURepair_Inspection.SolverCount;
 
         [Name("ins-verifier")]
-        [Index(24)]
+        [Index(20)]
         public double Inspection_VerCount => GPURepair_Inspection.VerCount;
 
         [Name("grid-ins-status")]
-        [Index(25)]
+        [Index(21)]
         public string Grid_Inspection_Status => GPURepair_Grid_Inspection.Result(this);
 
         [Name("grid-ins-time")]
-        [Index(26)]
+        [Index(22)]
         public double Grid_Inspection_Time => GPURepair_Grid_Inspection.Total;
 
         [Name("grid-ins-solver")]
-        [Index(27)]
+        [Index(23)]
         public double Grid_Inspection_SolverCount => GPURepair_Grid_Inspection.SolverCount;
 
         [Name("grid-ins-verifier")]
-        [Index(28)]
+        [Index(24)]
         public double Grid_Inspection_VerCount => GPURepair_Grid_Inspection.VerCount;
     }
 }

@@ -48,21 +48,5 @@
         [Name("maxsat-verifier")]
         [Index(9)]
         public double MaxSAT_VerCount => GPURepair_MaxSAT.VerCount;
-
-        [Name("sat-status")]
-        [Index(10)]
-        public string SAT_Status => GPURepair_SAT.Result(this);
-
-        [Name("sat-time")]
-        [Index(11)]
-        public double SAT_Time => GPURepair_SAT.Total;
-
-        [Name("sat-solver")]
-        [Index(12)]
-        public double SAT_SolverCount => GPURepair_SAT.SolverCount;
-
-        [Name("sat-verifier")]
-        [Index(13)]
-        public double SAT_VerCount => GPURepair_SAT.VerCount;
     }
 }
