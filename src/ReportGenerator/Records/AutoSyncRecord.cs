@@ -5,12 +5,7 @@
 
     public class AutoSyncRecord
     {
-        private static List<string> falsePositives;
-
-        static AutoSyncRecord()
-        {
-            falsePositives = CsvWrapper.ReadLines(@"manual\falsepositives.csv");
-        }
+        private Status result = null;
 
         [Index(0)]
         public string Kernel { get; set; }
@@ -27,13 +22,15 @@
         [Index(4)]
         public string Exception { get; set; }
 
+        [Ignore]
         public Status Result
         {
             get
             {
-                if (falsePositives.Contains(Kernel))
-                    return Status.FalsePositive;
-                else if (Exception == "Timeout!")
+                if (result != null && result.Value != null)
+                    return result;
+
+                if (Exception == "Timeout!")
                     return Status.Timeout;
                 else if (VerCount == -1 && Changes == -1)
                     return Status.Error;
@@ -44,6 +41,8 @@
                 else
                     return Status.Unchanged;
             }
+
+            set { result = value; }
         }
 
         public class Status
@@ -59,6 +58,12 @@
             public static Status Timeout = new Status("TIMEOUT", 2);
 
             public static Status FalsePositive = new Status("FALSE_POSITIVE", 6);
+
+            public Status()
+            {
+                Value = null;
+                Priority = 0;
+            }
 
             private Status(string value, int priority)
             {

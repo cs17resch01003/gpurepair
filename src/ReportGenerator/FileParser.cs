@@ -27,8 +27,8 @@
 
         public static async Task ParseFiles(string directory)
         {
-            Autosync = await ParseSource(directory, "autosync", "autosync.csv", GetAutoSyncRecords);
             GPUVerify = await ParseSource(directory, "gpuverify", "gpuverify.csv", GetGPUVerifyRecords);
+            Autosync = await ParseSource(directory, "autosync", "autosync.csv", GetAutoSyncRecords);
             GPURepair = await ParseSource(directory, "gpurepair", "gpurepair.csv", GetGPURepairRecords);
             GPURepair_MaxSAT = await ParseSource(directory, "gpurepair_maxsat", "gpurepair_maxsat.csv", GetGPURepairRecords);
             GPURepair_SAT = await ParseSource(directory, "gpurepair_sat", "gpurepair_sat.csv", GetGPURepairRecords);
@@ -54,7 +54,7 @@
             if (!Directory.Exists(directory))
                 return new List<AutoSyncOutRecord>();
 
-            IEnumerable<string> files = Directory.EnumerateFiles(directory, "*.csv", SearchOption.AllDirectories);
+            IEnumerable<string> files = Directory.EnumerateFiles(directory, "*.csv", SearchOption.TopDirectoryOnly);
             List<AutoSyncRecord> records = new List<AutoSyncRecord>();
 
             // consolidate records from all the files in a single list
@@ -66,6 +66,25 @@
 
             // standardize the kernel name
             records.ForEach(x => x.Kernel = Common.StandardizeKernelName(x.Kernel));
+
+            directory = directory + Path.DirectorySeparatorChar + "gpuverify";
+            IEnumerable<GPUVerifyRecord> gv_records = GetGPUVerifyRecords(directory);
+
+            foreach (AutoSyncRecord record in records)
+            {
+                // AutoSync repaired but GPUVerify identified errors
+                GPUVerifyRecord gv_record = gv_records.FirstOrDefault(x => x.Kernel == record.Kernel);
+                if (record.Result == AutoSyncRecord.Status.Repaired)
+                    if (gv_record == null || gv_record.ResultEnum != GPUVerifyRecord.Status.Success)
+                        record.Result = AutoSyncRecord.Status.FalsePositive;
+
+                // AutoSync did not change anything but GPUVerify identified errors
+                // AutoSync should have returned a repair error in these cases
+                gv_record = GPUVerify.FirstOrDefault(x => x.Kernel == record.Kernel);
+                if (record.Result == AutoSyncRecord.Status.Unchanged)
+                    if (gv_record == null || gv_record.ResultEnum != GPUVerifyRecord.Status.Success)
+                        record.Result = AutoSyncRecord.Status.FalsePositive;
+            }
 
             List<AutoSyncOutRecord> summary = new List<AutoSyncOutRecord>();
             foreach (AutoSyncRecord record in records)
