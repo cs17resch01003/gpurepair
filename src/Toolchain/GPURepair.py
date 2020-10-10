@@ -363,10 +363,10 @@ class GPURepairInstance(object):
     if args.detailed_logging:
       options.append("/detailedLogging:true")
 
-    if args.disable_inspection:
+    if args.disable_inspect:
       options.append("/disableInspection:true")
 
-    if args.disable_grid_barriers:
+    if args.disable_grid:
       options.append("/disableGridBarriers:true")
       
     if args.source_language:
@@ -489,7 +489,7 @@ class GPURepairInstance(object):
     if args.detailed_logging:
       options.append("/detailedLogging:true")
 
-    if args.disable_inspection:
+    if args.disable_inspect:
       options.append("/disableInspection:true")
 
     if args.log_clauses:

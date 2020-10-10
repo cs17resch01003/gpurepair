@@ -309,9 +309,9 @@ def __build_parser(default_solver, version):
     help = "Enables detailed logging for instrumentation and repair")
   repair.add_argument("--log-clauses", action = 'store_true',
     help = "Enables logging of clauses during the repair process")
-  repair.add_argument("--disable-inspection", action = 'store_true',
+  repair.add_argument("--disable-inspect", action = 'store_true',
     help = "Disables inspection of programmer inserted barriers")
-  repair.add_argument("--disable-grid-barriers", action = 'store_true',
+  repair.add_argument("--disable-grid", action = 'store_true',
     help = "Disables grid-level barriers during instrumentation")
   repair.add_argument("--loop-depth-weight", action = 'store_true',
     help = "The weight of a barrier when it is inside a loop. This value will be raised exponentially based on the loop depth")

@@ -15,7 +15,7 @@ do
 
 	clear
 	cd /datadrive/gpurepair/src/Toolchain
-	./grtester.py /datadrive/gpurepair/tests/testsuite --threads=1 --time-as-csv --csv-file=gpurepair-$i.csv --gropt=--detailed-logging --gropt=--disable-grid-barriers 2>&1 | tee gpurepair-run-$i.log
+	./grtester.py /datadrive/gpurepair/tests/testsuite --threads=1 --time-as-csv --csv-file=gpurepair-$i.csv --gropt=--detailed-logging --gropt=--disable-grid 2>&1 | tee gpurepair-run-$i.log
 
 	cd /datadrive/gpurepair/tests/testsuite
 	zip -r gpurepair-snapshot-$i.zip .
