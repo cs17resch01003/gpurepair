@@ -18,6 +18,8 @@
             using (CsvReader csv = new CsvReader(reader))
             {
                 csv.Configuration.HasHeaderRecord = header;
+                csv.Configuration.MissingFieldFound = null;
+
                 return csv.GetRecords<T>().ToList();
             }
         }
@@ -32,7 +34,7 @@
             using (CsvWriter csv = new CsvWriter(writer))
             {
                 csv.Configuration.QuoteAllFields = true;
-                csv.WriteRecord(records);
+                csv.WriteRecords(records);
             }
         }
     }

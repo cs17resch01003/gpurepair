@@ -1,6 +1,5 @@
 ﻿namespace GPURepair.ReportGenerator.Records
 {
-    using System.Collections.Generic;
     using CsvHelper.Configuration.Attributes;
 
     public class AutoSyncRecord
@@ -27,7 +26,7 @@
         {
             get
             {
-                if (result != null && result.Value != null)
+                if (result != null && !string.IsNullOrWhiteSpace(result.Value))
                     return result;
 
                 if (Exception == "Timeout!")
@@ -62,7 +61,7 @@
             public Status()
             {
                 Value = null;
-                Priority = 0;
+                Priority = null;
             }
 
             private Status(string value, int priority)
@@ -73,7 +72,7 @@
 
             public string Value { get; set; }
 
-            public int Priority { get; set; }
+            public int? Priority { get; set; }
 
             public override string ToString()
             {

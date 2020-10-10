@@ -1,6 +1,5 @@
 ﻿namespace GPURepair.ReportGenerator.Reports
 {
-    using CsvHelper.Configuration.Attributes;
     using GPURepair.ReportGenerator.Records;
 
     public class BaseReportRecord
@@ -20,25 +19,18 @@
             GPURepair_Grid_Inspection = record.GPURepair_Grid_Inspection ?? new GPURepairRecord();
         }
 
-        [Ignore]
-        public AutoSyncOutRecord AutoSync { get; set; }
+        public AutoSyncOutRecord AutoSync;
 
-        [Ignore]
-        public GPUVerifyRecord GPUVerify { get; set; }
+        public GPUVerifyRecord GPUVerify;
 
-        [Ignore]
-        public GPURepairRecord GPURepair { get; set; }
+        public GPURepairRecord GPURepair;
 
-        [Ignore]
-        public GPURepairRecord GPURepair_MaxSAT { get; set; }
+        public GPURepairRecord GPURepair_MaxSAT;
 
-        [Ignore]
-        public GPURepairRecord GPURepair_Grid { get; set; }
+        public GPURepairRecord GPURepair_Grid;
 
-        [Ignore]
-        public GPURepairRecord GPURepair_Inspection { get; set; }
+        public GPURepairRecord GPURepair_Inspection;
 
-        [Ignore]
-        public GPURepairRecord GPURepair_Grid_Inspection { get; set; }
+        public GPURepairRecord GPURepair_Grid_Inspection;
     }
 }
