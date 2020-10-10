@@ -12,8 +12,8 @@
 
         static GPUVerifyRecord()
         {
-            assertionErrors = CsvWrapper.ReadLines(@"manual\assertionerrors.csv");
-            invariantErrors = CsvWrapper.ReadLines(@"manual\invarianterrors.csv");
+            assertionErrors = CsvWrapper.ReadLines(@"manual" + Path.DirectorySeparatorChar + @"assertionerrors.csv");
+            invariantErrors = CsvWrapper.ReadLines(@"manual" + Path.DirectorySeparatorChar + @"invarianterrors.csv");
         }
 
         public Status ResultEnum;
