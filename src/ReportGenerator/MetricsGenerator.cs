@@ -127,7 +127,7 @@
                 }
             }
 
-            await CsvWrapper.Write(records.OrderBy(x => x.Kernel), summaryFile).ConfigureAwait(false);
+            CsvWrapper.Write(records.OrderBy(x => x.Kernel), summaryFile);
         }
 
         private async Task<int> GetLines(string file)

@@ -3,7 +3,6 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Threading.Tasks;
     using GPURepair.ReportGenerator.Records;
     using GPURepair.ReportGenerator.Reports;
 
@@ -15,20 +14,20 @@
 
         public static IEnumerable<ConfigurationComparisonRecord> ConfigurationComparisonRecords { get; set; }
 
-        public static async Task AnalyzeData(string directory)
+        public static void AnalyzeData(string directory)
         {
             PopulateRecords();
 
-            await StoreDate(directory, "tool_comparison.csv", ToolComparisonRecords);
-            await StoreDate(directory, "solver_comparison.csv", SolverComparisonRecords);
-            await StoreDate(directory, "configuration_comparison.csv", ConfigurationComparisonRecords);
+            StoreDate(directory, "tool_comparison.csv", ToolComparisonRecords);
+            StoreDate(directory, "solver_comparison.csv", SolverComparisonRecords);
+            StoreDate(directory, "configuration_comparison.csv", ConfigurationComparisonRecords);
         }
 
-        private static async Task<IEnumerable<T>> StoreDate<T>(string directory,
+        private static IEnumerable<T> StoreDate<T>(string directory,
             string filename, IEnumerable<T> records)
         {
             string generated = directory + Path.DirectorySeparatorChar + "analysis" + Path.DirectorySeparatorChar + filename;
-            await CsvWrapper.Write(records, generated);
+            CsvWrapper.Write(records, generated);
 
             return records;
         }

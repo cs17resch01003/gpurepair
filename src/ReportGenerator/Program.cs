@@ -42,7 +42,7 @@
                 }
 
                 SummaryGenerator summary = new SummaryGenerator(args[1]);
-                await summary.Generate().ConfigureAwait(false);
+                summary.Generate();
             }
         }
     }

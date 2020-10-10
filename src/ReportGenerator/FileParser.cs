@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Threading.Tasks;
     using GPURepair.ReportGenerator.Records;
 
     public static class FileParser
@@ -23,25 +22,25 @@
 
         public static IEnumerable<GPURepairRecord> GPURepair_Grid_Inspection { get; set; }
 
-        public static async Task ParseFiles(string directory)
+        public static void ParseFiles(string directory)
         {
-            GPUVerify = await ParseSource(directory, "gpuverify", "gpuverify.csv", GetGPUVerifyRecords);
-            Autosync = await ParseSource(directory, "autosync", "autosync.csv", GetAutoSyncRecords);
-            GPURepair = await ParseSource(directory, "gpurepair", "gpurepair.csv", GetGPURepairRecords);
-            GPURepair_MaxSAT = await ParseSource(directory, "gpurepair_maxsat", "gpurepair_maxsat.csv", GetGPURepairRecords);
-            GPURepair_Grid = await ParseSource(directory, "gpurepair_grid", "gpurepair_grid.csv", GetGPURepairRecords);
-            GPURepair_Inspection = await ParseSource(directory, "gpurepair_inspection", "gpurepair_inspection.csv", GetGPURepairRecords);
-            GPURepair_Grid_Inspection = await ParseSource(directory, "gpurepair_grid_inspection", "gpurepair_grid_inspection.csv", GetGPURepairRecords);
+            GPUVerify = ParseSource(directory, "gpuverify", "gpuverify.csv", GetGPUVerifyRecords);
+            Autosync = ParseSource(directory, "autosync", "autosync.csv", GetAutoSyncRecords);
+            GPURepair = ParseSource(directory, "gpurepair", "gpurepair.csv", GetGPURepairRecords);
+            GPURepair_MaxSAT = ParseSource(directory, "gpurepair_maxsat", "gpurepair_maxsat.csv", GetGPURepairRecords);
+            GPURepair_Grid = ParseSource(directory, "gpurepair_grid", "gpurepair_grid.csv", GetGPURepairRecords);
+            GPURepair_Inspection = ParseSource(directory, "gpurepair_inspection", "gpurepair_inspection.csv", GetGPURepairRecords);
+            GPURepair_Grid_Inspection = ParseSource(directory, "gpurepair_grid_inspection", "gpurepair_grid_inspection.csv", GetGPURepairRecords);
         }
 
-        private static async Task<IEnumerable<T>> ParseSource<T>(
+        private static IEnumerable<T> ParseSource<T>(
             string directory, string folder, string filename, Func<string, IEnumerable<T>> method)
         {
             string source = directory + Path.DirectorySeparatorChar + folder;
             string generated = directory + Path.DirectorySeparatorChar + "generated" + Path.DirectorySeparatorChar + filename;
 
             IEnumerable<T> records = method(source);
-            await CsvWrapper.Write(records, generated);
+            CsvWrapper.Write(records, generated);
 
             return records;
         }

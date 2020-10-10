@@ -1,7 +1,5 @@
 ﻿namespace GPURepair.ReportGenerator
 {
-    using System.Threading.Tasks;
-
     public class SummaryGenerator
     {
         private string directory;
@@ -11,10 +9,10 @@
             this.directory = directory;
         }
 
-        public async Task Generate()
+        public void Generate()
         {
-            await FileParser.ParseFiles(directory);
-            await DataAnalyzer.AnalyzeData(directory);
+            FileParser.ParseFiles(directory);
+            DataAnalyzer.AnalyzeData(directory);
             TexGenerator.Generate(directory);
         }
     }
