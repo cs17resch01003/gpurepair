@@ -37,7 +37,7 @@
         public override string ToString()
         {
             FileInfo file = new FileInfo(File);
-            return string.Format("{0}{1}{2} {3}", Directory, Path.DirectorySeparatorChar, file.Name, Line);
+            return string.Format("{0} {1}", file.FullName, Line);
         }
 
         /// <summary>
