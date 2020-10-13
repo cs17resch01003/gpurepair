@@ -1,1 +1,0 @@
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/6_Advanced_concurrentKernels_sum/kernel.cu 21 inside the loop.

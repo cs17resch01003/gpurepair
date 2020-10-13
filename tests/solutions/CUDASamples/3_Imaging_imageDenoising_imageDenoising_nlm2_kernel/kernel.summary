@@ -1,1 +1,0 @@
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/3_Imaging_imageDenoising_imageDenoising_nlm2_kernel/kernel.cu 65 outside the loop.

@@ -1,3 +1,0 @@
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/transitiveclosuresimplified2/kernel.cl 34 inside the loop.
-Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/transitiveclosuresimplified2/kernel.cl 42.
-Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/transitiveclosuresimplified2/kernel.cl 27.

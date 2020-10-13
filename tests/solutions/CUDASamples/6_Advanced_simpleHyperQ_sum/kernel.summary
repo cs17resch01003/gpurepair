@@ -1,1 +1,0 @@
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/6_Advanced_simpleHyperQ_sum/kernel.cu 20 inside the loop.

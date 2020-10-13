@@ -1,5 +1,0 @@
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test4/kernel.cl 18.
-Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test4/kernel.cl 8 => /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test4/kernel.cl 34.
-Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test4/kernel.cl 8 => /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test4/kernel.cl 29.
-Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test4/kernel.cl 8 => /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test4/kernel.cl 24.
-Remove the barrier at location /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test4/kernel.cl 8 => /datadrive/gpurepair/tests/testsuite/OpenCL/barrier_intervals/test4/kernel.cl 15.

@@ -1,2 +1,0 @@
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/3_Imaging_dct8x8_CUDAkernel1DCT/kernel.cu 51 outside the loop.
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/3_Imaging_dct8x8_CUDAkernel1DCT/kernel.cu 33 outside the loop.

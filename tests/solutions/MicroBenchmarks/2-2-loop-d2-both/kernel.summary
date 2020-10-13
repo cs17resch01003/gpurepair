@@ -1,2 +1,0 @@
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/MicroBenchmarks/2-2-loop-d2-both/kernel.cu 9 inside the loop.
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/MicroBenchmarks/2-2-loop-d2-both/kernel.cu 15 inside the loop.

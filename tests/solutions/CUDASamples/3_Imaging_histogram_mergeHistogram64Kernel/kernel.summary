@@ -1,1 +1,0 @@
-Add a barrier at location /datadrive/gpurepair/tests/testsuite/CUDASamples/3_Imaging_histogram_mergeHistogram64Kernel/kernel.cu 25 inside the loop.
