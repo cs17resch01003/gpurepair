@@ -269,7 +269,7 @@ class GPUVerifyTestKernel(object):
                          " expected " + GPUVerifyErrorCodes.errorCodeToString[self.expectedReturnCode])
 
             #Print output for user to see
-            if logging.getLogger().getEffectiveLevel() != logging.CRITICAL:
+            if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
                 for line in stderr.split('\n'):
                     print(line)
                 for line in stdout.split('\n'):
