@@ -781,6 +781,9 @@
             int count = values.Count();
             int index = count / 2;
 
+            if (count == 0)
+                return 0;
+
             IEnumerable<double> sorted = values.OrderBy(n => n);
             double median = count % 2 != 0 ? sorted.ElementAt(index) :
                 (sorted.ElementAt(index) + sorted.ElementAt(index - 1)) / 2;
