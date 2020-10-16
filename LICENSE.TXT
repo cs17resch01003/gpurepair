@@ -29,7 +29,3 @@ A "contributor" is any person that distributes its contribution under this licen
 (D) If you distribute any portion of the software in source code form, you may do so only under this license by including a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object code form, you may only do so under a license that complies with this license.
 
 (E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
-
-4. Usage Limitations
-
-The Virtual Machine (VM) and all the binaries inside it should be used only for the review purpose of ISSTA (International Symposium on Software Testing and Analysis) 2020. The VM can be redistributed as need be for the review process, but the binaries should be contained within the VM. The source code of the tool isn’t made public owing to the double-blind nature of the review process. Once the paper is accepted, we will be making the source code public under the Ms-PL license.
