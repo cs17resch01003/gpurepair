@@ -16,7 +16,7 @@ do
 	mv ../gvfindtools.py ./gvfindtools.py
 	clear
 	cd /datadrive/gpuverify
-	./gvtester.py ./testsuite --threads=1 --time-as-csv --csv-file=gpuverify-$i.csv 2>&1 | tee gpuverify-run-$i.log
+	./gvtester.py ./tests/testsuite --threads=1 --time-as-csv --csv-file=gpuverify-$i.csv 2>&1 | tee gpuverify-run-$i.log
 	
 	mkdir -p /datadrive/reports
 	mv /datadrive/gpuverify/gpuverify-$i.csv /datadrive/reports/gpuverify-$i.csv

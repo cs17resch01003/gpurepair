@@ -485,6 +485,7 @@ class GPURepairInstance(object):
 
   def getRepairOptions(self, args):
     options = self.getSharedCruncherAndBoogieOptions(args)
+    options.append("/proverOpt:LOG_FILE=@PROC@.sat")
 
     if args.detailed_logging:
       options.append("/detailedLogging:true")

@@ -558,7 +558,7 @@
                 index = index + 1;
             }
 
-            GlobalVariable variable = CreateGlobalVariable(barrier.Name);
+            Constant variable = CreateGlobalVariable(barrier.Name);
             QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
 
             // move the commands to a new block to create a conditional barrier
@@ -618,7 +618,7 @@
             QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
             call.Attributes.AddLast(barrierAttribute);
 
-            GlobalVariable variable = CreateGlobalVariable(barrierName);
+            Constant variable = CreateGlobalVariable(barrierName);
             QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
 
             // move the commands to a new block to create a conditional barrier
@@ -695,10 +695,10 @@
         /// </summary>
         /// <param name="name">The name of the variable.</param>
         /// <returns>A reference to the variable.</returns>
-        private GlobalVariable CreateGlobalVariable(string name)
+        private Constant CreateGlobalVariable(string name)
         {
-            GlobalVariable variable = new GlobalVariable(Token.NoToken,
-                new TypedIdent(Token.NoToken, name, Type.Bool));
+            Constant constant = new Constant(Token.NoToken,
+                new TypedIdent(Token.NoToken, name, Type.Bool), false);
 
             Dictionary<string, object> attributes = new Dictionary<string, object>();
             attributes.Add("repair", null);
@@ -708,10 +708,10 @@
             attributes.Add("source_elem_width", Expr.Literal(32));
             attributes.Add("source_dimensions", "*");
 
-            variable.Attributes = ConvertAttributes(attributes);
-            program.AddTopLevelDeclaration(variable);
+            constant.Attributes = ConvertAttributes(attributes);
+            program.AddTopLevelDeclaration(constant);
 
-            return variable;
+            return constant;
         }
 
         /// <summary>

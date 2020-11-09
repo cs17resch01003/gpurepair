@@ -108,19 +108,8 @@
             Barriers = new Dictionary<string, Barrier>();
             Regex regex = new Regex(@"^b\d+$");
 
-            foreach (Declaration declaration in program.TopLevelDeclarations)
-                if (declaration is GlobalVariable)
-                {
-                    GlobalVariable globalVariable = declaration as GlobalVariable;
-                    if (regex.IsMatch(globalVariable.Name))
-                    {
-                        Barriers.Add(globalVariable.Name, new Barrier()
-                        {
-                            Name = globalVariable.Name,
-                            Variable = globalVariable
-                        });
-                    }
-                }
+            program.Constants.Where(x => regex.IsMatch(x.Name))
+                .ToList().ForEach(x => Barriers.Add(x.Name, new Barrier(x.Name)));
 
             foreach (Implementation implementation in program.Implementations)
             {

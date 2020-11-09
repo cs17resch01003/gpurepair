@@ -1,10 +1,7 @@
 ﻿namespace GPURepair.Repair
 {
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
-    using GPURepair.Repair.Errors;
-    using GPURepair.Repair.Metadata;
     using Microsoft.Boogie;
 
     public class ConstraintGenerator
@@ -28,64 +25,45 @@
         /// </summary>
         /// <param name="assignments">The assignments provided by the solver.</param>
         /// <param name="errors">The errors.</param>
-        public Microsoft.Boogie.Program ConstraintProgram(
-            Dictionary<string, bool> assignments, IEnumerable<RepairableError> errors)
+        public Microsoft.Boogie.Program ConstraintProgram(Dictionary<string, bool> assignments)
         {
             Microsoft.Boogie.Program program = BoogieUtilities.ReadFile(filePath);
             if (assignments == null || !assignments.Any())
                 return program;
 
-            foreach (Implementation implementation in program.Implementations)
-            {
-                Dictionary<string, bool> current_assignments = new Dictionary<string, bool>();
-                IEnumerable<string> barrierNames = ProgramMetadata.Barriers
-                    .Where(x => x.Value.Implementation.Name == implementation.Name).Select(x => x.Value.Name);
+            ApplyAssignments(program, assignments);
 
-                foreach (string barrierName in barrierNames)
-                    if (assignments.ContainsKey(barrierName))
-                        current_assignments.Add(barrierName, assignments[barrierName]);
-
-                if (current_assignments.Any())
-                    ApplyAssignments(implementation, current_assignments);
-            }
-
-            string tempFile = WriteFile(program);
+            string tempFile = BoogieUtilities.WriteFile(filePath, program);
             program = BoogieUtilities.ReadFile(tempFile);
 
             return program;
         }
 
         /// <summary>
-        /// Writes the program to a temp file.
+        /// Apply the assignments in the form of axioms.
         /// </summary>
         /// <param name="program">The program.</param>
-        /// <returns>The temp file path.</returns>
-        private string WriteFile(Microsoft.Boogie.Program program)
-        {
-            string tempFile = filePath.Replace(".cbpl", ".temp.cbpl");
-            if (File.Exists(tempFile))
-                File.Delete(tempFile);
-
-            using (TokenTextWriter writer = new TokenTextWriter(tempFile, true))
-                program.Emit(writer);
-            return tempFile;
-        }
-
-        /// <summary>
-        /// Apply the assignments in the form of requires statements.
-        /// </summary>
-        /// <param name="implementation">The implementation.</param>
         /// <param name="assignments">The assignments provided by the solver.</param>
-        private void ApplyAssignments(Implementation implementation, Dictionary<string, bool> assignments)
+        private void ApplyAssignments(Microsoft.Boogie.Program program, Dictionary<string, bool> assignments)
         {
+            // remove existing axioms
+            List<Axiom> axioms = new List<Axiom>();
+            foreach (Axiom axiom in program.Axioms.Where(x => x.Comment == "repair_constraint"))
+                axioms.Add(axiom);
+
+            axioms.ForEach(x => program.RemoveTopLevelDeclaration(x));
+
+            // add the axioms corresponding to the assignments
             foreach (KeyValuePair<string, bool> assignment in assignments)
             {
-                SimpleAssignLhs assign = new SimpleAssignLhs(Token.NoToken, new IdentifierExpr(Token.NoToken, assignment.Key, Type.Bool));
+                Expr identifier = new IdentifierExpr(Token.NoToken, assignment.Key, Type.Bool);
                 Expr literal = new LiteralExpr(Token.NoToken, assignment.Value);
-                AssignCmd command = new AssignCmd(Token.NoToken, new List<AssignLhs> { assign },
-                    new List<Expr> { literal });
 
-                implementation.Blocks[0].Cmds.Insert(0, command);
+                BinaryOperator _operator = new BinaryOperator(Token.NoToken, BinaryOperator.Opcode.Iff);
+                NAryExpr expr = new NAryExpr(Token.NoToken, _operator, new List<Expr> { identifier, literal });
+
+                Axiom axiom = new Axiom(Token.NoToken, expr, "repair_constraint");
+                program.AddTopLevelDeclaration(axiom);
             }
         }
     }

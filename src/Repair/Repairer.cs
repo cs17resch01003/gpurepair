@@ -82,10 +82,10 @@
                     if (type == Solver.SolverType.Optimizer &&
                         assignments.Count(x => x.Value == true) == solution.Count(x => x.Value == true))
                     {
-                        return constraintGenerator.ConstraintProgram(assignments, errors);
+                        return constraintGenerator.ConstraintProgram(assignments);
                     }
 
-                    IEnumerable<RepairableError> current_errors = VerifyProgram(assignments, errors);
+                    IEnumerable<RepairableError> current_errors = VerifyProgram(assignments);
                     if (type == Solver.SolverType.Optimizer)
                     {
                         Logger.Log($"RunsAfterOpt");
@@ -101,7 +101,7 @@
                                 assignments.Add(barrierName, false);
 
                         if (type == Solver.SolverType.MaxSAT || type == Solver.SolverType.Optimizer)
-                            return constraintGenerator.ConstraintProgram(assignments, errors);
+                            return constraintGenerator.ConstraintProgram(assignments);
                         else
                             solution = assignments;
                     }
@@ -117,9 +117,9 @@
                     foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
                         assignments.Add(barrier.Name, !barrier.Generated);
 
-                    IEnumerable<Error> current_errors = VerifyProgram(assignments, errors);
+                    IEnumerable<Error> current_errors = VerifyProgram(assignments);
                     if (!current_errors.Any())
-                        return constraintGenerator.ConstraintProgram(assignments, errors);
+                        return constraintGenerator.ConstraintProgram(assignments);
 
                     throw;
                 }
@@ -130,12 +130,10 @@
         /// Verifies the program and returns the errors.
         /// </summary>
         /// <param name="assignments">The assignements</param>
-        /// <param name="errors">The errors.</param>
         /// <returns>The errors.</returns>
-        private IEnumerable<RepairableError> VerifyProgram(
-            Dictionary<string, bool> assignments, IEnumerable<RepairableError> errors)
+        private IEnumerable<RepairableError> VerifyProgram(Dictionary<string, bool> assignments)
         {
-            Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments, errors);
+            Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments);
 
             IEnumerable<RepairableError> current_errors;
             using (Watch watch = new Watch(Measure.Verification))

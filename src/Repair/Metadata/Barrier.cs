@@ -6,6 +6,15 @@
     public class Barrier
     {
         /// <summary>
+        /// The constructor that takes a name.
+        /// </summary>
+        /// <param name="name">The barrier name.</param>
+        public Barrier(string name)
+        {
+            Name = name;
+        }
+
+        /// <summary>
         /// The weight associated with the loop-depth.
         /// </summary>
         public static int LoopDepthWeight { get; set; }
@@ -34,11 +43,6 @@
         /// The call command corresponding to the barrier.
         /// </summary>
         public CallCmd Call { get; set; }
-
-        /// <summary>
-        /// The varibale corresponding to the barrier.
-        /// </summary>
-        public Variable Variable { get; set; }
 
         /// <summary>
         /// The location of the barrier.
