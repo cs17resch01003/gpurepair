@@ -138,7 +138,17 @@
                         .Select(x => x.Name).ToList().ForEach(x => assignments.Add(x, element.Value));
 
                 foreach (string key in this.assignments.Keys)
-                    assignments.Add(key, this.assignments[key]);
+                {
+                    if (assignments.ContainsKey(key))
+                    {
+                        if (assignments[key] != this.assignments[key])
+                            throw new RepairException("The model value doesn't match the assignment value!");
+                    }
+                    else
+                    {
+                        assignments.Add(key, this.assignments[key]);
+                    }
+                }
 
                 bool value = error is RaceError ? false : true;
                 IEnumerable<string> names = assignments.Where(x => x.Value == value).Select(x => x.Key);
