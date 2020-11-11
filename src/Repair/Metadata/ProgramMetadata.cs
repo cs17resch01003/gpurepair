@@ -47,12 +47,13 @@
         /// Populates the metadata.
         /// </summary>
         /// <param name="filePath">The file path.</param>
-        public static void PopulateMetadata(string filePath)
+        /// <param name="useAxioms">Use axioms for instrumentation instead of variable assignments.</param>
+        public static void PopulateMetadata(string filePath, bool useAxioms)
         {
             Program program = BoogieUtilities.ReadFile(filePath);
 
             PopulateLocations(filePath.Replace(".cbpl", ".loc"));
-            PopulateBarriers(program);
+            PopulateBarriers(program, useAxioms);
             PopulateLoopInformation(program);
 
             ClauseLogger.LogWeights();
@@ -103,13 +104,23 @@
         /// Populates the barriers.
         /// </summary>
         /// <param name="program">The given program.</param>
-        private static void PopulateBarriers(Program program)
+        /// <param name="useAxioms">Use axioms for instrumentation instead of variable assignments.</param>
+        private static void PopulateBarriers(Program program, bool useAxioms)
         {
             Barriers = new Dictionary<string, Barrier>();
             Regex regex = new Regex(@"^b\d+$");
 
-            program.Constants.Where(x => regex.IsMatch(x.Name))
-                .ToList().ForEach(x => Barriers.Add(x.Name, new Barrier(x.Name)));
+            if (useAxioms)
+            {
+                program.Constants.Where(x => regex.IsMatch(x.Name))
+                    .ToList().ForEach(x => Barriers.Add(x.Name, new Barrier(x.Name)));
+            }
+            else
+            {
+                program.TopLevelDeclarations.Where(x => x is GlobalVariable)
+                    .Select(x => x as GlobalVariable).Where(x => regex.IsMatch(x.Name))
+                    .ToList().ForEach(x => Barriers.Add(x.Name, new Barrier(x.Name)));
+            }
 
             foreach (Implementation implementation in program.Implementations)
             {

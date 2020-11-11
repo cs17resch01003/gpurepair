@@ -50,6 +50,11 @@
         private bool disableGridBarriers;
 
         /// <summary>
+        /// Use axioms for instrumentation instead of variable assignments.
+        /// </summary>
+        private bool useAxioms;
+
+        /// <summary>
         /// The definition of the barrier.
         /// </summary>
         private Procedure barrier_definition;
@@ -84,14 +89,17 @@
         /// </summary>
         /// <param name="program">The source Boogie program.</param>
         /// <param name="sourceLanguage">The source language of the input program.</param>
-        /// <param name="enableGridBarriers">Enables the grid-level barriers.</param>
+        /// <param name="disableInspection">Disables inspection of programmer inserted barriers.</param>
+        /// <param name="disableGridBarriers">Disables grid-level barriers during instrumentation.</param>
+        /// <param name="useAxioms">Use axioms for instrumentation instead of variable assignments.</param>
         public Instrumentor(Microsoft.Boogie.Program program, SourceLanguage sourceLanguage,
-            bool disableInspection, bool disableGridBarriers)
+            bool disableInspection, bool disableGridBarriers, bool useAxioms)
         {
             this.program = program;
             this.sourceLanguage = sourceLanguage;
             this.disableInspection = disableInspection;
             this.disableGridBarriers = disableGridBarriers;
+            this.useAxioms = useAxioms;
 
             analyzer = new GraphAnalyzer(program);
             foreach (Declaration declaration in program.TopLevelDeclarations)
@@ -558,7 +566,7 @@
                 index = index + 1;
             }
 
-            Constant variable = CreateGlobalVariable(barrier.Name);
+            Variable variable = CreateGlobalVariable(barrier.Name);
             QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
 
             // move the commands to a new block to create a conditional barrier
@@ -618,7 +626,7 @@
             QKeyValue barrierAttribute = new QKeyValue(Token.NoToken, BarrierKey, new List<object>() { barrierName }, null);
             call.Attributes.AddLast(barrierAttribute);
 
-            Constant variable = CreateGlobalVariable(barrierName);
+            Variable variable = CreateGlobalVariable(barrierName);
             QKeyValue partition = new QKeyValue(Token.NoToken, "partition", new List<object>(), null);
 
             // move the commands to a new block to create a conditional barrier
@@ -695,11 +703,8 @@
         /// </summary>
         /// <param name="name">The name of the variable.</param>
         /// <returns>A reference to the variable.</returns>
-        private Constant CreateGlobalVariable(string name)
+        private Variable CreateGlobalVariable(string name)
         {
-            Constant constant = new Constant(Token.NoToken,
-                new TypedIdent(Token.NoToken, name, Type.Bool), false);
-
             Dictionary<string, object> attributes = new Dictionary<string, object>();
             attributes.Add("repair", null);
             attributes.Add("race_checking", null);
@@ -708,10 +713,14 @@
             attributes.Add("source_elem_width", Expr.Literal(32));
             attributes.Add("source_dimensions", "*");
 
-            constant.Attributes = ConvertAttributes(attributes);
-            program.AddTopLevelDeclaration(constant);
+            TypedIdent ident = new TypedIdent(Token.NoToken, name, Type.Bool);
+            Variable variable = useAxioms ? new Constant(Token.NoToken, ident, false)
+                : new GlobalVariable(Token.NoToken, ident) as Variable;
 
-            return constant;
+            variable.Attributes = ConvertAttributes(attributes);
+            program.AddTopLevelDeclaration(variable);
+
+            return variable;
         }
 
         /// <summary>

@@ -21,6 +21,11 @@
         public bool DisableGridBarriers { get; set; } = false;
 
         /// <summary>
+        /// Use axioms for instrumentation instead of variable assignments.
+        /// </summary>
+        public bool UseAxioms { get; set; } = false;
+
+        /// <summary>
         /// Sets the language of the input program.
         /// </summary>
         public SourceLanguage SourceLanguage { get; private set; } = SourceLanguage.OpenCL;
@@ -57,6 +62,12 @@
             {
                 if (ps.ConfirmArgumentCount(1))
                     DisableGridBarriers = bool.Parse(ps.args[ps.i]);
+                return true;
+            }
+            else if (name == "useAxioms")
+            {
+                if (ps.ConfirmArgumentCount(1))
+                    UseAxioms = bool.Parse(ps.args[ps.i]);
                 return true;
             }
             else if (name == "sourceLanguage")

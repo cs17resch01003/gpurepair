@@ -368,6 +368,9 @@ class GPURepairInstance(object):
 
     if args.disable_grid:
       options.append("/disableGridBarriers:true")
+
+    if args.use_axioms:
+      options.append("/useAxioms:true")
       
     if args.source_language:
       options.append("/sourceLanguage:" + self.getSourceLanguageString(args))
@@ -485,13 +488,15 @@ class GPURepairInstance(object):
 
   def getRepairOptions(self, args):
     options = self.getSharedCruncherAndBoogieOptions(args)
-    options.append("/proverOpt:LOG_FILE=@PROC@.sat")
 
     if args.detailed_logging:
       options.append("/detailedLogging:true")
 
     if args.disable_inspect:
       options.append("/disableInspection:true")
+
+    if args.use_axioms:
+      options.append("/useAxioms:true")
 
     if args.log_clauses:
       options.append("/logClauses:true")

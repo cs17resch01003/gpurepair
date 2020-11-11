@@ -313,6 +313,8 @@ def __build_parser(default_solver, version):
     help = "Disables inspection of programmer inserted barriers")
   repair.add_argument("--disable-grid", action = 'store_true',
     help = "Disables grid-level barriers during instrumentation")
+  repair.add_argument("--use-axioms", action = 'store_true',
+    help = "Use axioms for instrumentation instead of variable assignments")
   repair.add_argument("--loop-depth-weight", action = 'store_true',
     help = "The weight of a barrier when it is inside a loop. This value will be raised exponentially based on the loop depth")
   repair.add_argument("--grid-barrier-weight", action = 'store_true',

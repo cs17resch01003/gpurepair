@@ -21,6 +21,11 @@
         public bool DisableInspection { get; set; } = false;
 
         /// <summary>
+        /// Use axioms for instrumentation instead of variable assignments.
+        /// </summary>
+        public bool UseAxioms { get; set; } = false;
+
+        /// <summary>
         /// The weight associated with the loop-depth.
         /// </summary>
         public int LoopDepthWeight { get; set; } = 10;
@@ -67,6 +72,12 @@
             {
                 if (ps.ConfirmArgumentCount(1))
                     DisableInspection = bool.Parse(ps.args[ps.i]);
+                return true;
+            }
+            else if (name == "useAxioms")
+            {
+                if (ps.ConfirmArgumentCount(1))
+                    UseAxioms = bool.Parse(ps.args[ps.i]);
                 return true;
             }
             else if (name == "loopDepthWeight")

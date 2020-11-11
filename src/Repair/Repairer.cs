@@ -25,12 +25,13 @@
         /// </summary>
         /// <param name="filePath">The file path.</param>
         /// <param name="disableInspection">Disables inspection of programmer inserted barriers.</param>
-        public Repairer(string filePath, bool disableInspection)
+        /// <param name="useAxioms">Use axioms for instrumentation instead of variable assignments.</param>
+        public Repairer(string filePath, bool disableInspection, bool useAxioms)
         {
             this.disableInspection = disableInspection;
 
-            ProgramMetadata.PopulateMetadata(filePath);
-            constraintGenerator = new ConstraintGenerator(filePath);
+            ProgramMetadata.PopulateMetadata(filePath, useAxioms);
+            constraintGenerator = new ConstraintGenerator(filePath, useAxioms);
         }
 
         /// <summary>
