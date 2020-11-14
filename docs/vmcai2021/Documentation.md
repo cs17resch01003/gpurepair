@@ -18,7 +18,7 @@ To run GPURepair, the virtual machine needs a minimum of <b>1 CPU</b> and <b>4GB
 
 Copy the artifacts.zip file to the home directory of the user (<b>/home/vmcai2021</b>). As mentioned in the <a href="https://zenodo.org/record/4017293\#\.X4c\_mtAzaUk">documentation</a> provided by VMCAI, the virtual machine is running an SSH server, so that can be used to copy the zip file from the host machine to the VM. Extract the contents of the zip file here as shown in the below figure.
 
-![Figure 1](./images/figure_1_1.png)
+<div align="center"><img src="./images/figure_1_1.png" /></div>
 
 Below is a description of the folders extracted from the zip file.
 
@@ -44,7 +44,7 @@ cd /home/vmcai2021/artifacts
 bash ./scripts/setup.sh
 ```
 
-![figure_1_2](./images/figure_1_2.png)
+<div align="center"><img src="./images/figure_1_2.png" /></div>
 
 Once the required packages are successfully installed, the VM is ready to run GPURepair, AutoSync and GPUVerify. The setup script throws an error if it is run from anywhere besides the home directory of the user [**/home/vmcai2021/artifacts**].
 
@@ -107,11 +107,11 @@ cd /home/vmcai2021/artifacts/scripts
 bash ./run_experiments.sh testsuite_mini 1
 ```
 
-![figure_2_1](./images/figure_2_1.png)
+<div align="center"><img src="./images/figure_2_1.png" /></div>
 
 The  below figure shows the expected folder structure of the **results** directory if the experiments were successfully run.
 
-![figure_2_2](./images/figure_2_2.png)
+<div align="center"><img src="./images/figure_2_2.png" /></div>
 
 ## B.3. Analyzing the Results
 
@@ -147,7 +147,7 @@ cd /home/vmcai2021/artifacts/gpuverify
 vim ./tests/testsuite/Bugged/race/kernel.cu
 ```
 
-![figure_3_1](./images/figure_3_1.png)
+<div align="center"><img src="./images/figure_3_1.png" /></div>
 
 ## C.1. Using GPUVerify to verify the kernel
 
@@ -160,7 +160,7 @@ python3 ./GPUVerify.py ./tests/testsuite/Bugged/race/kernel.cu --blockDim=32 --g
 
 This command verifies the specified kernel and outputs that a data race exists in it. This can be seen in the below figure.
 
-![figure_3_2](./images/figure_3_2.png)
+<div align="center"><img src="./images/figure_3_2.png" /></div>
 
 ## C.2. Repair the kernel using GPURepair
 
@@ -179,11 +179,11 @@ cat ./tests/testsuite/Bugged/race/kernel.summary
 
 The changes in the summary file specify the file and line where a barrier needs to be added or removed. The fixed program is also available in its Boogie Intermediate Representation (IR) at the same location with the extension **.fixed.cbpl**
 
-![figure_3_3](./images/figure_3_3.png)
+<div align="center"><img src="./images/figure_3_3.png" /></div>
 
 Add the barrier at line number 14 as specified in the summary file to obtain the repaired kernel. The repaired kernel will look like below.
 
-![figure_3_4](./images/figure_3_4.png)
+<div align="center"><img src="./images/figure_3_4.png" /></div>
 
 Run GPUVerify on the repaired kernel to confirm that the repair process worked. This can be seen below.
 
@@ -191,9 +191,7 @@ Run GPUVerify on the repaired kernel to confirm that the repair process worked. 
 python3 ../gpuverify/GPUVerify.py ./tests/testsuite/Bugged/race/kernel.cu --blockDim=32 --gridDim=1
 ```
 
-
-
-![figure_3_5](./images/figure_3_5.png)
+<div align="center"><img src="./images/figure_3_5.png" /></div>
 
 All the command-line options available for GPUVerify at https://github.com/mc-imperial/gpuverify/blob/master/Documentation/basic_usage.rst can be used with GPURepair as well. GPURepair passes these command-line options, if specified during its invocation, to GPUVerify for the verification process.
 
@@ -203,7 +201,7 @@ Besides the verification options provided by GPUVerify, GPURepair provides comma
 python3 ./GPURepair.py --help
 ```
 
-![figure_3_6](./images/figure_3_6.png)
+<div align="center"><img src="./images/figure_3_6.png" /></div>
 
 By default, GPURepair uses the mhs solver, enables the instrumentation of grid-level barriers and inspection of pre-existing barriers. In the following subsections, we give an overview of the other configurations that we use to run the experiments in the paper:
 
@@ -251,7 +249,7 @@ python3 ./autosync.py kernel.cu --blockDim=32 --gridDim=1
 
 This command repairs the kernel and prints the number of changes and verifier calls that are required to correct this kernel. This can be seen below.
 
-![figure_3_7](./images/figure_3_7.png)
+<div align="center"><img src="./images/figure_3_7.png" /></div>
 
 The repaired kernel is available in the same folder with the name **kernel\_autosync.cu**
 
@@ -266,7 +264,7 @@ ls ./gpurepair/tests/testsuite
 ls ./autosync/tests/testsuite
 ```
 
-![figure_4_1](./images/figure_4_1.png)
+<div align="center"><img src="./images/figure_4_1.png" /></div>
 
 The OpenCL benchmarks are exclusive to GPURepair and GPUVerify since AutoSync cannot repair OpenCL kernels. Besides that, all the three testsuites follow a similar structure and have the same kernels. As seen in the kernel code examples in Section 3, every kernel has two comments at the beginning of the file. The first line is the expected result, the test runners of GPURepair and GPUVerify use this to provide additional feedback to the user in case the actual result doesn't match the expected result. The second line contains the input to the tool. The test runners of GPURepair, AutoSync and GPUVerify  use this information when running the test case. Since the expected result for all the three tools need not be the same, we maintain independent testsuites for them.
 
@@ -281,7 +279,7 @@ python3 ./gvtester.py ./tests/testsuite --threads=1 --time-as-csv --csv-file=gpu
 
 This command scans for CUDA and OpenCL kernels in the given folder, runs GPUVerify on these kernels, and summarizes the results in a CSV file. The test file syntax of GPUVerify is documented at https://github.com/mc-imperial/gpuverify/blob/master/Documentation/developer_guide.rst under the Test Framework section. The output of this can be seen below.
 
-![figure_4_2](./images/figure_4_2.png)
+<div align="center"><img src="./images/figure_4_2.png" /></div>
 
 ## D.2. Running the testsuite using GPURepair
 
@@ -294,7 +292,7 @@ python3 ./grtester.py ./tests/testsuite --threads=1 --time-as-csv --csv-file=gpu
 
 Similar to GPUVerify, this command scans for CUDA and OpenCL kernels in the given folder, runs GPURepair on these kernels, and summarizes the results in a CSV file. We leverage the same test file syntax as GPUVerify. The output of this can be seen below.
 
-![figure_4_3](./images/figure_4_3.png)
+<div align="center"><img src="./images/figure_4_3.png" /></div>
 
 A backup of the tests is available at **/home/vmcai2021/artifacts/gpurepair/tests-bkp**. This backup will be useful to clear all the summary and fixed Boogie files. The **testsuite** folder can be removed and copied back from the **tests-bkp** folder to bring it back to its original state.
 
@@ -343,9 +341,7 @@ python3 ./testrunner.py ./tests/testsuite
 
 This command scans for CUDA kernels in the given folder, runs AutoSync on these kernels, and summarizes the results on the screen. There are five metrics printed on the screen for each kernel separated by a comma. The first field represents the kernel name; the second field provides the time taken by AutoSync; the third and fourth fields represent the number of calls made to the verifier and the number of changes made to the kernel, respectively. If AutoSync crashes, the error message is returned as the fifth field. The number of changes made to the kernel is returned as -1 if AutoSync crashes or determines that it cannot repair the kernel.
 
-![figure_4_4](./images/figure_4_4.png)
-
-
+<div align="center"><img src="./images/figure_4_4.png" /></div>
 
 # References
 
