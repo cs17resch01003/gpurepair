@@ -4,30 +4,30 @@ This document summarizes how to set up the Virtual Machine (<a href="https://zen
 
 <h1>Table of Contents</h1>
 
-[A. Setting up the Virtual Machine](#a-setting-up-the-virtual-machine)
-&nbsp;&nbsp;&nbsp;&nbsp;[A.1. Resource Requirements](#a1-resource-requirements)
-&nbsp;&nbsp;&nbsp;&nbsp;[A.2. Artifact Setup](#a2-artifact-setup)
-[B. Replicating the Experiment Results](#b-replicating-the-experiment-results)
-&nbsp;&nbsp;&nbsp;&nbsp;[B.1. Running the testsuite (Takes 2 days)](#b1-running-the-testsuite--takes-2-days-)
-&nbsp;&nbsp;&nbsp;&nbsp;[B.2. Running the mini testsuite (Takes 3 hours)](#b2-running-the-mini-testsuite--takes-3-hours-)
-&nbsp;&nbsp;&nbsp;&nbsp;[B.3. Analyzing the Results](#b3-analyzing-the-results)
-[C. Basic Repair](#c-basic-repair)
-&nbsp;&nbsp;&nbsp;&nbsp;[C.1. Using GPUVerify to verify the kernel](#c1-using-gpuverify-to-verify-the-kernel)
-&nbsp;&nbsp;&nbsp;&nbsp;[C.2. Repair the kernel using GPURepair](#c2-repair-the-kernel-using-gpurepair)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C.2.1. Enabling the MaxSAT solver](#c21-enabling-the-maxsat-solver)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C.2.2. Disabling instrumentation of grid-level barriers](#c22-disabling-instrumentation-of-grid-level-barriers)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C.2.3. Disabling inspection of pre-existing barriers](#c23-disabling-inspection-of-pre-existing-barriers)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C.2.4. Disabling instrumentation of grid-level barriers and inspection of pre-existing barriers](#c24-disabling-instrumentation-of-grid-level-barriers-and-inspection-of-pre-existing-barriers)
-&nbsp;&nbsp;&nbsp;&nbsp;[C.3. Repair the kernel using AutoSync](#c3-repair-the-kernel-using-autosync)
-[D. Test Runners](#d-test-runners)
-&nbsp;&nbsp;&nbsp;&nbsp;[D.1. Running the testsuite using GPUVerify](#d1-running-the-testsuite-using-gpuverify)
-&nbsp;&nbsp;&nbsp;&nbsp;[D.2. Running the testsuite using GPURepair](#d2-running-the-testsuite-using-gpurepair)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[D.2.1. Enabling the MaxSAT solver](#d21-enabling-the-maxsat-solver)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[D.2.2. Disabling instrumentation of grid-level barriers](#d22-disabling-instrumentation-of-grid-level-barriers)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[D.2.3. Disabling inspection of pre-existing barriers](#d23-disabling-inspection-of-pre-existing-barriers)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[D.2.4. Disabling instrumentation of grid-level barriers and inspection of pre-existing barriers](#d24-disabling-instrumentation-of-grid-level-barriers-and-inspection-of-pre-existing-barriers)
-&nbsp;&nbsp;&nbsp;&nbsp;[D.3. Running the testsuite using AutoSync](#d3-running-the-testsuite-using-autosync)
-[References](#references)
+[A. Setting up the Virtual Machine](#a-setting-up-the-virtual-machine) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[A.1. Resource Requirements](#a1-resource-requirements) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[A.2. Artifact Setup](#a2-artifact-setup) <br/>
+[B. Replicating the Experiment Results](#b-replicating-the-experiment-results) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[B.1. Running the testsuite (Takes 2 days)](#b1-running-the-testsuite--takes-2-days-) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[B.2. Running the mini testsuite (Takes 3 hours)](#b2-running-the-mini-testsuite--takes-3-hours-) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[B.3. Analyzing the Results](#b3-analyzing-the-results) <br/>
+[C. Basic Repair](#c-basic-repair) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[C.1. Using GPUVerify to verify the kernel](#c1-using-gpuverify-to-verify-the-kernel) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[C.2. Repair the kernel using GPURepair](#c2-repair-the-kernel-using-gpurepair) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C.2.1. Enabling the MaxSAT solver](#c21-enabling-the-maxsat-solver) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C.2.2. Disabling instrumentation of grid-level barriers](#c22-disabling-instrumentation-of-grid-level-barriers) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C.2.3. Disabling inspection of pre-existing barriers](#c23-disabling-inspection-of-pre-existing-barriers) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C.2.4. Disabling instrumentation of grid-level barriers and inspection of pre-existing barriers](#c24-disabling-instrumentation-of-grid-level-barriers-and-inspection-of-pre-existing-barriers) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[C.3. Repair the kernel using AutoSync](#c3-repair-the-kernel-using-autosync) <br/>
+[D. Test Runners](#d-test-runners) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[D.1. Running the testsuite using GPUVerify](#d1-running-the-testsuite-using-gpuverify) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[D.2. Running the testsuite using GPURepair](#d2-running-the-testsuite-using-gpurepair) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[D.2.1. Enabling the MaxSAT solver](#d21-enabling-the-maxsat-solver) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[D.2.2. Disabling instrumentation of grid-level barriers](#d22-disabling-instrumentation-of-grid-level-barriers) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[D.2.3. Disabling inspection of pre-existing barriers](#d23-disabling-inspection-of-pre-existing-barriers) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[D.2.4. Disabling instrumentation of grid-level barriers and inspection of pre-existing barriers](#d24-disabling-instrumentation-of-grid-level-barriers-and-inspection-of-pre-existing-barriers) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[D.3. Running the testsuite using AutoSync](#d3-running-the-testsuite-using-autosync) <br/>
+[References](#references) <br/>
 
 # A. Setting up the Virtual Machine
 
