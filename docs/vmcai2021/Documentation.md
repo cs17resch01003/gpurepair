@@ -368,12 +368,12 @@ This command scans for CUDA kernels in the given folder, runs AutoSync on these 
 
 # References
 
-<a id="1">[1]</a> 
+<a id="1">[1]</a>
 Sourav Anand and Nadia Polikarpova.
 Automatic Synchronization for GPU Kernels.
 In FMCAD 2018, pages 1-9. IEEE, 2018.
 
-<a id="2">[2]</a> 
+<a id="2">[2]</a>
 Adam Betts, Nathan Chong, Alastair F. Donaldson, Shaz Qadeer and Paul Thomson.
 GPUVerify: A Verifier for GPU Kernels.
 In OOPSLA 2012, pages 113-132. ACM, 2012.
