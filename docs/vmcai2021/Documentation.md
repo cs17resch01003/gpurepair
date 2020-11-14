@@ -1,6 +1,6 @@
 <h1 align="center">VMCAI 2021 Documentation</h1>
 
-This document summarizes how to set up the Virtual Machine (<a href="https://zenodo.org/record/4017293/#%5C.X4c%5C_mtAzaUk">https://zenodo.org/record/4017293/#%5C.X4c%5C_mtAzaUk</a>) provided for the 22nd International Conference on Verification, Model Checking, and Abstract Interpretation (VMCAI 2021) and the steps to run GPURepair, AutoSync and GPUVerify. GPURepair is our tool described in the paper (submission 43 in VMCAI tool paper track). AutoSync <a href="#1">[1]</a> is a prior work that is compared against GPURepair. GPUVerify <a href="#2">[2]</a> is the verifier that GPURepair and AutoSync use as an oracle in the kernel repair process. The binaries of GPURepair, GPUVerify and the code of AutoSync are licensed under Ms-PL.
+This document summarizes how to set up the Virtual Machine (<a href="https://zenodo.org/record/4017293/#%5C.X4c%5C_mtAzaUk">https://zenodo.org/record/4017293/#%5C.X4c%5C_mtAzaUk</a>) provided for the 22nd International Conference on Verification, Model Checking, and Abstract Interpretation (VMCAI 2021) and the steps to run GPURepair, AutoSync and GPUVerify. GPURepair is our tool described in our <a href="https://arxiv.org/">paper</a>. AutoSync <a href="#1">[1]</a> is a prior work that is compared against GPURepair. GPUVerify <a href="#2">[2]</a> is the verifier that GPURepair and AutoSync use as an oracle in the kernel repair process. The binaries of GPURepair, GPUVerify and the code of AutoSync are licensed under Ms-PL.
 
 <h1>Table of Contents</h1>
 
