@@ -2,16 +2,17 @@
 
 <h1>Table of Contents</h1>
 
-[A. Getting Started with GPURepair](#a-getting-started-with-gpurepair) <br/>
-[B. Developer Guide](#b-developer-guide) <br/>
-[C. Reproducing the Experimental Results of the VMCAI Paper](#c-reproducing-the-experimental-results-of-the-vmcai-paper) <br/>
+[A. Introduction](#a-introduction) <br/>
+[B. Getting Started with GPURepair](#b-getting-started-with-gpurepair) <br/>
+[C. Developer Guide](#c-developer-guide) <br/>
 [References](#references) <br/>
 
-# A. Getting Started with GPURepair
-# B. Developer Guide
-# C. Reproducing the Experimental Results of the VMCAI Paper
+# A. Introduction
 
-GPURepair has been accepted in the 22nd International Conference on Verification, Model Checking, and Abstract Interpretation (VMCAI 2021) under the tool paper category. The documentation at <a href="./docs/vmcai2021/Documentation.md">docs/vmcai2021/Documentation.md</a> provides a detailed guide on how to set up GPURepair (the artifact is available <a href="">here</a>) on the Virtual Machine provided for VMCAI 2021 artifact evaluation (available <a href="https://zenodo.org/record/4017293/#%5C.X4c%5C_mtAzaUk">here</a>).
+GPURepair has been accepted in the 22nd International Conference on Verification, Model Checking, and Abstract Interpretation (VMCAI 2021) under the tool paper category. An extended version of the paper is available on arXiv at <a href=""></a>. The documentation at <a href="./docs/vmcai2021/Documentation.md">docs/vmcai2021/Documentation.md</a> provides a detailed guide on how to set up GPURepair (the artifact is available <a href="">here</a>) on the Virtual Machine provided for VMCAI 2021 artifact evaluation (available <a href="https://zenodo.org/record/4017293/#%5C.X4c%5C_mtAzaUk">here</a>).
+
+# B. Getting Started with GPURepair
+# C. Developer Guide
 
 # References
 
