@@ -11,6 +11,8 @@
 
 GPURepair has been accepted in the 22nd International Conference on Verification, Model Checking, and Abstract Interpretation (VMCAI 2021) under the tool paper category. An extended version of the paper is available on arXiv at <a href="https://arxiv.org/abs/2011.08373">https://arxiv.org/abs/2011.08373</a>. The documentation at <a href="./docs/vmcai2021/Documentation.md">docs/vmcai2021/Documentation.md</a> provides a detailed guide on how to set up GPURepair (the artifact is available <a href="">here</a>) on the Virtual Machine provided for VMCAI 2021 artifact evaluation (available <a href="https://zenodo.org/record/4017293/#%5C.X4c%5C_mtAzaUk">here</a>).
 
+If you are using our tool or the technique in your work, please cite our paper at <a href="https://link.springer.com/chapter/10.1007/978-3-030-67067-2_18">GPURepair: Automated Repair of GPU Kernels</a> <a href="#3">[3]</a>.
+
 # B. Developer Guide
 
 ### Building from Source on Ubuntu 18.04
@@ -264,3 +266,8 @@ In FMCAD 2018, pages 1-9. IEEE, 2018.
 Adam Betts, Nathan Chong, Alastair F. Donaldson, Shaz Qadeer and Paul Thomson.
 GPUVerify: A Verifier for GPU Kernels.
 In OOPSLA 2012, pages 113-132. ACM, 2012.
+
+<a id="3">[3]</a>
+Saurabh Joshi and Gautam Muduganti.
+GPURepair: Automated Repair of GPU Kernels.
+In VMCAI 2021, pages 401-414. Springer, 2021.
