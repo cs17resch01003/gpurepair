@@ -255,6 +255,19 @@ By default, GPURepair uses the mhs solver, enables the instrumentation of grid-l
 | --mhs | Use the mhs solver in the repair process |
 | --maxsat | Use the MaxSAT solver in the repair process |
 
+
+# Citation
+If you use GPURepair in any fashion, we would appreciate if you cite the following corresponding paper:
+
+
+ * Saurabh Joshi and Gautam Muduganti, _"GPURepair: Automated Repair of GPU Kernels"_.
+   In VMCAI 2021, pages 401-414. Springer, 2021.
+ 
+ You may download the BibTeX file from here: [BibTex](https://citation-needed.springer.com/v2/references/10.1007/978-3-030-67067-2_18?format=bibtex&flavour=citation)
+
+
+
+
 # References
 
 <a id="1">[1]</a>
