@@ -38,11 +38,16 @@ sudo apt update
 sudo apt install mono-devel
 ```
 
-3. Install the [Git](https://git-scm.com/) client to download the source code and install [cmake](https://cmake.org/) for building the tools from source
+3. Install the [Git](https://git-scm.com/) client to download the source code and install [cmake](https://cmake.org/) for building the tools from source. Latest instructions for installing cmake can be found at [https://apt.kitware.com](https://apt.kitware.com). We need [Nuget](https://www.nuget.org/) as well for restoring packages used in the build of GPUVerify
 
 ```bash
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+sudo apt-get update
+
 sudo apt install git
 sudo apt install cmake
+sudo apt install nuget
 ```
 
 4. Download the source code of LLVM and Clang from the [llvm-project 6.x](https://github.com/llvm/llvm-project/tree/release/6.x) repository and compile it
@@ -72,20 +77,7 @@ make -jN
 5. Download the source code of libclc from the [llvm-project 8.x](https://github.com/llvm/llvm-project/tree/release/8.x) repository and compile it
 
 ```bash
-# copy the libclc source code into a different folder
-mkdir -p ${BUILD_ROOT}/libclc
-cd ${BUILD_ROOT}/libclc
-cp -r ${BUILD_ROOT}/llvm_and_clang/src/libclc ${BUILD_ROOT}/libclc/src
-
-# build the source code
-cd ${BUILD_ROOT}/libclc/src
-python3 ./configure.py --with-llvm-config=${BUILD_ROOT}/llvm_and_clang/build/bin/llvm-config \
-	--with-cxx-compiler=c++ \
-	--prefix=${BUILD_ROOT}/libclc/install \
-	nvptx-- nvptx64--
-make
-
-make install# download the source code
+# download the source code
 cd ${BUILD_ROOT}/llvm_and_clang
 git clone https://github.com/llvm/llvm-project.git src/8.x
 
@@ -158,6 +150,7 @@ git clone https://github.com/cs17resch01003/gpuverify.git
 
 # compile the code
 cd ${BUILD_ROOT}/gpuverify
+nuget restore GPUVerify.sln
 msbuild /p:Configuration=Release GPUVerify.sln
 
 # copy the config file and change the "rootDir" variable to ${BUILD_ROOT}
@@ -255,18 +248,13 @@ By default, GPURepair uses the mhs solver, enables the instrumentation of grid-l
 | --mhs | Use the mhs solver in the repair process |
 | --maxsat | Use the MaxSAT solver in the repair process |
 
-
 # Citation
 If you use GPURepair in any fashion, we would appreciate if you cite the following corresponding paper:
 
-
  * Saurabh Joshi and Gautam Muduganti, _"GPURepair: Automated Repair of GPU Kernels"_.
    In VMCAI 2021, pages 401-414. Springer, 2021.
- 
- You may download the BibTeX file from here: [BibTex](https://citation-needed.springer.com/v2/references/10.1007/978-3-030-67067-2_18?format=bibtex&flavour=citation)
 
-
-
+You may download the BibTeX file from here: [BibTex](https://citation-needed.springer.com/v2/references/10.1007/978-3-030-67067-2_18?format=bibtex&flavour=citation)
 
 # References
 
