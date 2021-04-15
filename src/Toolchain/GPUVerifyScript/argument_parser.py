@@ -328,6 +328,14 @@ def __build_parser(default_solver, version):
     action = 'store_const', const = SolverType.MaxSAT,
     help = "Use the MaxSAT solver in the repair process")
 
+  verificationType = repair.add_mutually_exclusive_group()
+  verificationType.add_argument("--classic", dest = 'verification_type',
+    action = 'store_const', const = SolverType.mhs,
+    help = "Use the classic verifier in the repair process")
+  verificationType.add_argument("--incremental", dest = 'verification_type',
+    action = 'store_const', const = SolverType.MaxSAT,
+    help = "Use the incremental verifier in the repair process")
+
   return parser
 
 class __ldict(dict):

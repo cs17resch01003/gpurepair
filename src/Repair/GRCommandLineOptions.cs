@@ -41,6 +41,11 @@
         public Solver.SolverType SolverType = Solver.SolverType.mhs;
 
         /// <summary>
+        /// The verification type.
+        /// </summary>
+        public Repairer.VerificationType VerificationType = Repairer.VerificationType.Incremental;
+
+        /// <summary>
         /// Initializes an instance of <see cref="GRCommandLineOptions"/>.
         /// </summary>
         public GRCommandLineOptions()
@@ -96,6 +101,12 @@
             {
                 if (ps.ConfirmArgumentCount(1))
                     SolverType = (Solver.SolverType)Enum.Parse(typeof(Solver.SolverType), ps.args[ps.i]);
+                return true;
+            }
+            else if (name == "verificationType")
+            {
+                if (ps.ConfirmArgumentCount(1))
+                    VerificationType = (Repairer.VerificationType)Enum.Parse(typeof(Repairer.VerificationType), ps.args[ps.i]);
                 return true;
             }
 

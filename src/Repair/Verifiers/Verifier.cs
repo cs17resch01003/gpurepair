@@ -1,4 +1,4 @@
-﻿namespace GPURepair.Repair
+﻿namespace GPURepair.Repair.Verifiers
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -9,29 +9,21 @@
     using GPURepair.Repair.Metadata;
     using GPUVerify;
     using Microsoft.Boogie;
-    using VC;
 
-    public class Verifier
+    public abstract class Verifier
     {
         /// <summary>
         /// The program to be instrumented.
         /// </summary>
-        private Microsoft.Boogie.Program program;
-
-        /// <summary>
-        /// The current assignments to the variables.
-        /// </summary>
-        private Dictionary<string, bool> assignments;
+        protected Program program;
 
         /// <summary>
         /// Initialize the variables.
         /// </summary>
         /// <param name="program">The source Boogie program.</param>
-        /// <param name="assignments">The current assignments to the variables.</param>
-        public Verifier(Microsoft.Boogie.Program program, Dictionary<string, bool> assignments)
+        public Verifier(Program program)
         {
             this.program = program;
-            this.assignments = assignments;
 
             KernelAnalyser.EliminateDeadVariables(this.program);
             KernelAnalyser.Inline(this.program);
@@ -41,27 +33,24 @@
         /// <summary>
         /// Gets the errors and associated metadata after verifying the program.
         /// </summary>
+        /// <param name="assignments">The current assignments to the variables.</param>
         /// <returns>The metadata of the errors.</returns>
-        public IEnumerable<RepairableError> GetErrors()
+        public IEnumerable<RepairableError> GetErrors(Dictionary<string, bool> assignments)
         {
             List<Error> errors = new List<Error>();
-
-            VCGen gen = new VCGen(program, CommandLineOptions.Clo.SimplifyLogFilePath, CommandLineOptions.Clo.SimplifyLogFileAppend, new List<Checker>());
             foreach (Declaration declaration in program.TopLevelDeclarations)
             {
                 if (declaration is Implementation)
                 {
                     Implementation implementation = declaration as Implementation;
-                    List<Counterexample> examples;
-
-                    ConditionGeneration.Outcome outcome = gen.VerifyImplementation(implementation, out examples);
-                    if (outcome == ConditionGeneration.Outcome.Errors)
+                    if (!implementation.SkipVerification)
+                    {
+                        IEnumerable<Counterexample> examples = VerifyImplementation(implementation, assignments);
                         foreach (Counterexample example in examples)
-                            errors.AddRange(GenerateErrors(example, implementation));
+                            errors.AddRange(GenerateErrors(example, implementation, assignments));
+                    }
                 }
             }
-
-            gen.Close();
 
             // there are no repairable errors that have a variable assigned to them
             if (!errors.Any(x => x is RepairableError && (x as RepairableError).Barriers.Any()))
@@ -79,12 +68,23 @@
         }
 
         /// <summary>
+        /// Gets the counter examples after verifying the program.
+        /// </summary>
+        /// <param name="implementation">The implementation.</param>
+        /// <param name="assignments">The current assignments to the variables.</param>
+        /// <returns>The counter examples.</returns>
+        protected abstract IEnumerable<Counterexample> VerifyImplementation(
+            Implementation implementation, Dictionary<string, bool> assignments);
+
+        /// <summary>
         /// Generates the errors from the counter example.
         /// </summary>
         /// <param name="example">The counter example.</param>
         /// <param name="implementation">The implementation.</param>
-        /// <returns>The error.</returns>
-        private IEnumerable<Error> GenerateErrors(Counterexample example, Implementation implementation)
+        /// <param name="assignments">The current assignments to the variables.</param>
+        /// <returns>The errors.</returns>
+        private IEnumerable<Error> GenerateErrors(Counterexample example, Implementation implementation,
+            Dictionary<string, bool> assignments)
         {
             List<Error> errors = new List<Error>();
             if (example is CallCounterexample)
@@ -96,7 +96,7 @@
                     ErrorReporter reporter = new ErrorReporter(program, implementation.Name);
 
                     reporter.PopulateDivergenceInformation(callCounterexample, divergence);
-                    IdentifyVariables(divergence);
+                    IdentifyVariables(divergence, assignments);
 
                     errors.Add(divergence);
                     return errors;
@@ -108,7 +108,7 @@
 
                     IEnumerable<RaceError> races = reporter.GetRaceInformation(callCounterexample, template);
                     foreach (RaceError race in races)
-                        IdentifyVariables(race);
+                        IdentifyVariables(race, assignments);
 
                     errors.AddRange(races);
                     return errors;
@@ -123,35 +123,36 @@
         /// Identifies the variables from the counter example.
         /// </summary>
         /// <param name="error">The error.</param>
-        private void IdentifyVariables(RepairableError error)
+        /// <param name="assignments">The current assignments to the variables.</param>
+        private void IdentifyVariables(RepairableError error, Dictionary<string, bool> assignments)
         {
             // Filter the variables based on source locations
             if (error is RaceError)
             {
                 Regex regex = new Regex(@"^b\d+$");
-                Dictionary<string, bool> assignments = new Dictionary<string, bool>();
+                Dictionary<string, bool> local = new Dictionary<string, bool>();
 
                 IEnumerable<Model.Boolean> elements = error.CounterExample.Model.Elements
                     .Where(x => x is Model.Boolean).Select(x => x as Model.Boolean);
                 foreach (Model.Boolean element in elements)
                     element.References.Select(x => x.Func).Where(x => regex.IsMatch(x.Name))
-                        .Select(x => x.Name).ToList().ForEach(x => assignments.Add(x, element.Value));
+                        .Select(x => x.Name).ToList().ForEach(x => local.Add(x, element.Value));
 
-                foreach (string key in this.assignments.Keys)
+                foreach (string key in assignments.Keys)
                 {
-                    if (assignments.ContainsKey(key))
+                    if (local.ContainsKey(key))
                     {
-                        if (assignments[key] != this.assignments[key])
+                        if (local[key] != assignments[key])
                             throw new RepairException("The model value doesn't match the assignment value!");
                     }
                     else
                     {
-                        assignments.Add(key, this.assignments[key]);
+                        local.Add(key, assignments[key]);
                     }
                 }
 
                 bool value = error is RaceError ? false : true;
-                IEnumerable<string> names = assignments.Where(x => x.Value == value).Select(x => x.Key);
+                IEnumerable<string> names = local.Where(x => x.Value == value).Select(x => x.Key);
 
                 IEnumerable<Barrier> barriers = ProgramMetadata.Barriers
                     .Where(x => names.Contains(x.Key)).Select(x => x.Value)
@@ -277,6 +278,17 @@
         }
 
         /// <summary>
+        /// Adds a barrier to the list if it doesn't exist already.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        /// <param name="barrier">The barrier.</param>
+        private void AddBarrier(List<Barrier> list, Barrier barrier)
+        {
+            if (!list.Contains(barrier))
+                list.Add(barrier);
+        }
+
+        /// <summary>
         /// Gets the loop barriers if any of the given locations are inside a loop.
         /// </summary>
         /// <param name="start">The starting location.</param>
@@ -302,17 +314,6 @@
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Adds a barrier to the list if it doesn't exist already..
-        /// </summary>
-        /// <param name="list">The list.</param>
-        /// <param name="barrier">The barrier.</param>
-        private void AddBarrier(List<Barrier> list, Barrier barrier)
-        {
-            if (!list.Contains(barrier))
-                list.Add(barrier);
         }
     }
 }

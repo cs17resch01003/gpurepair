@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoogieUtilities.cs" />
+    <Compile Include="Boogie\RepairVCGen.cs" />
     <Compile Include="Diagnostics\ClauseLogger.cs" />
     <Compile Include="ErrorReporter.cs" />
     <Compile Include="Errors\DivergenceError.cs" />
@@ -98,12 +99,18 @@
     <Compile Include="Repairer.cs" />
     <Compile Include="Solver.cs" />
     <Compile Include="SummaryGenerator.cs" />
-    <Compile Include="Verifier.cs" />
+    <Compile Include="Verifiers\ClassicVerifier.cs" />
+    <Compile Include="Verifiers\IncrementalVerifier.cs" />
+    <Compile Include="Verifiers\Verifier.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{9F946FD1-D602-42CB-AADE-600C5B1172B1}</Project>
       <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Provers.RepairSMTLib\Provers.RepairSMTLib.csproj">
+      <Project>{4d8f135f-9553-4557-8e02-203113b43b21}</Project>
+      <Name>Provers.RepairSMTLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\Solvers\Solvers.csproj">
       <Project>{6EE42D59-E836-4E94-BCD1-72119D97B9A1}</Project>

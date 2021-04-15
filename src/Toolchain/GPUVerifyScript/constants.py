@@ -17,3 +17,7 @@ class SolverType(object):
   mhs = 0
   MaxSAT = 1
   SAT = 2
+
+class VerificationType(object):
+  Classic = 0
+  Incremental = 1

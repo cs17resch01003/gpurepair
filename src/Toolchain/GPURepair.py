@@ -488,6 +488,7 @@ class GPURepairInstance(object):
 
   def getRepairOptions(self, args):
     options = self.getSharedCruncherAndBoogieOptions(args)
+    options.append("/prover:RepairSMTLib")
 
     if args.detailed_logging:
       options.append("/detailedLogging:true")
