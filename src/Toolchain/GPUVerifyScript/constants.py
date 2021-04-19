@@ -19,5 +19,5 @@ class SolverType(object):
   SAT = 2
 
 class VerificationType(object):
-  Classic = 0
-  Incremental = 1
+  Incremental = 0
+  Classic = 1
