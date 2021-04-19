@@ -6,7 +6,7 @@ do
 	cd /datadrive/gpurepair/
 	git reset --hard
 	git clean -fd
-	git pull https://github.com/cs17resch01003/gpurepair.git master
+	git pull https://github.com/cs17resch01003/gpurepair.git inc-solving
 
 	clear
 	rm -rf Binaries/
