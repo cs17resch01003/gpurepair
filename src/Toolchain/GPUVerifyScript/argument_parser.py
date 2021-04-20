@@ -327,6 +327,9 @@ def __build_parser(default_solver, version):
   solverType.add_argument("--maxsat", dest = 'solver_type',
     action = 'store_const', const = SolverType.MaxSAT,
     help = "Use the MaxSAT solver in the repair process")
+  solverType.add_argument("--sat", dest = 'solver_type',
+    action = 'store_const', const = SolverType.SAT,
+    help = "Use the SAT solver in the repair process")
 
   verificationType = repair.add_mutually_exclusive_group()
   verificationType.add_argument("--incremental", dest = 'verification_type',
