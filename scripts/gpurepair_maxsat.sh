@@ -12,10 +12,11 @@ do
 	rm -rf Binaries/
 	cd src
 	xbuild /p:Configuration=Release /p:Platform=x86 GPURepair.sln
+	xbuild /p:Configuration=Release /p:Platform=x86 GPURepair.ReportGenerator.sln
 
 	clear
 	cd /datadrive/gpurepair/src/Toolchain
-	./grtester.py /datadrive/gpurepair/tests/testsuite --threads=1 --time-as-csv --csv-file=gpurepair-$i.csv --gropt=--detailed-logging --gropt=--maxsat 2>&1 | tee gpurepair-run-$i.log
+	python3 ./grtester.py /datadrive/gpurepair/tests/testsuite --threads=1 --time-as-csv --csv-file=gpurepair-$i.csv --gropt=--detailed-logging --gropt=--maxsat 2>&1 | tee gpurepair-run-$i.log
 
 	cd /datadrive/gpurepair/tests/testsuite
 	zip -r gpurepair-snapshot-$i.zip .
