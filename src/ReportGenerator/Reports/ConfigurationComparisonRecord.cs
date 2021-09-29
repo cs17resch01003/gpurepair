@@ -108,5 +108,37 @@
         [Name("grid-ins-verifier")]
         [Index(24)]
         public double Grid_Inspection_VerCount => GPURepair_Grid_Inspection.VerCount;
+
+        [Name("axioms-status")]
+        [Index(25)]
+        public string Axioms_Status => GPURepair_Axioms.Result(this);
+
+        [Name("axioms-time")]
+        [Index(26)]
+        public double Axioms_Time => GPURepair_Axioms.Total;
+
+        [Name("axioms-solver")]
+        [Index(27)]
+        public double Axioms_SolverCount => GPURepair_Axioms.SolverCount;
+
+        [Name("axioms-verifier")]
+        [Index(28)]
+        public double Axioms_VerCount => GPURepair_Axioms.VerCount;
+
+        [Name("classic-status")]
+        [Index(29)]
+        public string Classic_Status => GPURepair_Classic.Result(this);
+
+        [Name("classic-time")]
+        [Index(30)]
+        public double Classic_Time => GPURepair_Classic.Total;
+
+        [Name("classic-solver")]
+        [Index(31)]
+        public double Classic_SolverCount => GPURepair_Classic.SolverCount;
+
+        [Name("classic-verifier")]
+        [Index(32)]
+        public double Classic_VerCount => GPURepair_Classic.VerCount;
     }
 }

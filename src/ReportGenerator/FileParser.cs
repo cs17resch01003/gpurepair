@@ -22,6 +22,10 @@
 
         public static IEnumerable<GPURepairRecord> GPURepair_Grid_Inspection { get; set; }
 
+        public static IEnumerable<GPURepairRecord> GPURepair_Axioms { get; set; }
+
+        public static IEnumerable<GPURepairRecord> GPURepair_Classic { get; set; }
+
         public static void ParseFiles(string directory)
         {
             GPUVerify = ParseSource(directory, "gpuverify", "gpuverify.csv", GetGPUVerifyRecords);
@@ -31,6 +35,8 @@
             GPURepair_Grid = ParseSource(directory, "gpurepair_grid", "gpurepair_grid.csv", GetGPURepairRecords);
             GPURepair_Inspection = ParseSource(directory, "gpurepair_inspection", "gpurepair_inspection.csv", GetGPURepairRecords);
             GPURepair_Grid_Inspection = ParseSource(directory, "gpurepair_grid_inspection", "gpurepair_grid_inspection.csv", GetGPURepairRecords);
+            GPURepair_Axioms = ParseSource(directory, "gpurepair_axioms", "gpurepair_axioms.csv", GetGPURepairRecords);
+            GPURepair_Classic = ParseSource(directory, "gpurepair_classic", "gpurepair_classic.csv", GetGPURepairRecords);
         }
 
         private static IEnumerable<T> ParseSource<T>(
