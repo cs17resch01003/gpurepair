@@ -63,18 +63,8 @@
 
                     if (solution == null)
                     {
-                        if (!errors.Any() && disableInspection)
-                        {
-                            // for the first run, disable all the barriers
-                            assignments = new Dictionary<string, bool>();
-                            foreach (string barrierName in ProgramMetadata.Barriers.Keys)
-                                assignments.Add(barrierName, false);
-                        }
-                        else
-                        {
-                            // try finding a solution for the errors encountered so far
-                            assignments = solver.Solve(errors, ref type);
-                        }
+                        // try finding a solution for the errors encountered so far
+                        assignments = solver.Solve(errors, ref type);
                     }
                     else if (solution.Any(x => x.Value == true))
                     {
@@ -154,20 +144,24 @@
         private IEnumerable<RepairableError> VerifyProgram(VerificationType verificationType,
             Dictionary<string, bool> assignments)
         {
-            Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments);
-
             IEnumerable<RepairableError> current_errors;
             using (Watch watch = new Watch(Measure.Verification))
             {
                 if (verificationType == VerificationType.Classic)
                 {
+                    Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments);
+
                     ClassicVerifier verifier = new ClassicVerifier(program);
                     current_errors = verifier.GetErrors(assignments);
                 }
                 else
                 {
                     if (incrementalVerifier == null)
+                    {
+                        Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments);
                         incrementalVerifier = new IncrementalVerifier(program);
+                    }
+
                     current_errors = incrementalVerifier.GetErrors(assignments);
                 }
             }
