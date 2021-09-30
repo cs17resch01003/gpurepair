@@ -44,11 +44,13 @@
         /// <summary>
         /// Reapirs the program at the given filePath.
         /// </summary>
-        /// <param name="verificationType">The verification type.</param>
-        /// <param name="defaultType">The default solver to use.</param>
+        /// <param name="defaultVerificationType">The default verification type.</param>
+        /// <param name="defaultSolverType">The default solver to use.</param>
         /// <param name="assignments">The assignments to the variables.</param>
         /// <returns>The fixed program if one exists.</returns>
-        public Microsoft.Boogie.Program Repair(VerificationType verificationType, Solver.SolverType defaultType,
+        public Microsoft.Boogie.Program Repair(
+            VerificationType defaultVerificationType,
+            Solver.SolverType defaultSolverType,
             out Dictionary<string, bool> assignments)
         {
             List<RepairableError> errors = new List<RepairableError>();
@@ -56,15 +58,29 @@
 
             while (true)
             {
+                VerificationType verificationType = defaultVerificationType;
                 try
                 {
-                    Solver.SolverType type = defaultType;
+                    Solver.SolverType type = defaultSolverType;
                     Solver solver = new Solver();
 
                     if (solution == null)
                     {
-                        // try finding a solution for the errors encountered so far
-                        assignments = solver.Solve(errors, ref type);
+                        if (!errors.Any() && disableInspection)
+                        {
+                            // for the first run, disable all the barriers
+                            // and use the classic verification type since using incremental removes all barriers in the first run
+                            // because of which subsequent runs fail during incremental solving
+                            assignments = new Dictionary<string, bool>();
+                            foreach (string barrierName in ProgramMetadata.Barriers.Keys)
+                                assignments.Add(barrierName, false);
+                            verificationType = VerificationType.Classic;
+                        }
+                        else
+                        {
+                            // try finding a solution for the errors encountered so far
+                            assignments = solver.Solve(errors, ref type);
+                        }
                     }
                     else if (solution.Any(x => x.Value == true))
                     {
@@ -141,7 +157,8 @@
         /// <param name="verificationType">The verification type.</param>
         /// <param name="assignments">The assignements</param>
         /// <returns>The errors.</returns>
-        private IEnumerable<RepairableError> VerifyProgram(VerificationType verificationType,
+        private IEnumerable<RepairableError> VerifyProgram(
+            VerificationType verificationType,
             Dictionary<string, bool> assignments)
         {
             IEnumerable<RepairableError> current_errors;
