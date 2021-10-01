@@ -44,43 +44,47 @@
         /// <summary>
         /// Reapirs the program at the given filePath.
         /// </summary>
-        /// <param name="defaultVerificationType">The default verification type.</param>
-        /// <param name="defaultSolverType">The default solver to use.</param>
+        /// <param name="verificationType">The verification type.</param>
+        /// <param name="solverType">The default solver to use.</param>
         /// <param name="assignments">The assignments to the variables.</param>
         /// <returns>The fixed program if one exists.</returns>
         public Microsoft.Boogie.Program Repair(
-            VerificationType defaultVerificationType,
-            Solver.SolverType defaultSolverType,
+            VerificationType verificationType,
+            Solver.SolverType solverType,
             out Dictionary<string, bool> assignments)
         {
             List<RepairableError> errors = new List<RepairableError>();
             Dictionary<string, bool> solution = null;
 
+            if (disableInspection)
+            {
+                // for the first run, disable all the barriers
+                // this will mimic what AutoSync does
+                assignments = new Dictionary<string, bool>();
+                foreach (string barrierName in ProgramMetadata.Barriers.Keys)
+                    assignments.Add(barrierName, false);
+
+                IEnumerable<RepairableError> current_errors = VerifyProgram(VerificationType.Classic, assignments);
+                if (!current_errors.Any())
+                    return constraintGenerator.ConstraintProgram(assignments);
+
+                // the errors identified in this run can be reused only for classic verification
+                // incremental verification needs the barrier variables to be free the first time
+                if (verificationType == VerificationType.Classic)
+                    errors.AddRange(current_errors);
+            }
+
             while (true)
             {
-                VerificationType verificationType = defaultVerificationType;
                 try
                 {
-                    Solver.SolverType type = defaultSolverType;
+                    Solver.SolverType type = solverType;
                     Solver solver = new Solver();
 
                     if (solution == null)
                     {
-                        if (!errors.Any() && disableInspection)
-                        {
-                            // for the first run, disable all the barriers
-                            // and use the classic verification type since using incremental removes all barriers in the first run
-                            // because of which subsequent runs fail during incremental solving
-                            assignments = new Dictionary<string, bool>();
-                            foreach (string barrierName in ProgramMetadata.Barriers.Keys)
-                                assignments.Add(barrierName, false);
-                            verificationType = VerificationType.Classic;
-                        }
-                        else
-                        {
-                            // try finding a solution for the errors encountered so far
-                            assignments = solver.Solve(errors, ref type);
-                        }
+                        // try finding a solution for the errors encountered so far
+                        assignments = solver.Solve(errors, ref type);
                     }
                     else if (solution.Any(x => x.Value == true))
                     {
