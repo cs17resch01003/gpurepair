@@ -338,6 +338,9 @@ def __build_parser(default_solver, version):
   verificationType.add_argument("--classic", dest = 'verification_type',
     action = 'store_const', const = VerificationType.Classic,
     help = "Use the classic verifier in the repair process")
+  verificationType.add_argument("--version-1.0", dest = 'verification_type',
+    action = 'store_const', const = VerificationType.Classic,
+    help = "Use the verifier from version 1.0 in the repair process")
 
   return parser
 
