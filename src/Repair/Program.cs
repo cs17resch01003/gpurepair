@@ -48,11 +48,14 @@
 
                 // repair the program
                 Solver.SolverType solverType = ((GRCommandLineOptions)CommandLineOptions.Clo).SolverType;
+                Repairer.VerificationType verificationType =
+                    ((GRCommandLineOptions)CommandLineOptions.Clo).VerificationType;
                 bool disableInspection = ((GRCommandLineOptions)CommandLineOptions.Clo).DisableInspection;
                 bool useAxioms = ((GRCommandLineOptions)CommandLineOptions.Clo).UseAxioms;
 
-                Repairer repairer = new Repairer(Logger.FileName, disableInspection, useAxioms);
-                Microsoft.Boogie.Program program = repairer.Repair(solverType, out assignments);
+                Microsoft.Boogie.Program program;
+                using (Repairer repairer = new Repairer(Logger.FileName, disableInspection, useAxioms))
+                    program = repairer.Repair(verificationType, solverType, out assignments);
 
                 SummaryGenerator generator = new SummaryGenerator();
                 IEnumerable<string> changes = generator.GenerateSummary(assignments,

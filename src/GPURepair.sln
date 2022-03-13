@@ -13,6 +13,8 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Toolchain", "Toolchain\Tool
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{9F946FD1-D602-42CB-AADE-600C5B1172B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provers.RepairSMTLib", "Provers.RepairSMTLib\Provers.RepairSMTLib.csproj", "{4D8F135F-9553-4557-8E02-203113B43B21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,14 @@ Global
 		{9F946FD1-D602-42CB-AADE-600C5B1172B1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9F946FD1-D602-42CB-AADE-600C5B1172B1}.Release|x86.ActiveCfg = Release|Any CPU
 		{9F946FD1-D602-42CB-AADE-600C5B1172B1}.Release|x86.Build.0 = Release|Any CPU
+		{4D8F135F-9553-4557-8E02-203113B43B21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D8F135F-9553-4557-8E02-203113B43B21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D8F135F-9553-4557-8E02-203113B43B21}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4D8F135F-9553-4557-8E02-203113B43B21}.Debug|x86.Build.0 = Debug|Any CPU
+		{4D8F135F-9553-4557-8E02-203113B43B21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D8F135F-9553-4557-8E02-203113B43B21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D8F135F-9553-4557-8E02-203113B43B21}.Release|x86.ActiveCfg = Release|Any CPU
+		{4D8F135F-9553-4557-8E02-203113B43B21}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

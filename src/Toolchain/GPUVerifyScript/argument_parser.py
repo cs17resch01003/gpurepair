@@ -4,7 +4,7 @@ import argparse
 import os
 import subprocess
 
-from .constants import AnalysisMode, SourceLanguage, SolverType
+from .constants import AnalysisMode, SourceLanguage, SolverType, VerificationType
 from .error_codes import ErrorCodes
 from .util import is_hex_string, is_positive_string, GlobalSizeError, \
   get_num_groups
@@ -327,6 +327,20 @@ def __build_parser(default_solver, version):
   solverType.add_argument("--maxsat", dest = 'solver_type',
     action = 'store_const', const = SolverType.MaxSAT,
     help = "Use the MaxSAT solver in the repair process")
+  solverType.add_argument("--sat", dest = 'solver_type',
+    action = 'store_const', const = SolverType.SAT,
+    help = "Use the SAT solver in the repair process")
+
+  verificationType = repair.add_mutually_exclusive_group()
+  verificationType.add_argument("--incremental", dest = 'verification_type',
+    action = 'store_const', const = VerificationType.Incremental,
+    help = "Use the incremental verifier in the repair process")
+  verificationType.add_argument("--classic", dest = 'verification_type',
+    action = 'store_const', const = VerificationType.Classic,
+    help = "Use the classic verifier in the repair process")
+  verificationType.add_argument("--version-1.0", dest = 'verification_type',
+    action = 'store_const', const = VerificationType.Classic,
+    help = "Use the verifier from version 1.0 in the repair process")
 
   return parser
 
@@ -433,6 +447,9 @@ def parse_arguments(argv, default_solver, llvm_bin_dir, version):
 
   if not args.solver_type:
     args.solver_type = SolverType.mhs
+
+  if not args.verification_type:
+    args.verification_type = VerificationType.Incremental
 
   args.num_groups = __get_num_groups(args, parser)
   __check_global_offset(args, parser)

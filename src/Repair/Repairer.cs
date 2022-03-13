@@ -1,5 +1,6 @@
 ﻿namespace GPURepair.Repair
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using GPURepair.Common.Diagnostics;
@@ -7,13 +8,19 @@
     using GPURepair.Repair.Errors;
     using GPURepair.Repair.Exceptions;
     using GPURepair.Repair.Metadata;
+    using GPURepair.Repair.Verifiers;
 
-    public class Repairer
+    public class Repairer : IDisposable
     {
         /// <summary>
         /// The constraint generator.
         /// </summary>
         private ConstraintGenerator constraintGenerator;
+
+        /// <summary>
+        /// The incremental verifier.
+        /// </summary>
+        private IncrementalVerifier incrementalVerifier;
 
         /// <summary>
         /// Disables inspection of programmer inserted barriers.
@@ -37,35 +44,47 @@
         /// <summary>
         /// Reapirs the program at the given filePath.
         /// </summary>
-        /// <param name="defaultType">The default solver to use.</param>
+        /// <param name="verificationType">The verification type.</param>
+        /// <param name="solverType">The default solver to use.</param>
         /// <param name="assignments">The assignments to the variables.</param>
         /// <returns>The fixed program if one exists.</returns>
-        public Microsoft.Boogie.Program Repair(Solver.SolverType defaultType, out Dictionary<string, bool> assignments)
+        public Microsoft.Boogie.Program Repair(
+            VerificationType verificationType,
+            Solver.SolverType solverType,
+            out Dictionary<string, bool> assignments)
         {
             List<RepairableError> errors = new List<RepairableError>();
             Dictionary<string, bool> solution = null;
+
+            if (disableInspection)
+            {
+                // for the first run, disable all the barriers
+                // this will mimic what AutoSync does
+                assignments = new Dictionary<string, bool>();
+                foreach (string barrierName in ProgramMetadata.Barriers.Keys)
+                    assignments.Add(barrierName, false);
+
+                IEnumerable<RepairableError> current_errors = VerifyProgram(VerificationType.Classic, assignments);
+                if (!current_errors.Any())
+                    return constraintGenerator.ConstraintProgram(assignments);
+
+                // the errors identified in this run can be reused only for classic verification
+                // incremental verification needs the barrier variables to be free the first time
+                if (verificationType == VerificationType.Classic)
+                    errors.AddRange(current_errors);
+            }
 
             while (true)
             {
                 try
                 {
-                    Solver.SolverType type = defaultType;
+                    Solver.SolverType type = solverType;
                     Solver solver = new Solver();
 
                     if (solution == null)
                     {
-                        if (!errors.Any() && disableInspection)
-                        {
-                            // for the first run, disable all the barriers
-                            assignments = new Dictionary<string, bool>();
-                            foreach (string barrierName in ProgramMetadata.Barriers.Keys)
-                                assignments.Add(barrierName, false);
-                        }
-                        else
-                        {
-                            // try finding a solution for the errors encountered so far
-                            assignments = solver.Solve(errors, ref type);
-                        }
+                        // try finding a solution for the errors encountered so far
+                        assignments = solver.Solve(errors, ref type);
                     }
                     else if (solution.Any(x => x.Value == true))
                     {
@@ -86,7 +105,7 @@
                         return constraintGenerator.ConstraintProgram(assignments);
                     }
 
-                    IEnumerable<RepairableError> current_errors = VerifyProgram(assignments);
+                    IEnumerable<RepairableError> current_errors = VerifyProgram(verificationType, assignments);
                     if (type == Solver.SolverType.Optimizer)
                     {
                         Logger.Log($"RunsAfterOpt");
@@ -118,7 +137,7 @@
                     foreach (Barrier barrier in ProgramMetadata.Barriers.Values)
                         assignments.Add(barrier.Name, !barrier.Generated);
 
-                    IEnumerable<Error> current_errors = VerifyProgram(assignments);
+                    IEnumerable<RepairableError> current_errors = VerifyProgram(verificationType, assignments);
                     if (!current_errors.Any())
                         return constraintGenerator.ConstraintProgram(assignments);
 
@@ -128,22 +147,56 @@
         }
 
         /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            if (incrementalVerifier != null)
+                incrementalVerifier.Dispose();
+        }
+
+        /// <summary>
         /// Verifies the program and returns the errors.
         /// </summary>
+        /// <param name="verificationType">The verification type.</param>
         /// <param name="assignments">The assignements</param>
         /// <returns>The errors.</returns>
-        private IEnumerable<RepairableError> VerifyProgram(Dictionary<string, bool> assignments)
+        private IEnumerable<RepairableError> VerifyProgram(
+            VerificationType verificationType,
+            Dictionary<string, bool> assignments)
         {
-            Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments);
-
             IEnumerable<RepairableError> current_errors;
             using (Watch watch = new Watch(Measure.Verification))
             {
-                Verifier verifier = new Verifier(program, assignments);
-                current_errors = verifier.GetErrors();
+                if (verificationType == VerificationType.Classic)
+                {
+                    Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments);
+
+                    ClassicVerifier verifier = new ClassicVerifier(program);
+                    current_errors = verifier.GetErrors(assignments);
+                }
+                else
+                {
+                    if (incrementalVerifier == null)
+                    {
+                        Microsoft.Boogie.Program program = constraintGenerator.ConstraintProgram(assignments);
+                        incrementalVerifier = new IncrementalVerifier(program);
+                    }
+
+                    current_errors = incrementalVerifier.GetErrors(assignments);
+                }
             }
 
             return current_errors;
+        }
+
+        /// <summary>
+        /// The verification type used.
+        /// </summary>
+        public enum VerificationType
+        {
+            Classic,
+            Incremental
         }
     }
 }

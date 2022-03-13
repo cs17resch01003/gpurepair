@@ -22,7 +22,7 @@ else:
   import StringIO as io
 
 from GPUVerifyScript.argument_parser import ArgumentParserError, parse_arguments
-from GPUVerifyScript.constants import AnalysisMode, SourceLanguage, SolverType
+from GPUVerifyScript.constants import AnalysisMode, SourceLanguage, SolverType, VerificationType
 from GPUVerifyScript.error_codes import ErrorCodes
 
 import getversion
@@ -323,6 +323,12 @@ class GPURepairInstance(object):
       return "MaxSAT"
     elif args.solver_type == SolverType.SAT:
       return "SAT"
+      
+  def getVerificationTypeString(self, args):
+    if args.verification_type == VerificationType.Classic:
+      return "Classic"
+    elif args.verification_type == VerificationType.Incremental:
+      return "Incremental"
 
   def getOptOptions(self, args):
     options = ["-mem2reg", "-globaldce"]
@@ -488,6 +494,7 @@ class GPURepairInstance(object):
 
   def getRepairOptions(self, args):
     options = self.getSharedCruncherAndBoogieOptions(args)
+    options.append("/prover:RepairSMTLib")
 
     if args.detailed_logging:
       options.append("/detailedLogging:true")
@@ -509,6 +516,9 @@ class GPURepairInstance(object):
 
     if args.solver_type:
       options.append("/solverType:" + self.getSolverTypeString(args))
+
+    if args.verification_type:
+      options.append("/verificationType:" + self.getVerificationTypeString(args))
 
     if args.mode == AnalysisMode.FINDBUGS:
       options.append("/loopUnroll:" + str(args.loop_unwind))

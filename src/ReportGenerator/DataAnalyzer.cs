@@ -65,6 +65,8 @@
                 record.GPURepair_Grid = FileParser.GPURepair_Grid.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
                 record.GPURepair_Inspection = FileParser.GPURepair_Inspection.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
                 record.GPURepair_Grid_Inspection = FileParser.GPURepair_Grid_Inspection.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
+                record.GPURepair_Axioms = FileParser.GPURepair_Axioms.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
+                record.GPURepair_Classic = FileParser.GPURepair_Classic.FirstOrDefault(x => x.Kernel == _gpuverify.Kernel);
 
                 records.Add(record);
             }

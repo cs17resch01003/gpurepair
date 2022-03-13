@@ -55,7 +55,10 @@
                         PrepareSolverComparison(directory);
                     }
 
-                    if (FileParser.GPURepair_Grid.Any() && FileParser.GPURepair_Inspection.Any() && FileParser.GPURepair_Grid_Inspection.Any())
+                    bool configCheck = FileParser.GPURepair_Grid.Any() && FileParser.GPURepair_Inspection.Any()
+                        && FileParser.GPURepair_Grid_Inspection.Any() && FileParser.GPURepair_Axioms.Any()
+                        && FileParser.GPURepair_Classic.Any();
+                    if (configCheck)
                     {
                         lines.Add(@"\input{experiments/configuration_comparison}");
                         PrepareConfigurationComparison(directory);
@@ -610,6 +613,8 @@
             int dg_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_SolverCount)));
             int dg_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_VerCount)));
 
+            var xyz = DataAnalyzer.ConfigurationComparisonRecords.Where(x => x.Inspection_Status == "PASS");
+
             int di_repaired =
                 DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.Inspection_Status == "PASS");
             int di_optimized =
@@ -629,6 +634,26 @@
             double dg_di_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.Grid_Inspection_Time));
             int dg_di_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_Inspection_SolverCount)));
             int dg_di_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Grid_Inspection_VerCount)));
+
+            int axioms_repaired =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.Axioms_Status == "PASS");
+            int axioms_optimized =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "PASS" && x.Axioms_Status == "PASS");
+            int axioms_total = axioms_repaired + axioms_optimized;
+            double axioms_time = DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Axioms_Time);
+            double axioms_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.Axioms_Time));
+            int axioms_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Axioms_SolverCount)));
+            int axioms_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Axioms_VerCount)));
+
+            int classic_repaired =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "FAIL(6)" && x.Classic_Status == "PASS");
+            int classic_optimized =
+                DataAnalyzer.ConfigurationComparisonRecords.Count(x => x.GPUVerify_Status == "PASS" && x.Classic_Status == "PASS");
+            int classic_total = classic_repaired + classic_optimized;
+            double classic_time = DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Classic_Time);
+            double classic_median = Median(DataAnalyzer.ConfigurationComparisonRecords.Select(x => x.Classic_Time));
+            int classic_solver = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Classic_SolverCount)));
+            int classic_verifier = Convert.ToInt32(Math.Round(DataAnalyzer.ConfigurationComparisonRecords.Sum(x => x.Classic_VerCount)));
 
             string file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "tables" + Path.DirectorySeparatorChar + "configuration_comparison.tex";
@@ -673,6 +698,22 @@
             content = content.Replace("@@dg_di_median@@", dg_di_median, 2);
             content = content.Replace("@@dg_di_solver@@", dg_di_solver);
             content = content.Replace("@@dg_di_verifier@@", dg_di_verifier);
+
+            content = content.Replace("@@axioms_repaired@@", axioms_repaired);
+            content = content.Replace("@@axioms_optimized@@", axioms_optimized);
+            content = content.Replace("@@axioms_total@@", axioms_total);
+            content = content.Replace("@@axioms_time@@", axioms_time);
+            content = content.Replace("@@axioms_median@@", axioms_median, 2);
+            content = content.Replace("@@axioms_solver@@", axioms_solver);
+            content = content.Replace("@@axioms_verifier@@", axioms_verifier);
+
+            content = content.Replace("@@classic_repaired@@", classic_repaired);
+            content = content.Replace("@@classic_optimized@@", classic_optimized);
+            content = content.Replace("@@classic_total@@", classic_total);
+            content = content.Replace("@@classic_time@@", classic_time);
+            content = content.Replace("@@classic_median@@", classic_median, 2);
+            content = content.Replace("@@classic_solver@@", classic_solver);
+            content = content.Replace("@@classic_verifier@@", classic_verifier);
             File.WriteAllText(file, content);
         }
 
@@ -729,6 +770,18 @@
             double grid_inspection_ru_median = Median(cuda_repaired_unchanged.Select(x => x.Grid_Inspection_Time));
             int grid_inspection_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.Grid_Inspection_VerCount)));
 
+            double axioms_time = cuda_valid.Sum(x => x.Axioms_Time);
+            double axioms_median = Median(cuda_valid.Select(x => x.Axioms_Time));
+            double axioms_ru_time = cuda_repaired_unchanged.Sum(x => x.Axioms_Time);
+            double axioms_ru_median = Median(cuda_repaired_unchanged.Select(x => x.Axioms_Time));
+            int axioms_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.Axioms_VerCount)));
+
+            double classic_time = cuda_valid.Sum(x => x.Classic_Time);
+            double classic_median = Median(cuda_valid.Select(x => x.Classic_Time));
+            double classic_ru_time = cuda_repaired_unchanged.Sum(x => x.Classic_Time);
+            double classic_ru_median = Median(cuda_repaired_unchanged.Select(x => x.Classic_Time));
+            int classic_ru_verifier = Convert.ToInt32(Math.Round(cuda_repaired_unchanged.Sum(x => x.Classic_VerCount)));
+
             string file = directory + Path.DirectorySeparatorChar + "report" +
                 Path.DirectorySeparatorChar + "tables" + Path.DirectorySeparatorChar + "configuration_comparison_autosync.tex";
 
@@ -773,6 +826,18 @@
             content = content.Replace("@@grid_inspection_ru_time@@", grid_inspection_ru_time);
             content = content.Replace("@@grid_inspection_ru_median@@", grid_inspection_ru_median, 2);
             content = content.Replace("@@grid_inspection_ru_verifier@@", grid_inspection_ru_verifier);
+
+            content = content.Replace("@@axioms_time@@", axioms_time);
+            content = content.Replace("@@axioms_median@@", axioms_median, 2);
+            content = content.Replace("@@axioms_ru_time@@", axioms_ru_time);
+            content = content.Replace("@@axioms_ru_median@@", axioms_ru_median, 2);
+            content = content.Replace("@@axioms_ru_verifier@@", axioms_ru_verifier);
+
+            content = content.Replace("@@classic_time@@", classic_time);
+            content = content.Replace("@@classic_median@@", classic_median, 2);
+            content = content.Replace("@@classic_ru_time@@", classic_ru_time);
+            content = content.Replace("@@classic_ru_median@@", classic_ru_median, 2);
+            content = content.Replace("@@classic_ru_verifier@@", classic_ru_verifier);
             File.WriteAllText(file, content);
         }
 
