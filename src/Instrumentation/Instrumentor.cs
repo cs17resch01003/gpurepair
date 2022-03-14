@@ -540,7 +540,7 @@
             else
             {
                 QKeyValue instrumentedAttribute = new QKeyValue(Token.NoToken, InstrumentationKey, new List<object>(), null);
-                List<Expr> arguments = procedureName == "$bugle_barrier" ? new List<Expr>() { _1bv1, _1bv1 } : new List<Expr>() { _1bv1, _1bv1 };
+                List<Expr> arguments = new List<Expr>() { _1bv1, _1bv1 };
 
                 barrier.Call = new CallCmd(Token.NoToken, procedureName, arguments, new List<IdentifierExpr>(), barrierAttribute);
                 barrier.Call.Attributes.AddLast(instrumentedAttribute);
