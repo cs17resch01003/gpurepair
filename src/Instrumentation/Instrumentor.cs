@@ -685,6 +685,9 @@
                 return;
 
             List<Variable> variables = new List<Variable>();
+            variables.Add(new Formal(Token.NoToken, new TypedIdent(Token.NoToken, "$0", Type.GetBvType(1)), false));
+            variables.Add(new Formal(Token.NoToken, new TypedIdent(Token.NoToken, "$1", Type.GetBvType(1)), false));
+
             Procedure procedure = new Procedure(Token.NoToken, "$bugle_grid_barrier",
                 new List<TypeVariable>(), variables, new List<Variable>(), new List<Requires>(),
                 new List<IdentifierExpr>(), new List<Ensures>());
