@@ -25,30 +25,20 @@
         /// <returns>The race errors.</returns>
         public IEnumerable<RaceError> GetRaceInformation(CallCounterexample example, RaceError error)
         {
-            string raceName, access1, access2;
-
-            DetermineNatureOfRace(example, out raceName, out access1, out access2);
             PopulateModelWithStatesIfNecessary(example);
 
             string raceyArrayName = GetArrayName(example.FailingRequires);
             IEnumerable<SourceLocationInfo> possibleSourcesForFirstAccess =
                 GetPossibleSourceLocationsForFirstAccessInRace(
-                    example, raceyArrayName, AccessType.Create(access1), GetStateName(example));
+                    example, raceyArrayName, GetAccessType(example), GetStateName(example));
             SourceLocationInfo sourceInfoForSecondAccess = new SourceLocationInfo(
-                GetAttributes(example.FailingCall), GetSourceFileName(), example.FailingCall.tok);
-
-            error.RaceType = raceName;
-            error.Access1 = access1;
-            error.Access2 = access2;
+                example.FailingCall.Attributes, GetSourceFileName(), example.FailingCall.tok);
 
             List<RaceError> errors = new List<RaceError>();
             foreach (SourceLocationInfo possibleSourceForFirstAccess in possibleSourcesForFirstAccess)
             {
                 RaceError race = new RaceError(error.CounterExample, error.Implementation)
                 {
-                    RaceType = raceName,
-                    Access1 = access1,
-                    Access2 = access2,
                     Start = possibleSourceForFirstAccess,
                     End = sourceInfoForSecondAccess
                 };
@@ -69,8 +59,13 @@
         public void PopulateDivergenceInformation(CallCounterexample example, DivergenceError error)
         {
             CallCmd call = example.FailingCall;
-            SourceLocationInfo source = new SourceLocationInfo(GetAttributes(call), GetSourceFileName(), call.tok);
+            SourceLocationInfo source = new SourceLocationInfo(call.Attributes, GetSourceFileName(), call.tok);
             error.Location = source;
+        }
+
+        private static string GetSourceFileName()
+        {
+            return CommandLineOptions.Clo.Files[CommandLineOptions.Clo.Files.Count() - 1];
         }
     }
 }

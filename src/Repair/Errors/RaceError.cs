@@ -18,21 +18,6 @@
         }
 
         /// <summary>
-        /// The race type.
-        /// </summary>
-        public string RaceType { get; set; }
-
-        /// <summary>
-        /// The access type 1 for the race type.
-        /// </summary>
-        public string Access1 { get; set; }
-
-        /// <summary>
-        /// The access type 2 for the race type.
-        /// </summary>
-        public string Access2 { get; set; }
-
-        /// <summary>
         /// The starting line of code which caused the race.
         /// </summary>
         public SourceLocationInfo Start { get; set; }
