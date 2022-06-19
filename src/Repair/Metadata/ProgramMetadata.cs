@@ -78,6 +78,8 @@
                     string[] chain = line.Split(new char[] { '\x1E' });
 
                     LocationChain locationChain = new LocationChain();
+                    locationChain.SourceLocation = i;
+
                     foreach (string c in chain)
                     {
                         if (c != string.Empty)
@@ -85,7 +87,6 @@
                             string[] source = c.Split(new char[] { '\x1F' });
                             locationChain.Add(new Location
                             {
-                                SourceLocation = i,
                                 Line = Convert.ToInt32(source[0]),
                                 Column = Convert.ToInt32(source[1]),
                                 File = source[2],
