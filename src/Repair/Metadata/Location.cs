@@ -6,11 +6,6 @@
     public class Location
     {
         /// <summary>
-        /// The source location.
-        /// </summary>
-        public int SourceLocation { get; set; }
-
-        /// <summary>
         /// The line in the source file.
         /// </summary>
         public int Line { get; set; }

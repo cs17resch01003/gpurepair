@@ -6,39 +6,22 @@
 
     public class LocationChain : List<Location>
     {
+        /// <summary>
+        /// The source location.
+        /// </summary>
+        public int SourceLocation { get; set; }
+
         public bool Equals(SourceLocationInfo source)
         {
-            if (Count == source.GetRecords().Count)
-            {
-                bool result = true;
-                for (int i = 0; i < Count; i++)
-                    result = result && this[i].Equals(source.GetRecords()[i]);
-                return result;
-            }
-
-            // handling the case where the verifier ignores header and we don't
-            // refer OpenCL/atomics/refined_atomic_abstraction/access_in_loop as an example
-            if (source.GetRecords().Count == 1)
-            {
-                SourceLocationInfo.Record record = source.GetRecords().First();
-                if (this.Count(x => x.File == record.GetFile()) == 1)
-                    return this.First(x => x.File == record.GetFile()).Equals(record);
-            }
-
-            return false;
+            return SourceLocation == source.SourceLocation;
         }
 
         public bool IsBetween(SourceLocationInfo start, SourceLocationInfo end)
         {
-            IEnumerable<LocationChain> start_chains = start.GetLocationChain();
-            IEnumerable<LocationChain> end_chains = end.GetLocationChain();
+            LocationChain start_chain = ProgramMetadata.Locations[start.SourceLocation.Value];
+            LocationChain end_chain = ProgramMetadata.Locations[end.SourceLocation.Value];
 
-            foreach (LocationChain start_chain in start_chains)
-                foreach (LocationChain end_chain in end_chains)
-                    if (IsBetween(start_chain, end_chain))
-                        return true;
-
-            return false;
+            return IsBetween(start_chain, end_chain);
         }
 
         public bool IsBetween(LocationChain start, LocationChain end)
