@@ -13,13 +13,13 @@
 
         public bool Equals(SourceLocationInfo source)
         {
-            return SourceLocation == source.SourceLocation;
+            return SourceLocation == source.SourceLocationNumber;
         }
 
         public bool IsBetween(SourceLocationInfo start, SourceLocationInfo end)
         {
-            LocationChain start_chain = ProgramMetadata.Locations[start.SourceLocation.Value];
-            LocationChain end_chain = ProgramMetadata.Locations[end.SourceLocation.Value];
+            LocationChain start_chain = ProgramMetadata.Locations[start.SourceLocationNumber.Value];
+            LocationChain end_chain = ProgramMetadata.Locations[end.SourceLocationNumber.Value];
 
             return IsBetween(start_chain, end_chain);
         }
