@@ -8,6 +8,8 @@
 
     public class ErrorReporter : GPUVerifyErrorReporter
     {
+        private Microsoft.Boogie.Program program;
+
         /// <summary>
         /// Instantiates an instance of <see cref="ErrorReporter"/>.
         /// </summary>
@@ -15,6 +17,7 @@
         /// <param name="implName">The name of the implementation.</param>
         public ErrorReporter(Microsoft.Boogie.Program program, string implName) : base(program, implName)
         {
+            this.program = program;
         }
 
         /// <summary>
@@ -27,10 +30,8 @@
         {
             PopulateModelWithStatesIfNecessary(example);
 
-            string raceyArrayName = GetArrayName(example.FailingRequires);
             IEnumerable<SourceLocationInfo> possibleSourcesForFirstAccess =
-                GetPossibleSourceLocationsForFirstAccessInRace(
-                    example, raceyArrayName, GetAccessType(example), GetStateName(example));
+                GetPossibleSourceLocationsForFirstAccessInRace(example);
             SourceLocationInfo sourceInfoForSecondAccess = new SourceLocationInfo(
                 example.FailingCall.Attributes, GetSourceFileName(), example.FailingCall.tok);
 
@@ -63,9 +64,23 @@
             error.Location = source;
         }
 
-        private static string GetSourceFileName()
+        protected override Microsoft.Boogie.Program GetOriginalProgram()
+        {
+            return program;
+        }
+
+        protected override string GetSourceFileName()
         {
             return CommandLineOptions.Clo.Files[CommandLineOptions.Clo.Files.Count() - 1];
+        }
+
+        private static void PopulateModelWithStatesIfNecessary(Counterexample cex)
+        {
+            if (!cex.Model.ModelHasStatesAlready)
+            {
+                cex.PopulateModelWithStates();
+                cex.Model.ModelHasStatesAlready = true;
+            }
         }
     }
 }
