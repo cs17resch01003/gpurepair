@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--local_size=16 --num_groups=1 --loop-unwind=10 --no-inline
 
 __kernel void foo(__local int* A) {

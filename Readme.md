@@ -122,12 +122,12 @@ sudo make install
 ln -s z3 z3.exe
 ```
 
-7. Download the source code of the [Bugle](https://github.com/cs17resch01003/bugle) and compile it. This repository is a fork of [https://github.com/mc-imperial/bugle](https://github.com/mc-imperial/bugle) with additional code to support the [CUDA Cooperative Groups API](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cooperative-groups)
+7. Download the source code of the [Bugle](https://github.com/mc-imperial/bugle) and compile it
 
 ```bash
 # download the source code
 cd ${BUILD_ROOT}
-git clone https://github.com/cs17resch01003/bugle.git ${BUILD_ROOT}/bugle/src
+git clone https://github.com/mc-imperial/bugle.git ${BUILD_ROOT}/bugle/src
 
 # generate the build files
 mkdir ${BUILD_ROOT}/bugle/build
@@ -141,12 +141,12 @@ cmake -D LLVM_CONFIG_EXECUTABLE=${BUILD_ROOT}/llvm_and_clang/build/bin/llvm-conf
 make -jN
 ```
 
-8. Download the source code of the [GPUVerify](https://github.com/cs17resch01003/gpuverify) and compile it. This repository is a fork of [https://github.com/mc-imperial/gpuverify](https://github.com/mc-imperial/gpuverify) with additional code to support the [CUDA Cooperative Groups API](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cooperative-groups)
+8. Download the source code of the [GPUVerify](https://github.com/mc-imperial/gpuverify) and compile it
 
 ```bash
 # download the source code
 cd ${BUILD_ROOT}
-git clone https://github.com/cs17resch01003/gpuverify.git
+git clone https://github.com/mc-imperial/gpuverify.git
 
 # compile the code
 cd ${BUILD_ROOT}/gpuverify
