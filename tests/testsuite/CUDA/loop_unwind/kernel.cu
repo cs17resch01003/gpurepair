@@ -1,4 +1,4 @@
-//xfail:REPAIR_ERROR
+//pass
 //--blockDim=512 --gridDim=64 --loop-unwind=2 --no-inline
 
 #include <cuda.h>
